@@ -1,0 +1,2570 @@
+{
+  "startups": [
+    {
+      "id": "s1",
+      "slug": "halalpay",
+      "name": "HalalPay",
+      "tagline": "Shariah-compliant BNPL for Muslim households.",
+      "category": "Islamic Finance",
+      "country": "United Kingdom",
+      "flag": "🇬🇧",
+      "stage": "Series A",
+      "fundingStage": "Series A",
+      "businessModel": "B2C",
+      "verified": true,
+      "openToFunding": true,
+      "hiring": true,
+      "pitching": true,
+      "totalRaised": 8500000,
+      "foundedYear": 2021,
+      "teamSize": 34,
+      "hq": "London, UK",
+      "founderSlugs": [
+        "aisha-rahman"
+      ],
+      "revenue": "$2M–5M ARR",
+      "users": "220,000+",
+      "growth": "+18% MoM",
+      "addedAt": "2025-11-12",
+      "logo": {
+        "mark": "HP",
+        "color": "#C93636"
+      },
+      "banner": "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "HalalPay lets Muslim households pay in interest-free installments while staying compliant with Islamic finance principles. Merchants integrate in a day and reach a fast-growing halal consumer segment.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1600&auto=format&fit=crop&q=70",
+        "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": true,
+      "ownerId": "u-founder",
+      "updatedAt": "2025-11-12",
+      "views": 420
+    },
+    {
+      "id": "s2",
+      "slug": "ummahcart",
+      "name": "UmmahCart",
+      "tagline": "A global marketplace for halal commerce.",
+      "category": "E-commerce",
+      "country": "United Arab Emirates",
+      "flag": "🇦🇪",
+      "stage": "Series B",
+      "fundingStage": "Series B",
+      "businessModel": "Marketplace",
+      "verified": true,
+      "openToFunding": false,
+      "hiring": true,
+      "pitching": false,
+      "totalRaised": 22000000,
+      "foundedYear": 2019,
+      "teamSize": 120,
+      "hq": "Dubai, UAE",
+      "founderSlugs": [
+        "yusuf-al-amin"
+      ],
+      "revenue": "$10M+ GMV/mo",
+      "users": "1.2M shoppers",
+      "growth": "+9% MoM",
+      "addedAt": "2025-10-30",
+      "logo": {
+        "mark": "UC",
+        "color": "#2F8F5B"
+      },
+      "banner": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "UmmahCart is the world’s largest halal-verified marketplace, connecting Muslim brands with buyers in 40+ countries.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": true,
+      "ownerId": "u-founder",
+      "updatedAt": "2025-10-30",
+      "views": 493
+    },
+    {
+      "id": "s3",
+      "slug": "zakatflow",
+      "name": "ZakatFlow",
+      "tagline": "Programmable, transparent zakat for the modern ummah.",
+      "category": "Zakat & Charity",
+      "country": "France",
+      "flag": "🇫🇷",
+      "stage": "Seed",
+      "fundingStage": "Seed",
+      "businessModel": "B2C SaaS",
+      "verified": true,
+      "openToFunding": true,
+      "hiring": false,
+      "pitching": true,
+      "totalRaised": 1800000,
+      "foundedYear": 2023,
+      "teamSize": 9,
+      "hq": "Paris, France",
+      "founderSlugs": [
+        "nadia-benali"
+      ],
+      "revenue": "Pre-revenue",
+      "users": "34,000 waitlisted",
+      "growth": "2x waitlist / quarter",
+      "addedAt": "2025-12-01",
+      "logo": {
+        "mark": "ZF",
+        "color": "#B58208"
+      },
+      "banner": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "ZakatFlow automates zakat calculation, categorization, and disbursement to vetted causes — with full on-chain transparency.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": true,
+      "ownerId": "u-founder",
+      "updatedAt": "2025-12-01",
+      "views": 566
+    },
+    {
+      "id": "s4",
+      "slug": "modestly",
+      "name": "Modestly",
+      "tagline": "Modest fashion, athleisure, and hijab tech.",
+      "category": "Modest Fashion",
+      "country": "United States",
+      "flag": "🇺🇸",
+      "stage": "Series A",
+      "fundingStage": "Series A",
+      "businessModel": "D2C",
+      "verified": true,
+      "openToFunding": false,
+      "hiring": true,
+      "pitching": false,
+      "totalRaised": 12400000,
+      "foundedYear": 2018,
+      "teamSize": 65,
+      "hq": "Brooklyn, USA",
+      "founderSlugs": [
+        "layla-hassan"
+      ],
+      "revenue": "$18M ARR",
+      "users": "480,000 customers",
+      "growth": "+22% YoY",
+      "addedAt": "2025-10-14",
+      "logo": {
+        "mark": "Md",
+        "color": "#7A55C7"
+      },
+      "banner": "https://images.unsplash.com/photo-1531973576160-7125cd663d86?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "Modestly builds thoughtfully-engineered modest athleisure and hijabs, sold in 20+ countries.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1531973576160-7125cd663d86?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": true,
+      "ownerId": "",
+      "updatedAt": "2025-10-14",
+      "views": 639
+    },
+    {
+      "id": "s5",
+      "slug": "hajjmate",
+      "name": "HajjMate",
+      "tagline": "The operating system for Hajj and Umrah groups.",
+      "category": "Travel & Hajj",
+      "country": "Saudi Arabia",
+      "flag": "🇸🇦",
+      "stage": "Seed",
+      "fundingStage": "Seed",
+      "businessModel": "B2B SaaS",
+      "verified": true,
+      "openToFunding": true,
+      "hiring": true,
+      "pitching": true,
+      "totalRaised": 3200000,
+      "foundedYear": 2022,
+      "teamSize": 22,
+      "hq": "Jeddah, KSA",
+      "founderSlugs": [
+        "omar-farouq"
+      ],
+      "revenue": "$800K ARR",
+      "users": "120 tour operators",
+      "growth": "+14% MoM",
+      "addedAt": "2025-11-22",
+      "logo": {
+        "mark": "HM",
+        "color": "#2F8F5B"
+      },
+      "banner": "https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "HajjMate powers Hajj and Umrah operators with logistics, pilgrim apps, and real-time coordination.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": true,
+      "ownerId": "",
+      "updatedAt": "2025-11-22",
+      "views": 712
+    },
+    {
+      "id": "s6",
+      "slug": "deenai",
+      "name": "DeenAI",
+      "tagline": "Faith-aligned AI research assistant.",
+      "category": "AI & SaaS",
+      "country": "Canada",
+      "flag": "🇨🇦",
+      "stage": "Pre-Seed",
+      "fundingStage": "Pre-Seed",
+      "businessModel": "B2C SaaS",
+      "verified": true,
+      "openToFunding": true,
+      "hiring": false,
+      "pitching": true,
+      "totalRaised": 650000,
+      "foundedYear": 2024,
+      "teamSize": 6,
+      "hq": "Toronto, Canada",
+      "founderSlugs": [
+        "imran-siddiqui"
+      ],
+      "revenue": "Pre-revenue",
+      "users": "11,000 beta users",
+      "growth": "+40% MoM",
+      "addedAt": "2025-12-08",
+      "logo": {
+        "mark": "AI",
+        "color": "#3B7DD8"
+      },
+      "banner": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "DeenAI helps students and researchers explore Islamic texts with faith-aligned models trained on classical sources.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": true,
+      "ownerId": "",
+      "updatedAt": "2025-12-08",
+      "views": 785
+    },
+    {
+      "id": "s7",
+      "slug": "sadaqahcloud",
+      "name": "SadaqahCloud",
+      "tagline": "Community giving infrastructure for masajid.",
+      "category": "Zakat & Charity",
+      "country": "Nigeria",
+      "flag": "🇳🇬",
+      "stage": "Seed",
+      "fundingStage": "Seed",
+      "businessModel": "B2B SaaS",
+      "verified": true,
+      "openToFunding": true,
+      "hiring": false,
+      "pitching": false,
+      "totalRaised": 1100000,
+      "foundedYear": 2023,
+      "teamSize": 11,
+      "hq": "Lagos, Nigeria",
+      "founderSlugs": [
+        "khadija-bello"
+      ],
+      "revenue": "$180K ARR",
+      "users": "340 masajid",
+      "growth": "+11% MoM",
+      "addedAt": "2025-11-05",
+      "logo": {
+        "mark": "SC",
+        "color": "#C93636"
+      },
+      "banner": "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "SadaqahCloud gives masajid and charities a Stripe-like platform for recurring giving and campaigns.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": false,
+      "ownerId": "",
+      "updatedAt": "2025-11-05",
+      "views": 858
+    },
+    {
+      "id": "s8",
+      "slug": "noorlearn",
+      "name": "NoorLearn",
+      "tagline": "Structured Islamic learning for kids and adults.",
+      "category": "Education",
+      "country": "Pakistan",
+      "flag": "🇵🇰",
+      "stage": "Series A",
+      "fundingStage": "Series A",
+      "businessModel": "B2C Subscription",
+      "verified": true,
+      "openToFunding": false,
+      "hiring": true,
+      "pitching": false,
+      "totalRaised": 6500000,
+      "foundedYear": 2020,
+      "teamSize": 48,
+      "hq": "Karachi, Pakistan",
+      "founderSlugs": [
+        "sana-qureshi"
+      ],
+      "revenue": "$3.4M ARR",
+      "users": "86,000 subscribers",
+      "growth": "+8% MoM",
+      "addedAt": "2025-10-02",
+      "logo": {
+        "mark": "NL",
+        "color": "#B58208"
+      },
+      "banner": "https://images.unsplash.com/photo-1520333789090-1afc82db536a?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "NoorLearn is a structured Islamic learning platform combining live classes with self-paced modules.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1520333789090-1afc82db536a?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": false,
+      "ownerId": "",
+      "updatedAt": "2025-10-02",
+      "views": 931
+    },
+    {
+      "id": "s9",
+      "slug": "barakahbooks",
+      "name": "BarakahBooks",
+      "tagline": "Muslim children's stories, reading platform, and classroom OS.",
+      "category": "Media",
+      "country": "United Kingdom",
+      "flag": "🇬🇧",
+      "stage": "Seed",
+      "fundingStage": "Seed",
+      "businessModel": "B2B2C",
+      "verified": true,
+      "openToFunding": true,
+      "hiring": false,
+      "pitching": true,
+      "totalRaised": 2400000,
+      "foundedYear": 2022,
+      "teamSize": 15,
+      "hq": "Manchester, UK",
+      "founderSlugs": [
+        "fatima-oduya"
+      ],
+      "revenue": "$620K ARR",
+      "users": "1,100 classrooms",
+      "growth": "+12% MoM",
+      "addedAt": "2025-11-18",
+      "logo": {
+        "mark": "BB",
+        "color": "#3B7DD8"
+      },
+      "banner": "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "BarakahBooks builds beautifully illustrated Muslim children's stories with a classroom reading platform.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": false,
+      "ownerId": "",
+      "updatedAt": "2025-11-18",
+      "views": 1004
+    },
+    {
+      "id": "s10",
+      "slug": "halalsupply",
+      "name": "HalalSupply",
+      "tagline": "B2B halal ingredients marketplace.",
+      "category": "Halal Economy",
+      "country": "Indonesia",
+      "flag": "🇮🇩",
+      "stage": "Series A",
+      "fundingStage": "Series A",
+      "businessModel": "B2B Marketplace",
+      "verified": true,
+      "openToFunding": true,
+      "hiring": true,
+      "pitching": true,
+      "totalRaised": 9100000,
+      "foundedYear": 2019,
+      "teamSize": 52,
+      "hq": "Jakarta, Indonesia",
+      "founderSlugs": [
+        "zainab-mohamed"
+      ],
+      "revenue": "$14M GMV",
+      "users": "320 manufacturers",
+      "growth": "+15% QoQ",
+      "addedAt": "2025-09-28",
+      "logo": {
+        "mark": "HS",
+        "color": "#2F8F5B"
+      },
+      "banner": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "HalalSupply connects halal-certified ingredient suppliers with F&B manufacturers across Southeast Asia.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": false,
+      "ownerId": "",
+      "updatedAt": "2025-09-28",
+      "views": 1077
+    },
+    {
+      "id": "s11",
+      "slug": "tayyibtech",
+      "name": "TayyibTech",
+      "tagline": "Halal compliance and certification SaaS.",
+      "category": "Halal Economy",
+      "country": "Turkey",
+      "flag": "🇹🇷",
+      "stage": "Seed",
+      "fundingStage": "Seed",
+      "businessModel": "B2B SaaS",
+      "verified": true,
+      "openToFunding": true,
+      "hiring": false,
+      "pitching": false,
+      "totalRaised": 1900000,
+      "foundedYear": 2022,
+      "teamSize": 14,
+      "hq": "Istanbul, Turkey",
+      "founderSlugs": [
+        "hamza-yildiz"
+      ],
+      "revenue": "$420K ARR",
+      "users": "86 manufacturers",
+      "growth": "+10% MoM",
+      "addedAt": "2025-10-21",
+      "logo": {
+        "mark": "TT",
+        "color": "#B58208"
+      },
+      "banner": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "TayyibTech automates halal certification workflows for manufacturers across the Middle East and Europe.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": false,
+      "ownerId": "",
+      "updatedAt": "2025-10-21",
+      "views": 1150
+    },
+    {
+      "id": "s12",
+      "slug": "umrahgo",
+      "name": "UmrahGo",
+      "tagline": "Book Umrah packages like a flight.",
+      "category": "Travel & Hajj",
+      "country": "Egypt",
+      "flag": "🇪🇬",
+      "stage": "Pre-Seed",
+      "fundingStage": "Pre-Seed",
+      "businessModel": "B2C Marketplace",
+      "verified": false,
+      "openToFunding": true,
+      "hiring": false,
+      "pitching": true,
+      "totalRaised": 400000,
+      "foundedYear": 2024,
+      "teamSize": 5,
+      "hq": "Cairo, Egypt",
+      "founderSlugs": [],
+      "revenue": "Pre-revenue",
+      "users": "6,500 waitlisted",
+      "growth": "Waitlist growing 3x QoQ",
+      "addedAt": "2025-12-05",
+      "logo": {
+        "mark": "UG",
+        "color": "#7A55C7"
+      },
+      "banner": "https://images.unsplash.com/photo-1531973576160-7125cd663d86?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "UmrahGo lets travelers compare and book Umrah packages transparently.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1531973576160-7125cd663d86?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": false,
+      "ownerId": "",
+      "updatedAt": "2025-12-05",
+      "views": 1223
+    },
+    {
+      "id": "s13",
+      "slug": "sukuksoft",
+      "name": "SukukSoft",
+      "tagline": "Sukuk issuance software for Islamic banks.",
+      "category": "Islamic Finance",
+      "country": "Malaysia",
+      "flag": "🇲🇾",
+      "stage": "Seed",
+      "fundingStage": "Seed",
+      "businessModel": "B2B SaaS",
+      "verified": true,
+      "openToFunding": true,
+      "hiring": true,
+      "pitching": true,
+      "totalRaised": 2800000,
+      "foundedYear": 2022,
+      "teamSize": 18,
+      "hq": "Kuala Lumpur, Malaysia",
+      "founderSlugs": [
+        "ahmed-khalifa"
+      ],
+      "revenue": "$540K ARR",
+      "users": "11 banks",
+      "growth": "+18% MoM",
+      "addedAt": "2025-11-30",
+      "logo": {
+        "mark": "SS",
+        "color": "#C93636"
+      },
+      "banner": "https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "SukukSoft is used by Islamic banks and treasury desks to structure, price, and issue sukuk instruments.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": false,
+      "ownerId": "",
+      "updatedAt": "2025-11-30",
+      "views": 1296
+    },
+    {
+      "id": "s14",
+      "slug": "qiblacommerce",
+      "name": "QiblaCommerce",
+      "tagline": "Halal-first Shopify plug-ins and merchandising.",
+      "category": "E-commerce",
+      "country": "Bahrain",
+      "flag": "🇧🇭",
+      "stage": "Seed",
+      "fundingStage": "Seed",
+      "businessModel": "B2B SaaS",
+      "verified": true,
+      "openToFunding": false,
+      "hiring": false,
+      "pitching": false,
+      "totalRaised": 1400000,
+      "foundedYear": 2023,
+      "teamSize": 9,
+      "hq": "Manama, Bahrain",
+      "founderSlugs": [],
+      "revenue": "$210K ARR",
+      "users": "1,900 stores",
+      "growth": "+7% MoM",
+      "addedAt": "2025-08-11",
+      "logo": {
+        "mark": "QC",
+        "color": "#3B7DD8"
+      },
+      "banner": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "QiblaCommerce provides halal-first Shopify tools including certification labels and prayer-aware fulfillment.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": false,
+      "ownerId": "",
+      "updatedAt": "2025-08-11",
+      "views": 1369
+    },
+    {
+      "id": "s15",
+      "slug": "waqfworks",
+      "name": "WaqfWorks",
+      "tagline": "Modern waqf infrastructure for endowments.",
+      "category": "Islamic Finance",
+      "country": "United Arab Emirates",
+      "flag": "🇦🇪",
+      "stage": "Seed",
+      "fundingStage": "Seed",
+      "businessModel": "B2B SaaS",
+      "verified": true,
+      "openToFunding": true,
+      "hiring": false,
+      "pitching": false,
+      "totalRaised": 2100000,
+      "foundedYear": 2023,
+      "teamSize": 12,
+      "hq": "Abu Dhabi, UAE",
+      "founderSlugs": [],
+      "revenue": "$380K ARR",
+      "users": "22 endowment funds",
+      "growth": "+9% MoM",
+      "addedAt": "2025-09-19",
+      "logo": {
+        "mark": "WW",
+        "color": "#2F8F5B"
+      },
+      "banner": "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "WaqfWorks digitizes endowment (waqf) management for foundations and community trusts.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": false,
+      "ownerId": "",
+      "updatedAt": "2025-09-19",
+      "views": 1442
+    },
+    {
+      "id": "s16",
+      "slug": "tayyibmeals",
+      "name": "TayyibMeals",
+      "tagline": "Chef-prepared halal meal delivery.",
+      "category": "Food & Nutrition",
+      "country": "United States",
+      "flag": "🇺🇸",
+      "stage": "Seed",
+      "fundingStage": "Seed",
+      "businessModel": "D2C",
+      "verified": false,
+      "openToFunding": true,
+      "hiring": true,
+      "pitching": true,
+      "totalRaised": 1600000,
+      "foundedYear": 2023,
+      "teamSize": 20,
+      "hq": "Chicago, USA",
+      "founderSlugs": [],
+      "revenue": "$1.1M ARR",
+      "users": "8,000 subscribers",
+      "growth": "+13% MoM",
+      "addedAt": "2025-11-01",
+      "logo": {
+        "mark": "TM",
+        "color": "#C93636"
+      },
+      "banner": "https://images.unsplash.com/photo-1520333789090-1afc82db536a?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "TayyibMeals delivers chef-prepared halal meals to Muslim families across the US Midwest.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1520333789090-1afc82db536a?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": false,
+      "ownerId": "",
+      "updatedAt": "2025-11-01",
+      "views": 1515
+    },
+    {
+      "id": "s17",
+      "slug": "salaamhealth",
+      "name": "SalaamHealth",
+      "tagline": "Muslim-friendly mental health telehealth.",
+      "category": "Health & Wellness",
+      "country": "Australia",
+      "flag": "🇦🇺",
+      "stage": "Pre-Seed",
+      "fundingStage": "Pre-Seed",
+      "businessModel": "B2C",
+      "verified": true,
+      "openToFunding": true,
+      "hiring": false,
+      "pitching": false,
+      "totalRaised": 520000,
+      "foundedYear": 2024,
+      "teamSize": 8,
+      "hq": "Sydney, Australia",
+      "founderSlugs": [],
+      "revenue": "Pre-revenue",
+      "users": "2,600 users",
+      "growth": "+22% MoM",
+      "addedAt": "2025-12-10",
+      "logo": {
+        "mark": "SH",
+        "color": "#7A55C7"
+      },
+      "banner": "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "SalaamHealth connects Muslim users with culturally competent therapists and mental health resources.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": false,
+      "ownerId": "",
+      "updatedAt": "2025-12-10",
+      "views": 1588
+    },
+    {
+      "id": "s18",
+      "slug": "masjidsync",
+      "name": "MasjidSync",
+      "tagline": "The operating system for your local masjid.",
+      "category": "Community",
+      "country": "United States",
+      "flag": "🇺🇸",
+      "stage": "Seed",
+      "fundingStage": "Seed",
+      "businessModel": "B2B SaaS",
+      "verified": true,
+      "openToFunding": false,
+      "hiring": false,
+      "pitching": false,
+      "totalRaised": 1300000,
+      "foundedYear": 2022,
+      "teamSize": 11,
+      "hq": "Houston, USA",
+      "founderSlugs": [],
+      "revenue": "$310K ARR",
+      "users": "480 masajid",
+      "growth": "+8% MoM",
+      "addedAt": "2025-07-14",
+      "logo": {
+        "mark": "MS",
+        "color": "#3B7DD8"
+      },
+      "banner": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "MasjidSync provides masajid with events, donations, prayer times, and community management in one place.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": false,
+      "ownerId": "",
+      "updatedAt": "2025-07-14",
+      "views": 1661
+    },
+    {
+      "id": "s19",
+      "slug": "ihsanstudio",
+      "name": "IhsanStudio",
+      "tagline": "Muslim creator monetization platform.",
+      "category": "Media",
+      "country": "United Kingdom",
+      "flag": "🇬🇧",
+      "stage": "Seed",
+      "fundingStage": "Seed",
+      "businessModel": "B2B2C",
+      "verified": true,
+      "openToFunding": true,
+      "hiring": true,
+      "pitching": true,
+      "totalRaised": 2600000,
+      "foundedYear": 2023,
+      "teamSize": 17,
+      "hq": "London, UK",
+      "founderSlugs": [],
+      "revenue": "$430K ARR",
+      "users": "1,200 creators",
+      "growth": "+16% MoM",
+      "addedAt": "2025-11-27",
+      "logo": {
+        "mark": "IS",
+        "color": "#B58208"
+      },
+      "banner": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "IhsanStudio helps Muslim creators monetize podcasts, courses, and content with halal-friendly tooling.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": false,
+      "ownerId": "",
+      "updatedAt": "2025-11-27",
+      "views": 1734
+    },
+    {
+      "id": "s20",
+      "slug": "khayrjobs",
+      "name": "KhayrJobs",
+      "tagline": "Values-aligned careers for Muslim professionals.",
+      "category": "Community",
+      "country": "Canada",
+      "flag": "🇨🇦",
+      "stage": "Pre-Seed",
+      "fundingStage": "Pre-Seed",
+      "businessModel": "Marketplace",
+      "verified": false,
+      "openToFunding": true,
+      "hiring": false,
+      "pitching": true,
+      "totalRaised": 280000,
+      "foundedYear": 2024,
+      "teamSize": 4,
+      "hq": "Toronto, Canada",
+      "founderSlugs": [],
+      "revenue": "Pre-revenue",
+      "users": "9,400 jobseekers",
+      "growth": "+28% MoM",
+      "addedAt": "2025-12-14",
+      "logo": {
+        "mark": "KJ",
+        "color": "#2F8F5B"
+      },
+      "banner": "https://images.unsplash.com/photo-1531973576160-7125cd663d86?w=1600&auto=format&fit=crop&q=70",
+      "website": "#",
+      "description": "KhayrJobs matches Muslim professionals with values-aligned employers across North America.",
+      "productImages": [
+        "https://images.unsplash.com/photo-1531973576160-7125cd663d86?w=1600&auto=format&fit=crop&q=70"
+      ],
+      "status": "Published",
+      "featured": false,
+      "ownerId": "",
+      "updatedAt": "2025-12-14",
+      "views": 1807
+    }
+  ],
+  "founders": [
+    {
+      "id": "f1",
+      "slug": "aisha-rahman",
+      "name": "Aisha Rahman",
+      "role": "Co-founder & CEO",
+      "startupSlug": "halalpay",
+      "country": "United Kingdom",
+      "flag": "🇬🇧",
+      "industry": "Islamic Finance",
+      "bio": "Fintech operator building Shariah-compliant payment rails across Europe and MENA.",
+      "story": "Grew up between London and Dhaka; ran ops at a UK challenger bank before launching HalalPay to bring interest-free BNPL to Muslim households.",
+      "skills": [
+        "Fintech",
+        "Growth",
+        "Compliance"
+      ],
+      "previousStartups": [
+        "MintBridge"
+      ],
+      "openTo": [
+        "funding",
+        "partnerships",
+        "speaking"
+      ],
+      "photo": "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800&auto=format&fit=crop&q=70",
+      "linkedin": "#",
+      "experience": "8+ years in fintech and payments",
+      "status": "Published",
+      "verified": true,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "f2",
+      "slug": "yusuf-al-amin",
+      "name": "Yusuf Al-Amin",
+      "role": "Founder & CEO",
+      "startupSlug": "ummahcart",
+      "country": "United Arab Emirates",
+      "flag": "🇦🇪",
+      "industry": "E-commerce",
+      "bio": "Marketplace builder serving 40+ countries with halal-first commerce.",
+      "story": "Second-time founder — sold a logistics startup in 2021, now scaling UmmahCart as the global home for halal commerce.",
+      "skills": [
+        "Marketplaces",
+        "Logistics",
+        "B2B Sales"
+      ],
+      "previousStartups": [
+        "ShipCrescent"
+      ],
+      "openTo": [
+        "funding",
+        "partnerships"
+      ],
+      "photo": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop&q=70",
+      "linkedin": "#",
+      "experience": "12 years across commerce and ops",
+      "status": "Published",
+      "verified": true,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "f3",
+      "slug": "nadia-benali",
+      "name": "Nadia Benali",
+      "role": "Founder",
+      "startupSlug": "zakatflow",
+      "country": "France",
+      "flag": "🇫🇷",
+      "industry": "Zakat & Charity",
+      "bio": "Building programmable giving for the modern ummah.",
+      "story": "Former product lead at a European neobank. Wants zakat to be automatic, transparent, and beautifully designed.",
+      "skills": [
+        "Product",
+        "Design",
+        "Fintech"
+      ],
+      "previousStartups": [],
+      "openTo": [
+        "funding",
+        "co-founder",
+        "speaking"
+      ],
+      "photo": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=800&auto=format&fit=crop&q=70",
+      "linkedin": "#",
+      "experience": "Ex-neobank product lead",
+      "status": "Published",
+      "verified": true,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "f4",
+      "slug": "imran-siddiqui",
+      "name": "Imran Siddiqui",
+      "role": "Founder & CTO",
+      "startupSlug": "deenai",
+      "country": "Canada",
+      "flag": "🇨🇦",
+      "industry": "AI & SaaS",
+      "bio": "ML engineer building faith-aligned AI assistants and study tools.",
+      "story": "Ex-Google researcher on his third venture. Believes AI can democratize Islamic scholarship.",
+      "skills": [
+        "ML",
+        "LLMs",
+        "NLP"
+      ],
+      "previousStartups": [
+        "DataMasjid",
+        "ReciteAI"
+      ],
+      "openTo": [
+        "funding",
+        "partnerships"
+      ],
+      "photo": "https://images.unsplash.com/photo-1607346256330-dee7af15f7c5?w=800&auto=format&fit=crop&q=70",
+      "linkedin": "#",
+      "experience": "Ex-Google Brain",
+      "status": "Published",
+      "verified": true,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "f5",
+      "slug": "layla-hassan",
+      "name": "Layla Hassan",
+      "role": "Founder & CEO",
+      "startupSlug": "modestly",
+      "country": "United States",
+      "flag": "🇺🇸",
+      "industry": "Modest Fashion",
+      "bio": "Designer-turned-operator building the world’s largest modest fashion marketplace.",
+      "story": "Built Modestly out of Brooklyn after struggling to find modest athleisure. Now shipping in 20+ countries.",
+      "skills": [
+        "Brand",
+        "Ops",
+        "Fashion"
+      ],
+      "previousStartups": [],
+      "openTo": [
+        "funding",
+        "speaking"
+      ],
+      "photo": "https://images.unsplash.com/photo-1520295187453-cd239786cb0f?w=800&auto=format&fit=crop&q=70",
+      "linkedin": "#",
+      "experience": "Parsons School of Design",
+      "status": "Published",
+      "verified": true,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "f6",
+      "slug": "omar-farouq",
+      "name": "Omar Farouq",
+      "role": "Co-founder",
+      "startupSlug": "hajjmate",
+      "country": "Saudi Arabia",
+      "flag": "🇸🇦",
+      "industry": "Travel & Hajj",
+      "bio": "Reimagining Hajj and Umrah logistics for the smartphone era.",
+      "story": "Grew up in Makkah; combines deep local knowledge with product engineering to build HajjMate.",
+      "skills": [
+        "Ops",
+        "Travel",
+        "Product"
+      ],
+      "previousStartups": [],
+      "openTo": [
+        "funding",
+        "partnerships"
+      ],
+      "photo": "https://images.unsplash.com/photo-1531384441138-2736e62e0919?w=800&auto=format&fit=crop&q=70",
+      "linkedin": "#",
+      "experience": "10 years in travel operations",
+      "status": "Published",
+      "verified": true,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "f7",
+      "slug": "sana-qureshi",
+      "name": "Sana Qureshi",
+      "role": "Founder & CEO",
+      "startupSlug": "noorlearn",
+      "country": "Pakistan",
+      "flag": "🇵🇰",
+      "industry": "Education",
+      "bio": "Building the largest online Islamic learning platform in South Asia.",
+      "story": "Former teacher, now leading a team of 40 building NoorLearn across Karachi and Lahore.",
+      "skills": [
+        "Edtech",
+        "Content",
+        "Ops"
+      ],
+      "previousStartups": [],
+      "openTo": [
+        "funding",
+        "partnerships",
+        "speaking"
+      ],
+      "photo": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&auto=format&fit=crop&q=70",
+      "linkedin": "#",
+      "experience": "Ex-teacher and curriculum lead",
+      "status": "Published",
+      "verified": true,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "f8",
+      "slug": "khadija-bello",
+      "name": "Khadija Bello",
+      "role": "Founder",
+      "startupSlug": "sadaqahcloud",
+      "country": "Nigeria",
+      "flag": "🇳🇬",
+      "industry": "Zakat & Charity",
+      "bio": "Digitizing sadaqah for African diaspora communities.",
+      "story": "Lagos-born, London-based. Believes charity infrastructure is due for a redesign.",
+      "skills": [
+        "Fintech",
+        "Nonprofit",
+        "Growth"
+      ],
+      "previousStartups": [],
+      "openTo": [
+        "funding",
+        "co-founder"
+      ],
+      "photo": "https://images.unsplash.com/photo-1548142813-c348350df52b?w=800&auto=format&fit=crop&q=70",
+      "linkedin": "#",
+      "experience": "Ex-World Bank consultant",
+      "status": "Published",
+      "verified": true,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "f9",
+      "slug": "hamza-yildiz",
+      "name": "Hamza Yildiz",
+      "role": "Founder",
+      "startupSlug": "tayyibtech",
+      "country": "Turkey",
+      "flag": "🇹🇷",
+      "industry": "Halal Economy",
+      "bio": "Building compliance and halal certification tooling for manufacturers.",
+      "story": "Third-generation family business background — now bringing tech to a legacy industry.",
+      "skills": [
+        "B2B",
+        "Compliance",
+        "Supply Chain"
+      ],
+      "previousStartups": [],
+      "openTo": [
+        "partnerships",
+        "speaking"
+      ],
+      "photo": "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=800&auto=format&fit=crop&q=70",
+      "linkedin": "#",
+      "experience": "Family business + engineering background",
+      "status": "Published",
+      "verified": true,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "f10",
+      "slug": "fatima-oduya",
+      "name": "Fatima Oduya",
+      "role": "Founder & CEO",
+      "startupSlug": "barakahbooks",
+      "country": "United Kingdom",
+      "flag": "🇬🇧",
+      "industry": "Media",
+      "bio": "Publishing house-turned-platform for Muslim children's content.",
+      "story": "Started with three picture books; now a global children's content platform with schools in 15 countries.",
+      "skills": [
+        "Publishing",
+        "Content",
+        "Brand"
+      ],
+      "previousStartups": [
+        "LittleUmmah"
+      ],
+      "openTo": [
+        "funding",
+        "partnerships"
+      ],
+      "photo": "https://images.unsplash.com/photo-1601412436009-d964bd02edbc?w=800&auto=format&fit=crop&q=70",
+      "linkedin": "#",
+      "experience": "12 years in publishing",
+      "status": "Published",
+      "verified": true,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "f11",
+      "slug": "ahmed-khalifa",
+      "name": "Ahmed Khalifa",
+      "role": "Co-founder",
+      "startupSlug": "sukuksoft",
+      "country": "Malaysia",
+      "flag": "🇲🇾",
+      "industry": "Islamic Finance",
+      "bio": "Building sukuk issuance software for emerging market banks.",
+      "story": "Ex-CIMB and ex-Grab. Believes Islamic capital markets are massively under-tooled.",
+      "skills": [
+        "Fintech",
+        "Enterprise Sales",
+        "Compliance"
+      ],
+      "previousStartups": [],
+      "openTo": [
+        "funding",
+        "partnerships"
+      ],
+      "photo": "https://images.unsplash.com/photo-1590650046871-92c887180603?w=800&auto=format&fit=crop&q=70",
+      "linkedin": "#",
+      "experience": "Ex-CIMB fixed income",
+      "status": "Published",
+      "verified": true,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "f12",
+      "slug": "zainab-mohamed",
+      "name": "Zainab Mohamed",
+      "role": "Founder & COO",
+      "startupSlug": "halalsupply",
+      "country": "Indonesia",
+      "flag": "🇮🇩",
+      "industry": "Halal Economy",
+      "bio": "Building B2B halal ingredient sourcing for F&B manufacturers.",
+      "story": "Grew HalalSupply from Jakarta to serve 300+ manufacturers across Southeast Asia.",
+      "skills": [
+        "B2B",
+        "Supply Chain",
+        "Growth"
+      ],
+      "previousStartups": [],
+      "openTo": [
+        "funding",
+        "partnerships"
+      ],
+      "photo": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format&fit=crop&q=70",
+      "linkedin": "#",
+      "experience": "Ex-Sinar Mas supply chain",
+      "status": "Published",
+      "verified": true,
+      "updatedAt": "2026-07-15"
+    }
+  ],
+  "investors": [
+    {
+      "id": "i1",
+      "slug": "barakah-ventures",
+      "name": "Barakah Ventures",
+      "type": "Venture Capital",
+      "country": "United Arab Emirates",
+      "flag": "🇦🇪",
+      "focus": [
+        "Islamic Finance",
+        "Halal Economy",
+        "E-commerce"
+      ],
+      "stageFocus": [
+        "Seed",
+        "Series A"
+      ],
+      "ticketRange": "$250K – $2M",
+      "portfolioCount": 24,
+      "halalFocus": true,
+      "logo": {
+        "mark": "BV",
+        "color": "#C93636"
+      },
+      "description": "Dubai-based fund investing in the halal economy and Muslim consumer companies.",
+      "website": "#",
+      "portfolio": [
+        "halalpay",
+        "ummahcart",
+        "hajjmate",
+        "tayyibtech",
+        "sukuksoft",
+        "halalsupply"
+      ],
+      "status": "Published",
+      "verified": true,
+      "featured": true,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "i2",
+      "slug": "noor-capital",
+      "name": "Noor Capital",
+      "type": "Investment Firm",
+      "country": "Saudi Arabia",
+      "flag": "🇸🇦",
+      "focus": [
+        "AI & SaaS",
+        "Islamic Finance",
+        "Media"
+      ],
+      "stageFocus": [
+        "Series A",
+        "Series B"
+      ],
+      "ticketRange": "$1M – $10M",
+      "portfolioCount": 31,
+      "halalFocus": true,
+      "logo": {
+        "mark": "NC",
+        "color": "#171717"
+      },
+      "description": "Riyadh-based growth investor across the Muslim world.",
+      "website": "#",
+      "portfolio": [
+        "ummahcart",
+        "modestly",
+        "noorlearn",
+        "ihsanstudio"
+      ],
+      "status": "Published",
+      "verified": true,
+      "featured": true,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "i3",
+      "slug": "crescent-angels",
+      "name": "Crescent Angels",
+      "type": "Angel Syndicate",
+      "country": "United Kingdom",
+      "flag": "🇬🇧",
+      "focus": [
+        "E-commerce",
+        "Modest Fashion",
+        "Community"
+      ],
+      "stageFocus": [
+        "Pre-Seed",
+        "Seed"
+      ],
+      "ticketRange": "$25K – $250K",
+      "portfolioCount": 48,
+      "halalFocus": false,
+      "logo": {
+        "mark": "CA",
+        "color": "#7A55C7"
+      },
+      "description": "A syndicate of 200+ Muslim professionals investing in early-stage founders.",
+      "website": "#",
+      "portfolio": [
+        "halalpay",
+        "zakatflow",
+        "modestly",
+        "barakahbooks",
+        "umrahgo",
+        "khayrjobs"
+      ],
+      "status": "Published",
+      "verified": true,
+      "featured": true,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "i4",
+      "slug": "amanah-growth-fund",
+      "name": "Amanah Growth Fund",
+      "type": "Venture Capital",
+      "country": "Malaysia",
+      "flag": "🇲🇾",
+      "focus": [
+        "Islamic Finance",
+        "Halal Economy",
+        "Travel & Hajj"
+      ],
+      "stageFocus": [
+        "Series A",
+        "Series B"
+      ],
+      "ticketRange": "$2M – $8M",
+      "portfolioCount": 19,
+      "halalFocus": true,
+      "logo": {
+        "mark": "AG",
+        "color": "#2F8F5B"
+      },
+      "description": "Southeast Asia growth investor focused on ethical, halal-aligned companies.",
+      "website": "#",
+      "portfolio": [
+        "sukuksoft",
+        "halalsupply",
+        "noorlearn"
+      ],
+      "status": "Published",
+      "verified": true,
+      "featured": true,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "i5",
+      "slug": "sukuk-studio",
+      "name": "Sukuk Studio",
+      "type": "Venture Studio",
+      "country": "Bahrain",
+      "flag": "🇧🇭",
+      "focus": [
+        "Islamic Finance",
+        "AI & SaaS"
+      ],
+      "stageFocus": [
+        "Pre-Seed",
+        "Seed"
+      ],
+      "ticketRange": "$50K – $500K",
+      "portfolioCount": 12,
+      "halalFocus": true,
+      "logo": {
+        "mark": "Sk",
+        "color": "#3B7DD8"
+      },
+      "description": "Manama-based venture studio building Islamic finance infrastructure companies.",
+      "website": "#",
+      "portfolio": [
+        "sukuksoft",
+        "waqfworks",
+        "qiblacommerce"
+      ],
+      "status": "Published",
+      "verified": true,
+      "featured": false,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "i6",
+      "slug": "halal-economy-fund",
+      "name": "Halal Economy Fund",
+      "type": "Venture Capital",
+      "country": "Indonesia",
+      "flag": "🇮🇩",
+      "focus": [
+        "Halal Economy",
+        "Food & Nutrition",
+        "E-commerce"
+      ],
+      "stageFocus": [
+        "Seed",
+        "Series A"
+      ],
+      "ticketRange": "$500K – $4M",
+      "portfolioCount": 22,
+      "halalFocus": true,
+      "logo": {
+        "mark": "HE",
+        "color": "#B58208"
+      },
+      "description": "Jakarta-based fund investing across halal economy segments in Southeast Asia.",
+      "website": "#",
+      "portfolio": [
+        "halalsupply",
+        "tayyibmeals",
+        "tayyibtech"
+      ],
+      "status": "Published",
+      "verified": true,
+      "featured": false,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "i7",
+      "slug": "mena-muslim-angels",
+      "name": "MENA Muslim Angels",
+      "type": "Angel Syndicate",
+      "country": "Egypt",
+      "flag": "🇪🇬",
+      "focus": [
+        "Travel & Hajj",
+        "Media",
+        "Education"
+      ],
+      "stageFocus": [
+        "Pre-Seed",
+        "Seed"
+      ],
+      "ticketRange": "$25K – $150K",
+      "portfolioCount": 33,
+      "halalFocus": false,
+      "logo": {
+        "mark": "MA",
+        "color": "#C93636"
+      },
+      "description": "Cairo-based syndicate backing pre-seed founders across MENA.",
+      "website": "#",
+      "portfolio": [
+        "umrahgo",
+        "deenai",
+        "ihsanstudio"
+      ],
+      "status": "Published",
+      "verified": true,
+      "featured": false,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "i8",
+      "slug": "ethical-ventures",
+      "name": "Ethical Ventures",
+      "type": "Venture Capital",
+      "country": "United States",
+      "flag": "🇺🇸",
+      "focus": [
+        "Health & Wellness",
+        "Community",
+        "Media"
+      ],
+      "stageFocus": [
+        "Seed",
+        "Series A"
+      ],
+      "ticketRange": "$500K – $3M",
+      "portfolioCount": 27,
+      "halalFocus": false,
+      "logo": {
+        "mark": "EV",
+        "color": "#3B7DD8"
+      },
+      "description": "Values-aligned US fund investing in founders across faith communities.",
+      "website": "#",
+      "portfolio": [
+        "salaamhealth",
+        "masjidsync",
+        "sadaqahcloud",
+        "khayrjobs"
+      ],
+      "status": "Published",
+      "verified": true,
+      "featured": false,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "i9",
+      "slug": "tayyib-capital",
+      "name": "Tayyib Capital",
+      "type": "Venture Capital",
+      "country": "Turkey",
+      "flag": "🇹🇷",
+      "focus": [
+        "Halal Economy",
+        "Food & Nutrition",
+        "E-commerce"
+      ],
+      "stageFocus": [
+        "Seed",
+        "Series A"
+      ],
+      "ticketRange": "$500K – $4M",
+      "portfolioCount": 18,
+      "halalFocus": true,
+      "logo": {
+        "mark": "TC",
+        "color": "#2F8F5B"
+      },
+      "description": "Istanbul-based investor backing Turkish and MENA halal economy founders.",
+      "website": "#",
+      "portfolio": [
+        "tayyibtech",
+        "tayyibmeals",
+        "umrahgo"
+      ],
+      "status": "Published",
+      "verified": false,
+      "featured": false,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "i10",
+      "slug": "ummah-impact-partners",
+      "name": "Ummah Impact Partners",
+      "type": "Impact Fund",
+      "country": "Canada",
+      "flag": "🇨🇦",
+      "focus": [
+        "Education",
+        "Community",
+        "Zakat & Charity"
+      ],
+      "stageFocus": [
+        "Seed",
+        "Series A"
+      ],
+      "ticketRange": "$250K – $2M",
+      "portfolioCount": 14,
+      "halalFocus": true,
+      "logo": {
+        "mark": "UI",
+        "color": "#7A55C7"
+      },
+      "description": "Toronto impact fund for education, community, and giving infrastructure.",
+      "website": "#",
+      "portfolio": [
+        "noorlearn",
+        "sadaqahcloud",
+        "barakahbooks",
+        "deenai"
+      ],
+      "status": "Published",
+      "verified": false,
+      "featured": false,
+      "updatedAt": "2026-07-15"
+    }
+  ],
+  "rounds": [
+    {
+      "id": "r1",
+      "startupSlug": "halalpay",
+      "roundName": "Series A",
+      "date": "2025-03-14",
+      "amount": 8500000,
+      "valuation": 45000000,
+      "leadInvestorSlug": "barakah-ventures",
+      "investorSlugs": [
+        "barakah-ventures",
+        "crescent-angels"
+      ],
+      "stage": "Series A",
+      "notes": "Led by Barakah Ventures with UK angel participation.",
+      "status": "Published",
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "r2",
+      "startupSlug": "ummahcart",
+      "roundName": "Series B",
+      "date": "2024-09-04",
+      "amount": 15000000,
+      "valuation": 120000000,
+      "leadInvestorSlug": "noor-capital",
+      "investorSlugs": [
+        "noor-capital",
+        "barakah-ventures"
+      ],
+      "stage": "Series B",
+      "notes": "Growth round to expand across Africa.",
+      "status": "Published",
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "r3",
+      "startupSlug": "modestly",
+      "roundName": "Series A",
+      "date": "2024-06-12",
+      "amount": 7500000,
+      "valuation": 60000000,
+      "leadInvestorSlug": "noor-capital",
+      "investorSlugs": [
+        "noor-capital",
+        "crescent-angels"
+      ],
+      "stage": "Series A",
+      "notes": "Retail expansion round.",
+      "status": "Published",
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "r4",
+      "startupSlug": "hajjmate",
+      "roundName": "Seed",
+      "date": "2024-11-22",
+      "amount": 3200000,
+      "valuation": 18000000,
+      "leadInvestorSlug": "barakah-ventures",
+      "investorSlugs": [
+        "barakah-ventures"
+      ],
+      "stage": "Seed",
+      "notes": "To scale into Egypt and Malaysia.",
+      "status": "Published",
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "r5",
+      "startupSlug": "noorlearn",
+      "roundName": "Series A",
+      "date": "2024-02-18",
+      "amount": 6500000,
+      "valuation": 40000000,
+      "leadInvestorSlug": "amanah-growth-fund",
+      "investorSlugs": [
+        "amanah-growth-fund",
+        "noor-capital",
+        "ummah-impact-partners"
+      ],
+      "stage": "Series A",
+      "notes": "Curriculum expansion.",
+      "status": "Published",
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "r6",
+      "startupSlug": "halalsupply",
+      "roundName": "Series A",
+      "date": "2024-05-30",
+      "amount": 9100000,
+      "valuation": 52000000,
+      "leadInvestorSlug": "halal-economy-fund",
+      "investorSlugs": [
+        "halal-economy-fund",
+        "amanah-growth-fund",
+        "barakah-ventures"
+      ],
+      "stage": "Series A",
+      "notes": "ASEAN expansion.",
+      "status": "Published",
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "r7",
+      "startupSlug": "sukuksoft",
+      "roundName": "Seed",
+      "date": "2024-08-10",
+      "amount": 2800000,
+      "valuation": 14000000,
+      "leadInvestorSlug": "sukuk-studio",
+      "investorSlugs": [
+        "sukuk-studio",
+        "amanah-growth-fund"
+      ],
+      "stage": "Seed",
+      "notes": "Enterprise pilots with three banks.",
+      "status": "Published",
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "r8",
+      "startupSlug": "zakatflow",
+      "roundName": "Seed",
+      "date": "2025-01-20",
+      "amount": 1800000,
+      "valuation": 12000000,
+      "leadInvestorSlug": "crescent-angels",
+      "investorSlugs": [
+        "crescent-angels"
+      ],
+      "stage": "Seed",
+      "notes": "Product build-out.",
+      "status": "Published",
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "r9",
+      "startupSlug": "barakahbooks",
+      "roundName": "Seed",
+      "date": "2024-10-04",
+      "amount": 2400000,
+      "valuation": 15000000,
+      "leadInvestorSlug": "ummah-impact-partners",
+      "investorSlugs": [
+        "ummah-impact-partners",
+        "crescent-angels"
+      ],
+      "stage": "Seed",
+      "notes": "Content library expansion.",
+      "status": "Published",
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "r10",
+      "startupSlug": "ihsanstudio",
+      "roundName": "Seed",
+      "date": "2025-04-22",
+      "amount": 2600000,
+      "valuation": 18000000,
+      "leadInvestorSlug": "noor-capital",
+      "investorSlugs": [
+        "noor-capital",
+        "mena-muslim-angels"
+      ],
+      "stage": "Seed",
+      "notes": "Creator tooling and monetization.",
+      "status": "Published",
+      "updatedAt": "2026-07-15"
+    }
+  ],
+  "opportunities": [
+    {
+      "id": "o1",
+      "title": "Barakah Founder Fellowship 2026",
+      "type": "Fellowship",
+      "organization": "Barakah Ventures",
+      "country": "Global",
+      "remote": true,
+      "deadline": "2026-02-28",
+      "description": "12-week fellowship for Muslim founders with $50k grant and mentorship.",
+      "image": "https://images.unsplash.com/photo-1552664688-cf412ec27db2?w=1000&auto=format&fit=crop&q=70",
+      "industry": "Multi-sector",
+      "founderStage": "Pre-Seed",
+      "status": "Published",
+      "featured": true,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "o2",
+      "title": "Halal Economy Accelerator",
+      "type": "Accelerator",
+      "organization": "Halal Economy Fund",
+      "country": "Indonesia",
+      "remote": false,
+      "deadline": "2026-03-15",
+      "description": "6-month accelerator with equity investment for halal economy founders.",
+      "image": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1000&auto=format&fit=crop&q=70",
+      "industry": "Halal Economy",
+      "founderStage": "Seed",
+      "status": "Published",
+      "featured": true,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "o3",
+      "title": "MENA Islamic Fintech Competition",
+      "type": "Competition",
+      "organization": "Sukuk Studio",
+      "country": "Bahrain",
+      "remote": false,
+      "deadline": "2026-01-31",
+      "description": "$100k prize + follow-on for winning Islamic fintech founders.",
+      "image": "https://images.unsplash.com/photo-1560264280-88b68371db39?w=1000&auto=format&fit=crop&q=70",
+      "industry": "Islamic Finance",
+      "founderStage": "Pre-Seed",
+      "status": "Published",
+      "featured": true,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "o4",
+      "title": "Modest Fashion Grant",
+      "type": "Grant",
+      "organization": "Crescent Angels",
+      "country": "United Kingdom",
+      "remote": false,
+      "deadline": "2026-02-10",
+      "description": "Non-dilutive £20k grants for modest fashion brands.",
+      "image": "https://images.unsplash.com/photo-1552581234-26160f608093?w=1000&auto=format&fit=crop&q=70",
+      "industry": "Modest Fashion",
+      "founderStage": "Pre-Seed",
+      "status": "Published",
+      "featured": false,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "o5",
+      "title": "Ummah Demo Day — Winter 2026",
+      "type": "Demo Day",
+      "organization": "Startup Muslim",
+      "country": "United Arab Emirates",
+      "remote": false,
+      "deadline": "2026-02-05",
+      "description": "Present to 60+ Muslim investors from GCC, MENA, and SEA.",
+      "image": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1000&auto=format&fit=crop&q=70",
+      "industry": "Multi-sector",
+      "founderStage": "Seed",
+      "status": "Published",
+      "featured": false,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "o6",
+      "title": "AI for Deen Founders Program",
+      "type": "Founder Program",
+      "organization": "DeenAI Lab",
+      "country": "Canada",
+      "remote": true,
+      "deadline": "2026-03-01",
+      "description": "Support for AI founders building faith-aligned products.",
+      "image": "https://images.unsplash.com/photo-1590650153855-d9e808231d41?w=1000&auto=format&fit=crop&q=70",
+      "industry": "AI & SaaS",
+      "founderStage": "Pre-Seed",
+      "status": "Published",
+      "featured": false,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "o7",
+      "title": "Southeast Asia Halal Grant",
+      "type": "Grant",
+      "organization": "Amanah Growth Fund",
+      "country": "Malaysia",
+      "remote": false,
+      "deadline": "2026-04-12",
+      "description": "Up to $75k in non-dilutive grants for SEA halal founders.",
+      "image": "https://images.unsplash.com/photo-1552664688-cf412ec27db2?w=1000&auto=format&fit=crop&q=70",
+      "industry": "Halal Economy",
+      "founderStage": "Seed",
+      "status": "Published",
+      "featured": false,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "o8",
+      "title": "Global Zakat Innovators Fellowship",
+      "type": "Fellowship",
+      "organization": "Ummah Impact Partners",
+      "country": "Global",
+      "remote": true,
+      "deadline": "2026-05-01",
+      "description": "Fellowship for founders reimagining giving infrastructure.",
+      "image": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1000&auto=format&fit=crop&q=70",
+      "industry": "Zakat & Charity",
+      "founderStage": "Pre-Seed",
+      "status": "Published",
+      "featured": false,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "o9",
+      "title": "Women Founders Program",
+      "type": "Founder Program",
+      "organization": "Crescent Angels",
+      "country": "Global",
+      "remote": true,
+      "deadline": "2026-02-20",
+      "description": "Program supporting Muslim women founders with mentorship and capital.",
+      "image": "https://images.unsplash.com/photo-1560264280-88b68371db39?w=1000&auto=format&fit=crop&q=70",
+      "industry": "Multi-sector",
+      "founderStage": "Pre-Seed",
+      "status": "Published",
+      "featured": false,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "o10",
+      "title": "Halal F&B Competition",
+      "type": "Competition",
+      "organization": "Halal Economy Fund",
+      "country": "Indonesia",
+      "remote": false,
+      "deadline": "2026-03-25",
+      "description": "Prize + investment for halal F&B startups.",
+      "image": "https://images.unsplash.com/photo-1552581234-26160f608093?w=1000&auto=format&fit=crop&q=70",
+      "industry": "Food & Nutrition",
+      "founderStage": "Seed",
+      "status": "Published",
+      "featured": false,
+      "updatedAt": "2026-07-15"
+    }
+  ],
+  "jobs": [
+    {
+      "id": "j1",
+      "startupSlug": "halalpay",
+      "title": "Senior Product Designer",
+      "location": "London / Remote",
+      "arrangement": "Remote",
+      "type": "Full-time",
+      "level": "Senior",
+      "posted": "2025-12-01",
+      "description": "Lead product design across our consumer app and merchant dashboard.",
+      "status": "Published",
+      "applications": 12,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "j2",
+      "startupSlug": "ummahcart",
+      "title": "Head of Growth",
+      "location": "Dubai",
+      "arrangement": "On-site",
+      "type": "Full-time",
+      "level": "Lead",
+      "posted": "2025-11-27",
+      "description": "Own performance marketing across GCC and North Africa.",
+      "status": "Published",
+      "applications": 21,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "j3",
+      "startupSlug": "modestly",
+      "title": "E-commerce Manager",
+      "location": "Brooklyn, NY",
+      "arrangement": "Hybrid",
+      "type": "Full-time",
+      "level": "Mid",
+      "posted": "2025-11-22",
+      "description": "Own site conversion, merchandising, and lifecycle.",
+      "status": "Published",
+      "applications": 9,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "j4",
+      "startupSlug": "hajjmate",
+      "title": "Backend Engineer",
+      "location": "Jeddah",
+      "arrangement": "On-site",
+      "type": "Full-time",
+      "level": "Mid",
+      "posted": "2025-11-19",
+      "description": "Build reliable pilgrim logistics infrastructure.",
+      "status": "Published",
+      "applications": 18,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "j5",
+      "startupSlug": "noorlearn",
+      "title": "Curriculum Lead",
+      "location": "Karachi",
+      "arrangement": "On-site",
+      "type": "Full-time",
+      "level": "Senior",
+      "posted": "2025-11-15",
+      "description": "Design structured Islamic learning pathways.",
+      "status": "Published",
+      "applications": 15,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "j6",
+      "startupSlug": "halalsupply",
+      "title": "Enterprise Account Executive",
+      "location": "Jakarta",
+      "arrangement": "Hybrid",
+      "type": "Full-time",
+      "level": "Senior",
+      "posted": "2025-11-10",
+      "description": "Close large F&B manufacturer accounts.",
+      "status": "Published",
+      "applications": 27,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "j7",
+      "startupSlug": "sukuksoft",
+      "title": "Compliance Engineer",
+      "location": "Kuala Lumpur",
+      "arrangement": "On-site",
+      "type": "Full-time",
+      "level": "Mid",
+      "posted": "2025-11-08",
+      "description": "Own our compliance test framework across multiple regulators.",
+      "status": "Published",
+      "applications": 7,
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "id": "j8",
+      "startupSlug": "ihsanstudio",
+      "title": "Frontend Engineer (Internship)",
+      "location": "London / Remote",
+      "arrangement": "Remote",
+      "type": "Internship",
+      "level": "Junior",
+      "posted": "2025-11-30",
+      "description": "Ship features on our creator platform. Great mentorship.",
+      "status": "Published",
+      "applications": 11,
+      "updatedAt": "2026-07-15"
+    }
+  ],
+  "pitches": [
+    {
+      "id": "p1",
+      "startupSlug": "halalpay",
+      "pitchTitle": "Series B: Scaling halal BNPL across GCC",
+      "summary": "Raising $12M Series B to expand into GCC and add merchant capital products.",
+      "problem": "Muslim households lack interest-free short-term credit.",
+      "solution": "HalalPay provides murabaha-based BNPL with a merchant-first onboarding.",
+      "market": "$120B TAM in halal consumer credit",
+      "businessModel": "Merchant fees + capital markets spread.",
+      "traction": "220k users, $85M annualized GMV.",
+      "requested": 12000000,
+      "equity": 12,
+      "valuation": 100000000,
+      "minTicket": 250000,
+      "useOfFunds": "50% product, 30% GTM, 20% capital markets.",
+      "visibility": "Public",
+      "submitted": "2025-11-01",
+      "status": "Active",
+      "reviewStatus": "Approved",
+      "featured": true,
+      "views": 150,
+      "updatedAt": "2026-07-15",
+      "ownerId": "u-founder"
+    },
+    {
+      "id": "p2",
+      "startupSlug": "zakatflow",
+      "pitchTitle": "Seed extension: Programmable zakat",
+      "summary": "Raising $2M to launch consumer app in France, UK, and Germany.",
+      "problem": "Zakat calculation and disbursement is fragmented.",
+      "solution": "ZakatFlow unifies calculation, categorization, and disbursement.",
+      "market": "$1B addressable in EU alone",
+      "businessModel": "Take-rate on disbursement.",
+      "traction": "34k waitlisted; 3 charity partners signed.",
+      "requested": 2000000,
+      "equity": 8,
+      "valuation": 20000000,
+      "minTicket": 100000,
+      "useOfFunds": "60% product, 30% GTM, 10% ops.",
+      "visibility": "Public",
+      "submitted": "2025-11-14",
+      "status": "Active",
+      "reviewStatus": "Approved",
+      "featured": true,
+      "views": 192,
+      "updatedAt": "2026-07-15",
+      "ownerId": "u-founder"
+    },
+    {
+      "id": "p3",
+      "startupSlug": "hajjmate",
+      "pitchTitle": "Series A: Hajj operator OS",
+      "summary": "Raising $8M to consolidate Hajj/Umrah operator software in MENA.",
+      "problem": "Hajj operators run on WhatsApp and spreadsheets.",
+      "solution": "HajjMate offers logistics, pilgrim apps, and ops in one platform.",
+      "market": "40k operators globally",
+      "businessModel": "SaaS + payments.",
+      "traction": "120 operators, $800k ARR.",
+      "requested": 8000000,
+      "equity": 14,
+      "valuation": 50000000,
+      "minTicket": 500000,
+      "useOfFunds": "40% product, 40% GTM, 20% expansion.",
+      "visibility": "Public",
+      "submitted": "2025-11-18",
+      "status": "Active",
+      "reviewStatus": "Approved",
+      "featured": true,
+      "views": 234,
+      "updatedAt": "2026-07-15",
+      "ownerId": ""
+    },
+    {
+      "id": "p4",
+      "startupSlug": "deenai",
+      "pitchTitle": "Seed: Faith-aligned AI research assistant",
+      "summary": "Raising $2.5M seed for consumer AI product for Muslim students.",
+      "problem": "General AI hallucinates on Islamic texts.",
+      "solution": "DeenAI is trained on classical sources with scholar review.",
+      "market": "2B Muslims globally",
+      "businessModel": "Consumer subscription.",
+      "traction": "11k beta users; +40% MoM.",
+      "requested": 2500000,
+      "equity": 15,
+      "valuation": 15000000,
+      "minTicket": 100000,
+      "useOfFunds": "70% product, 30% GTM.",
+      "visibility": "Public",
+      "submitted": "2025-11-30",
+      "status": "Active",
+      "reviewStatus": "Approved",
+      "featured": false,
+      "views": 276,
+      "updatedAt": "2026-07-15",
+      "ownerId": ""
+    },
+    {
+      "id": "p5",
+      "startupSlug": "sukuksoft",
+      "pitchTitle": "Series A: Sukuk issuance rails",
+      "summary": "Raising $6M Series A to expand into GCC banks.",
+      "problem": "Sukuk workflows still run on Excel.",
+      "solution": "SukukSoft is the modern platform for issuance and reporting.",
+      "market": "$800B sukuk market",
+      "businessModel": "Enterprise SaaS.",
+      "traction": "11 banks, $540k ARR.",
+      "requested": 6000000,
+      "equity": 10,
+      "valuation": 60000000,
+      "minTicket": 500000,
+      "useOfFunds": "50% product, 40% GTM, 10% compliance.",
+      "visibility": "Public",
+      "submitted": "2025-11-26",
+      "status": "Active",
+      "reviewStatus": "Approved",
+      "featured": false,
+      "views": 318,
+      "updatedAt": "2026-07-15",
+      "ownerId": ""
+    },
+    {
+      "id": "p6",
+      "startupSlug": "umrahgo",
+      "pitchTitle": "Pre-Seed: Book Umrah like a flight",
+      "summary": "Raising $600k pre-seed for consumer Umrah marketplace.",
+      "problem": "Umrah bookings are opaque and offline.",
+      "solution": "UmrahGo is a transparent, mobile-first Umrah marketplace.",
+      "market": "10M Umrah pilgrims/year",
+      "businessModel": "Take rate on bookings.",
+      "traction": "6.5k waitlisted, 12 operator LOIs.",
+      "requested": 600000,
+      "equity": 12,
+      "valuation": 5000000,
+      "minTicket": 25000,
+      "useOfFunds": "MVP + first market launch.",
+      "visibility": "Public",
+      "submitted": "2025-12-05",
+      "status": "Active",
+      "reviewStatus": "Pending",
+      "featured": false,
+      "views": 360,
+      "updatedAt": "2026-07-15",
+      "ownerId": ""
+    },
+    {
+      "id": "p7",
+      "startupSlug": "ihsanstudio",
+      "pitchTitle": "Seed extension: Muslim creator monetization",
+      "summary": "Raising $2M seed extension.",
+      "problem": "Muslim creators lack halal-friendly monetization.",
+      "solution": "IhsanStudio is a Stripe-like platform for the creator economy.",
+      "market": "1M+ Muslim creators globally",
+      "businessModel": "Take rate on payments.",
+      "traction": "1.2k creators, $430k ARR.",
+      "requested": 2000000,
+      "equity": 9,
+      "valuation": 22000000,
+      "minTicket": 100000,
+      "useOfFunds": "50% product, 50% GTM.",
+      "visibility": "Public",
+      "submitted": "2025-11-28",
+      "status": "Active",
+      "reviewStatus": "Pending",
+      "featured": false,
+      "views": 402,
+      "updatedAt": "2026-07-15",
+      "ownerId": ""
+    },
+    {
+      "id": "p8",
+      "startupSlug": "tayyibmeals",
+      "pitchTitle": "Series A: Chef-prepared halal meals",
+      "summary": "Raising $5M Series A.",
+      "problem": "Halal families lack premium meal delivery options.",
+      "solution": "Chef-prepared, dietician-designed halal meals shipped nationally.",
+      "market": "$8B halal meal delivery in US",
+      "businessModel": "Subscription + upsell.",
+      "traction": "8k subscribers, $1.1M ARR.",
+      "requested": 5000000,
+      "equity": 12,
+      "valuation": 30000000,
+      "minTicket": 250000,
+      "useOfFunds": "40% ops, 40% GTM, 20% product.",
+      "visibility": "Public",
+      "submitted": "2025-12-02",
+      "status": "Active",
+      "reviewStatus": "Pending",
+      "featured": false,
+      "views": 444,
+      "updatedAt": "2026-07-15",
+      "ownerId": ""
+    }
+  ],
+  "claims": [
+    {
+      "id": "c1",
+      "startupSlug": "tayyibmeals",
+      "requester": "Bilal Rashid",
+      "role": "Founder",
+      "submitted": "2025-12-01",
+      "status": "Pending",
+      "notes": "",
+      "updatedAt": "2026-07-15",
+      "ownerId": "u-founder"
+    },
+    {
+      "id": "c2",
+      "startupSlug": "salaamhealth",
+      "requester": "Amina Diallo",
+      "role": "Founder & CEO",
+      "submitted": "2025-11-27",
+      "status": "Pending",
+      "notes": "",
+      "updatedAt": "2026-07-15",
+      "ownerId": ""
+    },
+    {
+      "id": "c3",
+      "startupSlug": "umrahgo",
+      "requester": "Mahmoud Fathi",
+      "role": "Founder",
+      "submitted": "2025-11-22",
+      "status": "Approved",
+      "notes": "",
+      "updatedAt": "2026-07-15",
+      "ownerId": ""
+    },
+    {
+      "id": "c4",
+      "startupSlug": "qiblacommerce",
+      "requester": "Reem Al-Khalifa",
+      "role": "Head of Marketing",
+      "submitted": "2025-11-15",
+      "status": "Rejected",
+      "notes": "",
+      "updatedAt": "2026-07-15",
+      "ownerId": ""
+    },
+    {
+      "id": "c5",
+      "startupSlug": "khayrjobs",
+      "requester": "Ismail Nur",
+      "role": "Co-founder",
+      "submitted": "2025-12-11",
+      "status": "Pending",
+      "notes": "",
+      "updatedAt": "2026-07-15",
+      "ownerId": ""
+    }
+  ],
+  "categories": [
+    {
+      "slug": "islamic-finance",
+      "name": "Islamic Finance",
+      "icon": "Landmark",
+      "description": "Shariah-compliant finance, sukuk, takaful, and ethical banking.",
+      "accent": "#C93636",
+      "status": "Active",
+      "order": 1,
+      "featured": true
+    },
+    {
+      "slug": "halal-economy",
+      "name": "Halal Economy",
+      "icon": "Globe2",
+      "description": "Halal supply chain, certification, and commerce infrastructure.",
+      "accent": "#2F8F5B",
+      "status": "Active",
+      "order": 2,
+      "featured": true
+    },
+    {
+      "slug": "ai-saas",
+      "name": "AI & SaaS",
+      "icon": "Sparkles",
+      "description": "AI tools and cloud software for the ummah and beyond.",
+      "accent": "#3B7DD8",
+      "status": "Active",
+      "order": 3,
+      "featured": true
+    },
+    {
+      "slug": "ecommerce",
+      "name": "E-commerce",
+      "icon": "ShoppingBag",
+      "description": "Marketplaces and D2C brands serving Muslim consumers globally.",
+      "accent": "#7A55C7",
+      "status": "Active",
+      "order": 4,
+      "featured": true
+    },
+    {
+      "slug": "education",
+      "name": "Education",
+      "icon": "GraduationCap",
+      "description": "Islamic learning, edtech, and knowledge networks.",
+      "accent": "#B58208",
+      "status": "Active",
+      "order": 5,
+      "featured": true
+    },
+    {
+      "slug": "health-wellness",
+      "name": "Health & Wellness",
+      "icon": "HeartPulse",
+      "description": "Faith-aligned mental, physical, and preventive care.",
+      "accent": "#C93636",
+      "status": "Active",
+      "order": 6,
+      "featured": true
+    },
+    {
+      "slug": "modest-fashion",
+      "name": "Modest Fashion",
+      "icon": "Shirt",
+      "description": "Modest clothing, athletic hijabs, and fashion tech.",
+      "accent": "#7A55C7",
+      "status": "Active",
+      "order": 7,
+      "featured": true
+    },
+    {
+      "slug": "media",
+      "name": "Media",
+      "icon": "Clapperboard",
+      "description": "Storytelling, podcasts, streaming, and creator platforms.",
+      "accent": "#3B7DD8",
+      "status": "Active",
+      "order": 8,
+      "featured": true
+    },
+    {
+      "slug": "community",
+      "name": "Community",
+      "icon": "Users",
+      "description": "Networks, masajid tech, and civic engagement.",
+      "accent": "#2F8F5B",
+      "status": "Active",
+      "order": 9,
+      "featured": false
+    },
+    {
+      "slug": "travel-hajj",
+      "name": "Travel & Hajj",
+      "icon": "Plane",
+      "description": "Halal travel, Hajj/Umrah logistics, and hospitality.",
+      "accent": "#B58208",
+      "status": "Active",
+      "order": 10,
+      "featured": false
+    },
+    {
+      "slug": "zakat-charity",
+      "name": "Zakat & Charity",
+      "icon": "HandHeart",
+      "description": "Zakat calculators, sadaqah platforms, waqf, and giving.",
+      "accent": "#C93636",
+      "status": "Active",
+      "order": 11,
+      "featured": false
+    },
+    {
+      "slug": "food-nutrition",
+      "name": "Food & Nutrition",
+      "icon": "UtensilsCrossed",
+      "description": "Halal food brands, dine platforms, and nutrition tech.",
+      "accent": "#2F8F5B",
+      "status": "Active",
+      "order": 12,
+      "featured": false
+    }
+  ],
+  "users": [
+    {
+      "id": "u-admin",
+      "name": "Crescent Admin",
+      "email": "admin@startupmuslim.com",
+      "password": "Admin123!",
+      "role": "Admin",
+      "country": "United Kingdom",
+      "status": "Active",
+      "joinedAt": "2025-01-10",
+      "verified": true
+    },
+    {
+      "id": "u-founder",
+      "name": "Ayah Founder",
+      "email": "founder@startupmuslim.com",
+      "password": "Founder123!",
+      "role": "Founder",
+      "country": "United Kingdom",
+      "status": "Active",
+      "joinedAt": "2025-04-18",
+      "verified": true
+    },
+    {
+      "id": "u-investor",
+      "name": "Omar Investor",
+      "email": "investor@example.com",
+      "password": "Investor123!",
+      "role": "Investor",
+      "country": "United Arab Emirates",
+      "status": "Active",
+      "joinedAt": "2025-07-02",
+      "verified": true
+    },
+    {
+      "id": "u-partner",
+      "name": "Noor Partner",
+      "email": "partner@example.com",
+      "password": "Partner123!",
+      "role": "Ecosystem Partner",
+      "country": "Pakistan",
+      "status": "Active",
+      "joinedAt": "2025-09-11",
+      "verified": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "name": "Sara Ahmed",
+      "email": "sara@example.com",
+      "topic": "Partnership",
+      "message": "We would like to discuss an ecosystem report partnership.",
+      "status": "Unread",
+      "submittedAt": "2026-07-14T10:30:00Z"
+    },
+    {
+      "id": "m2",
+      "name": "Hassan Ali",
+      "email": "hassan@example.com",
+      "topic": "Investor inquiry",
+      "message": "Please share details about accessing private pitches.",
+      "status": "Replied",
+      "submittedAt": "2026-07-13T15:15:00Z"
+    }
+  ],
+  "subscribers": [
+    {
+      "id": "n1",
+      "email": "weekly@example.com",
+      "status": "Subscribed",
+      "source": "Footer",
+      "subscribedAt": "2026-07-10"
+    },
+    {
+      "id": "n2",
+      "email": "foundernews@example.com",
+      "status": "Subscribed",
+      "source": "Homepage",
+      "subscribedAt": "2026-07-12"
+    }
+  ],
+  "pages": [
+    {
+      "slug": "home",
+      "title": "Home",
+      "seoTitle": "Startup Muslim — Global Muslim Startup Ecosystem",
+      "metaDescription": "Discover Muslim founders, startups, investors, funding rounds, opportunities, jobs, and active pitches.",
+      "status": "Published",
+      "content": "",
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "slug": "about-directory",
+      "title": "About Directory",
+      "seoTitle": "About Startup Muslim Directory",
+      "metaDescription": "Learn how the Startup Muslim ecosystem directory works.",
+      "status": "Published",
+      "content": "",
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "slug": "contact",
+      "title": "Contact",
+      "seoTitle": "Contact Startup Muslim",
+      "metaDescription": "Contact Startup Muslim for partnerships, media, startup, pitch, and investor inquiries.",
+      "status": "Published",
+      "content": "",
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "slug": "privacy",
+      "title": "Privacy Policy",
+      "seoTitle": "Privacy Policy — Startup Muslim",
+      "metaDescription": "Privacy information for Startup Muslim users.",
+      "status": "Draft",
+      "content": "",
+      "updatedAt": "2026-07-15"
+    },
+    {
+      "slug": "terms",
+      "title": "Terms & Conditions",
+      "seoTitle": "Terms — Startup Muslim",
+      "metaDescription": "Terms and conditions for use of Startup Muslim.",
+      "status": "Draft",
+      "content": "",
+      "updatedAt": "2026-07-15"
+    }
+  ],
+  "media": [
+    {
+      "id": "media1",
+      "name": "Homepage team image",
+      "type": "Image",
+      "url": "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1200&auto=format&fit=crop&q=75",
+      "alt": "Startup team collaborating",
+      "uploadedAt": "2026-07-01"
+    },
+    {
+      "id": "media2",
+      "name": "Founder editorial image",
+      "type": "Image",
+      "url": "https://images.unsplash.com/photo-1573164574572-cb89e39749b4?w=1200&auto=format&fit=crop&q=75",
+      "alt": "Founder working at a desk",
+      "uploadedAt": "2026-07-02"
+    }
+  ],
+  "settings": {
+    "siteName": "Startup Muslim",
+    "directoryName": "Startup Muslim Atlas",
+    "siteUrl": "http://localhost:3000",
+    "adminEmail": "admin@startupmuslim.com",
+    "supportEmail": "hello@startupmuslim.com",
+    "logoText": "Startup Muslim",
+    "tagline": "The global Muslim startup ecosystem directory.",
+    "footerText": "A research atlas of Muslim founders, startups, investors, and halal economy companies shaping the future.",
+    "submissionsEnabled": true,
+    "registrationsEnabled": true,
+    "maintenanceMode": false,
+    "requireListingApproval": true,
+    "requirePitchApproval": true,
+    "defaultCountry": "United Kingdom",
+    "currency": "USD",
+    "timezone": "Asia/Karachi",
+    "socialTwitter": "#",
+    "socialLinkedin": "#",
+    "socialInstagram": "#",
+    "socialYoutube": "#",
+    "updatedAt": "2026-07-15T12:00:00.000Z"
+  },
+  "activity": [
+    {
+      "id": "a1",
+      "action": "Startup approved",
+      "detail": "HalalPay was approved and published.",
+      "actor": "Crescent Admin",
+      "createdAt": "2026-07-15T08:30:00Z"
+    },
+    {
+      "id": "a2",
+      "action": "Pitch submitted",
+      "detail": "A new pitch was submitted by DeenAI.",
+      "actor": "Imran Siddiqui",
+      "createdAt": "2026-07-15T07:15:00Z"
+    },
+    {
+      "id": "a3",
+      "action": "User registered",
+      "detail": "A new founder account was created.",
+      "actor": "System",
+      "createdAt": "2026-07-14T16:45:00Z"
+    }
+  ],
+  "savedItems": [
+    {
+      "userId": "u-founder",
+      "itemType": "startups",
+      "itemKey": "modestly"
+    },
+    {
+      "userId": "u-founder",
+      "itemType": "investors",
+      "itemKey": "barakah-ventures"
+    },
+    {
+      "userId": "u-founder",
+      "itemType": "pitches",
+      "itemKey": "p3"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+LOCAL REPAIR
+============
+
+Open PowerShell in this extracted project folder and run:
+
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\repair-and-start.ps1
+
+The repair script:
+- confirms Node.js 20-22
+- recreates a private local .env when missing
+- reinstalls exact dependencies from package-lock.json
+- applies missing database tables without deleting current records
+- starts the local API and React website
+
+For a completely fresh local demo database, use .\first-time-setup.ps1 instead.
+Do not use the local demo database or demo credentials on Hostinger.
