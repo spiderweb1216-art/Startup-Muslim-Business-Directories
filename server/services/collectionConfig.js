@@ -62,7 +62,7 @@ const COLLECTIONS = {
 };
 
 const ADMIN_ONLY = new Set(['users','messages','subscribers','activity']);
-const MEMBER_OWNED = new Set(['startups','founders','rounds','pitches','jobs','opportunities','claims']);
+const MEMBER_OWNED = new Set(['startups','founders','investors','rounds','pitches','jobs','opportunities','claims']);
 const STARTUP_LINKED = new Set(['founders','rounds','pitches','jobs','opportunities']);
 
 module.exports = { COLLECTIONS, ADMIN_ONLY, MEMBER_OWNED, STARTUP_LINKED };

@@ -1,60 +1,115 @@
-# Start here — local Windows setup
+# Crescent Startup Lab — MySQL full-stack setup
 
+This version is no longer browser-local. It contains:
 
-> **First-time setup note:** `first-time-setup.ps1` recreates the local database named in `.env`. This is intentional for a clean local demo and prevents old table structures from conflicting. Do not use the local demo reset command against a production database.
+- React frontend
+- Node.js/Express API
+- MySQL database
+- JWT login sessions
+- bcrypt password hashing
+- Full admin CRUD
+- Database-backed public forms
+- Database-backed saved items
+- Populated seed records
 
-## First run
+## Seeded content
 
-1. Install Node.js 22 LTS.
-2. Open XAMPP and start **MySQL**. Apache is not needed.
-3. Open PowerShell inside the project folder containing `package.json`.
-4. Run:
+The initial database includes:
+
+- 20 startups
+- 12 founders
+- 10 investors
+- 10 funding rounds
+- 8 pitches
+- 8 jobs
+- 10 opportunities
+- 12 categories
+- 5 claim requests
+- 4 user accounts
+- Contact messages, subscribers, pages, media, settings, activity records, and saved items
+
+The directories are therefore not empty after database setup.
+
+## Requirements
+
+Use Node.js 20 LTS and MySQL 8+. XAMPP MySQL/MariaDB can also be used for local development.
+
+## XAMPP setup
+
+1. Open XAMPP Control Panel.
+2. Start **MySQL**. Apache/PHP are not required for this project.
+3. Open this project folder in VS Code.
+4. Open **Terminal → New Terminal**.
+5. Run:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\first-time-setup.ps1
 ```
 
-The first-time script safely creates `.env` from `.env.example`, generates a private local JWT secret, installs the exact packages from `package-lock.json`, resets the local demo database, and starts the website and API.
+The script installs dependencies, creates `crescent_startup_lab`, creates every table, inserts all seed records, and starts the website and API.
 
-## Local addresses
+## Manual commands
 
-```text
-Website:     http://localhost:3000
-API health:  http://localhost:5000/api/health
+```powershell
+npm install --include=dev --legacy-peer-deps
+npm run db:setup
+npm start
 ```
 
-## Local demo accounts
+Website: `http://localhost:3000`
 
-These are only for the local database created by `db:setup:local`:
+API health check: `http://localhost:5000/api/health`
+
+## Login accounts
+
+Admin:
 
 ```text
-Admin:   admin@startupmuslim.com / Admin123!
-Founder: founder@startupmuslim.com / Founder123!
-Investor: investor@example.com / Investor123!
+admin@startupmuslim.com
+Admin123!
 ```
 
-Never deploy these accounts to a real public database.
+Founder:
+
+```text
+founder@startupmuslim.com
+Founder123!
+```
+
+Investor:
+
+```text
+investor@example.com
+Investor123!
+```
+
+## MySQL connection
+
+Local defaults are stored in `.env`:
+
+```env
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=crescent_startup_lab
+```
+
+Change `DB_PASSWORD` when your MySQL root account has a password.
 
 ## Normal daily start
 
-Start MySQL and run:
+After first-time setup:
 
 ```powershell
 .\start-local.ps1
 ```
 
-## Repair without deleting database data
+or:
 
 ```powershell
-.\repair-and-start.ps1
+npm start
 ```
 
-The repair script reinstalls dependencies and applies missing tables, but does not reseed the database.
-
-## Important command difference
-
-```text
-npm run dev   = local API + local React server
-npm start     = production Express server serving the build folder
-```
+Do not run `npm run db:setup` every day because it resets the database to the original populated seed data.

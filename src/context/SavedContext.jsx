@@ -8,13 +8,12 @@ const SavedContext=createContext(null);
 
 export const SavedProvider=({children})=>{
   const {currentUser}=useAuth();
-  const currentUserId=currentUser?.id||'';
   const [saved,setSaved]=useState({...EMPTY});
 
   useEffect(()=>{
     let active=true;
     const load=async()=>{
-      if(currentUserId){
+      if(currentUser){
         try{const result=await api('/saved');if(active)setSaved({...EMPTY,...result.saved});}
         catch{if(active)setSaved({...EMPTY});}
       }else{
@@ -22,14 +21,14 @@ export const SavedProvider=({children})=>{
       }
     };
     load();return()=>{active=false;};
-  },[currentUserId]);
+  },[currentUser?.id]);
 
-  useEffect(()=>{if(!currentUserId){try{localStorage.setItem(KEY,JSON.stringify(saved));}catch{}}},[saved,currentUserId]);
+  useEffect(()=>{if(!currentUser){try{localStorage.setItem(KEY,JSON.stringify(saved));}catch{}}},[saved,currentUser]);
 
   const toggle=useCallback((type,id)=>{
     setSaved(prev=>{const list=prev[type]||[];const exists=list.includes(id);return{...prev,[type]:exists?list.filter(x=>x!==id):[...list,id]};});
-    if(currentUserId)api('/saved/toggle',{method:'POST',body:{itemType:type,itemKey:id}}).catch(console.error);
-  },[currentUserId]);
+    if(currentUser)api('/saved/toggle',{method:'POST',body:{itemType:type,itemKey:id}}).catch(console.error);
+  },[currentUser]);
   const isSaved=useCallback((type,id)=>(saved[type]||[]).includes(id),[saved]);
   return <SavedContext.Provider value={{saved,toggle,isSaved}}>{children}</SavedContext.Provider>;
 };

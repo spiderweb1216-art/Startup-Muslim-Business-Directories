@@ -1,5 +1,4 @@
 const express=require('express');
-const crypto=require('crypto');
 const {requireAuth,requireAdmin}=require('../middleware/auth');
 const {listCollection,getSettings,createRecord,updateRecord,getUserById,updateSettings,addActivity}=require('../services/recordService');
 const {seedDatabase}=require('../scripts/setupDatabase');
@@ -22,7 +21,7 @@ router.post('/import',async(req,res,next)=>{
     await connection.query('SET FOREIGN_KEY_CHECKS=1');
     await connection.commit();
     for(const [collection,table] of Object.entries(tableMap)){void table;for(const item of payload[collection]||[])await createRecord(collection,item);}
-    for(const user of payload.users||[]){const existing=await getUserById(user.id);if(existing){await updateRecord('users',user.id,user);}else{const generatedPassword=crypto.randomBytes(32).toString('base64url');await createRecord('users',{...user,password:user.password||generatedPassword,status:user.password?(user.status||'Active'):'Pending'});}}
+    for(const user of payload.users||[]){const existing=await getUserById(user.id);if(existing)await updateRecord('users',user.id,user);else await createRecord('users',{...user,password:user.password||'Imported123!'});}
     if(payload.settings)await updateSettings(payload.settings);
     if(Array.isArray(payload.savedItems)){
       await pool.query('DELETE FROM saved_items');

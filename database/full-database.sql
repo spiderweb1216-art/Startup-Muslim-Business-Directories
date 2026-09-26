@@ -1,8 +1,8 @@
-CREATE DATABASE IF NOT EXISTS `startup_muslim_directory_local_v312`
+CREATE DATABASE IF NOT EXISTS `crescent_startup_lab`
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
-USE `startup_muslim_directory_local_v312`;
+USE `crescent_startup_lab`;
 
 CREATE TABLE IF NOT EXISTS schema_migrations (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -196,7 +196,6 @@ CREATE TABLE IF NOT EXISTS contact_messages (
 
 CREATE TABLE IF NOT EXISTS newsletter_subscribers (
   record_key VARCHAR(191) PRIMARY KEY,
-  name VARCHAR(190) NOT NULL,
   email VARCHAR(190) NOT NULL UNIQUE,
   status VARCHAR(40) NOT NULL DEFAULT 'Subscribed',
   source VARCHAR(100) NULL,
@@ -257,7 +256,7 @@ CREATE TABLE IF NOT EXISTS saved_items (
 ) ENGINE=InnoDB;
 
 INSERT IGNORE INTO schema_migrations (version) VALUES ('3.0.0');
-USE `startup_muslim_directory_local_v312`;
+USE `crescent_startup_lab`;
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS=0;
 DELETE FROM `saved_items`;
@@ -398,6 +397,3 @@ INSERT INTO saved_items (user_id,item_type,item_key) VALUES ('u-founder','invest
 INSERT INTO saved_items (user_id,item_type,item_key) VALUES ('u-founder','pitches','p3');
 
 INSERT IGNORE INTO schema_migrations (version) VALUES ('3.0.0-seed');
-INSERT IGNORE INTO schema_migrations (version) VALUES ('3.1.0');
-
-INSERT IGNORE INTO schema_migrations (version) VALUES ('3.1.2');

@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
+require('dotenv').config({ path:path.resolve(__dirname,'../../.env') });
 const { mysql, baseConfig, database } = require('../config/db');
-const { boolEnv, isProduction } = require('../config/env');
 
 const seed = require('../seed/seed-data.json');
 const TABLES = [
@@ -11,79 +11,19 @@ const TABLES = [
   'startups','categories','users','site_settings'
 ];
 
-const PRODUCTION_CONTENT_COLLECTIONS = [
-  'categories','startups','founders','investors','rounds','jobs','opportunities','pages','media'
-];
-
 function validDatabaseName(name) {
   if (!/^[a-zA-Z0-9_]+$/.test(name)) throw new Error('DB_NAME may contain only letters, numbers, and underscores.');
   return name;
 }
 
-async function resetLocalDatabase() {
-  if (isProduction) {
-    throw new Error('Refusing to reset a database while NODE_ENV=production.');
-  }
-
+async function applySchema() {
   const dbName = validDatabaseName(database);
-  const connection = await mysql.createConnection({
-    ...baseConfig,
-    multipleStatements: false,
-  });
-  try {
-    await connection.query(`DROP DATABASE IF EXISTS \`${dbName}\``);
-  } finally {
-    await connection.end();
-  }
-}
-
-async function ensureSchemaCompatibility(connection) {
-  const [subscriberNameColumns] = await connection.query(
-    "SHOW COLUMNS FROM `newsletter_subscribers` LIKE 'name'"
-  );
-  if (subscriberNameColumns.length === 0) {
-    await connection.query(
-      "ALTER TABLE `newsletter_subscribers` ADD COLUMN `name` VARCHAR(190) NULL AFTER `record_key`"
-    );
-    await connection.query(
-      "UPDATE `newsletter_subscribers` SET `name`=`email` WHERE `name` IS NULL OR `name`=''"
-    );
-    await connection.query(
-      "ALTER TABLE `newsletter_subscribers` MODIFY COLUMN `name` VARCHAR(190) NOT NULL"
-    );
-  }
-  await connection.query(
-    "INSERT IGNORE INTO `schema_migrations` (`version`) VALUES ('3.1.2')"
-  );
-}
-
-async function applySchema({ createDatabase = false } = {}) {
-  const dbName = validDatabaseName(database);
-
-  if (createDatabase) {
-    const serverConnection = await mysql.createConnection({
-      ...baseConfig,
-      multipleStatements: false,
-    });
-    try {
-      await serverConnection.query(
-        `CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
-      );
-    } finally {
-      await serverConnection.end();
-    }
-  }
-
-  const schemaPath = path.resolve(__dirname, '../../database/hostinger-schema.sql');
-  const sql = fs.readFileSync(schemaPath, 'utf8');
-  const connection = await mysql.createConnection({
-    ...baseConfig,
-    database: dbName,
-    multipleStatements: true,
-  });
+  const schemaPath = path.resolve(__dirname, '../../database/schema.sql');
+  let sql = fs.readFileSync(schemaPath, 'utf8');
+  sql = sql.replaceAll('`crescent_startup_lab`', `\`${dbName}\``);
+  const connection = await mysql.createConnection({ ...baseConfig, multipleStatements:true });
   try {
     await connection.query(sql);
-    await ensureSchemaCompatibility(connection);
   } finally {
     await connection.end();
   }
@@ -91,11 +31,8 @@ async function applySchema({ createDatabase = false } = {}) {
 
 async function clearDatabase(connection) {
   await connection.query('SET FOREIGN_KEY_CHECKS=0');
-  try {
-    for (const table of TABLES) await connection.query(`TRUNCATE TABLE \`${table}\``);
-  } finally {
-    await connection.query('SET FOREIGN_KEY_CHECKS=1');
-  }
+  for (const table of TABLES) await connection.query(`TRUNCATE TABLE \`${table}\``);
+  await connection.query('SET FOREIGN_KEY_CHECKS=1');
 }
 
 function configFor(collection) {
@@ -118,39 +55,24 @@ function configFor(collection) {
   return configs[collection];
 }
 
-async function insertEntity(connection, collection, record, { ignoreDuplicates = false } = {}) {
-  const config = configFor(collection);
-  if (!config) throw new Error(`Unknown seed collection: ${collection}`);
-  const [table,idField,nameField,indexedFn] = config;
-  const row = {
-    record_key:String(record[idField]),
-    name:String(record[nameField]||record[idField]),
-    data:JSON.stringify(record),
-    ...indexedFn(record),
-  };
+async function insertEntity(connection, collection, record) {
+  const [table,idField,nameField,indexedFn] = configFor(collection);
+  const row = { record_key:String(record[idField]), name:String(record[nameField]||record[idField]), data:JSON.stringify(record), ...indexedFn(record) };
   if (collection === 'activity') delete row.name;
   const columns = Object.keys(row);
-  const insertKeyword = ignoreDuplicates ? 'INSERT IGNORE' : 'INSERT';
   await connection.query(
-    `${insertKeyword} INTO \`${table}\` (${columns.map((c)=>`\`${c}\``).join(',')}) VALUES (${columns.map(()=>'?').join(',')})`,
+    `INSERT INTO \`${table}\` (${columns.map((c)=>`\`${c}\``).join(',')}) VALUES (${columns.map(()=>'?').join(',')})`,
     Object.values(row)
   );
 }
 
 async function seedDatabase({ clear = true } = {}) {
-  if (isProduction && !boolEnv('ALLOW_DEMO_SEED', false)) {
-    const error = new Error('Demo reset/seed is disabled in production. Set ALLOW_DEMO_SEED=true only for a disposable staging database.');
-    error.status = 403;
-    throw error;
-  }
-
   const connection = await mysql.createConnection({ ...baseConfig, database });
   try {
     if (clear) await clearDatabase(connection);
     for (const user of seed.users) {
       const passwordHash = await bcrypt.hash(user.password, 12);
-      const profile = { ...user };
-      delete profile.password;
+      const profile = { ...user }; delete profile.password;
       await connection.query(
         `INSERT INTO users (id,name,email,password_hash,role,country,status,verified,joined_at,profile) VALUES (?,?,?,?,?,?,?,?,?,?)`,
         [user.id,user.name,user.email.toLowerCase(),passwordHash,user.role,user.country||null,user.status||'Active',user.verified?1:0,user.joinedAt||null,JSON.stringify(profile)]
@@ -168,95 +90,25 @@ async function seedDatabase({ clear = true } = {}) {
   }
 }
 
-function sanitizeProductionRecord(record) {
-  const next = JSON.parse(JSON.stringify(record));
-  delete next.ownerId;
-  delete next.submitterEmail;
-  delete next.submitterName;
-  delete next.claimId;
-  delete next.claimedByUserId;
-  delete next.claimedAt;
-  next.claimed = false;
-  next.claimVerified = false;
-  return next;
-}
-
-async function seedProductionContent({ onlyIfEmpty = true } = {}) {
-  const connection = await mysql.createConnection({ ...baseConfig, database });
-  const productionSettings = {
-    ...seed.settings,
-    siteUrl:String(process.env.CLIENT_URL || seed.settings.siteUrl || '').split(',')[0].trim().replace(/\/$/, ''),
-    adminEmail:process.env.ADMIN_EMAIL || seed.settings.adminEmail,
-    supportEmail:process.env.SUPPORT_EMAIL || seed.settings.supportEmail,
-    updatedAt:new Date().toISOString(),
-  };
-  try {
-    if (onlyIfEmpty) {
-      const [[startupCount], [categoryCount]] = await Promise.all([
-        connection.query('SELECT COUNT(*) AS total FROM startups'),
-        connection.query('SELECT COUNT(*) AS total FROM categories'),
-      ]);
-      if (Number(startupCount[0]?.total || 0) > 0 || Number(categoryCount[0]?.total || 0) > 0) {
-        await connection.query('INSERT IGNORE INTO site_settings (id,settings) VALUES (1,?)', [JSON.stringify(productionSettings)]);
-        return { inserted:0, skipped:true };
-      }
-    }
-
-    let inserted = 0;
-    for (const collection of PRODUCTION_CONTENT_COLLECTIONS) {
-      for (const record of seed[collection] || []) {
-        await insertEntity(connection, collection, sanitizeProductionRecord(record), { ignoreDuplicates:true });
-        inserted += 1;
-      }
-    }
-    await connection.query(
-      'INSERT INTO site_settings (id,settings) VALUES (1,?) ON DUPLICATE KEY UPDATE settings=VALUES(settings)',
-      [JSON.stringify(productionSettings)]
-    );
-    return { inserted, skipped:false };
-  } finally {
-    await connection.end();
-  }
-}
-
 async function main() {
-  const mode = process.argv[2] || '--schema-only';
-  if (mode === '--local-demo') {
-    console.log(`\nResetting the LOCAL MySQL database: ${database}`);
-    console.log('A brand-new local database will be created from the current schema and then populated.');
-    await resetLocalDatabase();
-    await applySchema({ createDatabase:true });
-    console.log('Fresh schema created.');
-    await seedDatabase({ clear:false });
-    console.log('Local demo data inserted.');
-    console.log('\nLocal database setup complete.');
-    console.log('Admin:   admin@startupmuslim.com / Admin123!');
-    console.log('Founder: founder@startupmuslim.com / Founder123!\n');
-    return;
-  }
-
-  const createDatabase = boolEnv('DB_CREATE_DATABASE', false);
-  await applySchema({ createDatabase });
-  console.log(`Schema applied to ${database}.`);
-
-  if (mode === '--demo') {
-    await seedDatabase({ clear:true });
-    console.log('Demo data inserted.');
-  } else if (mode === '--production-content') {
-    const result = await seedProductionContent({ onlyIfEmpty:true });
-    console.log(result.skipped ? 'Production content seed skipped because content already exists.' : `Inserted ${result.inserted} production content records.`);
-  }
+  console.log(`\nCreating MySQL database: ${database}`);
+  await applySchema();
+  console.log('Schema created.');
+  await seedDatabase({ clear:true });
+  console.log('Seed data inserted.');
+  console.log('\nDatabase setup complete.');
+  console.log('Admin:   admin@startupmuslim.com / Admin123!');
+  console.log('Founder: founder@startupmuslim.com / Founder123!\n');
 }
 
 if (require.main === module) {
   main().catch((error) => {
     console.error('\nDatabase setup failed:');
     console.error(error.message);
-    if (error.code === 'ECONNREFUSED') console.error('Start MySQL and confirm DB_HOST and DB_PORT.');
-    if (error.code === 'ER_ACCESS_DENIED_ERROR') console.error('Check DB_USER and DB_PASSWORD.');
-    if (error.code === 'ER_BAD_DB_ERROR') console.error('Create the database in your hosting panel first, or set DB_CREATE_DATABASE=true locally.');
+    if (error.code === 'ECONNREFUSED') console.error('Start MySQL/XAMPP and confirm DB_HOST and DB_PORT in .env.');
+    if (error.code === 'ER_ACCESS_DENIED_ERROR') console.error('Check DB_USER and DB_PASSWORD in .env.');
     process.exit(1);
   });
 }
 
-module.exports = { applySchema, resetLocalDatabase, seedDatabase, seedProductionContent };
+module.exports = { applySchema, seedDatabase };

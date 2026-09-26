@@ -17,6 +17,11 @@ import { useData, slugify } from '@/context/DataContext';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { Wordmark } from '@/components/common/Logo';
+import OverviewBlockEditor from '@/components/common/OverviewBlockEditor';
+import StartupWorkspaceEditor from '@/components/admin/StartupWorkspaceEditor';
+import { countryLabel } from '@/lib/countryAtlas';
+import { getOverviewBlocks, normalizeOverviewBlocks, overviewSummary } from '@/lib/overviewBlocks';
+import { FOUNDER_OPEN_TO_OPTIONS } from '@/constants/founderOptions';
 
 const NAV_GROUPS = [
   {
@@ -84,8 +89,8 @@ const CONFIGS = {
       F('foundedYear','Founded year','number'), F('teamSize','Team size','number'), F('hq','Headquarters'),
       F('revenue','Revenue'), F('users','Users / customers'), F('growth','Growth'),
       F('website','Website URL','url'), F('banner','Banner image URL','url',{span:2}),
-      F('description','Description','textarea',{span:2}), F('founderSlugs','Founder slugs','csv',{span:2}),
-      F('productImages','Product image URLs','csv',{span:2}), F('logo.mark','Logo initials'), F('logo.color','Logo color','color'),
+      F('overviewBlocks','Overview content','overview-blocks',{span:2}), F('founderSlugs','Founder slugs','csv',{span:2}),
+      F('productImages','Product tab image URLs','csv',{span:2}), F('logo.mark','Logo initials'), F('logo.color','Logo color','color'),
       F('ownerId','Owner user ID'), F('addedAt','Added date','date'), F('views','Profile views','number'),
     ],
   },
@@ -93,21 +98,25 @@ const CONFIGS = {
     title:'Founders', singular:'founder', idField:'slug', nameField:'name', description:'Manage founder biographies, linked companies, visibility, verification, social links, skills, and availability.',
     columns:[['name','Founder'],['role','Role'],['startupSlug','Startup'],['country','Country'],['status','Status'],['verified','Verified']],
     fields:[
-      F('name','Full name','text',{required:true}),F('slug','URL slug'),F('role','Role'),F('startupSlug','Startup slug'),
-      F('country','Country'),F('flag','Flag / emoji'),F('industry','Industry'),F('status','Publication status','select',{options:statusOptions}),
-      F('verified','Verified','checkbox'),F('bio','Short bio','textarea',{span:2}),F('story','Founder story','textarea',{span:2}),
-      F('experience','Experience'),F('photo','Photo URL','url'),F('linkedin','LinkedIn URL','url'),
-      F('skills','Skills','csv',{span:2}),F('previousStartups','Previous startups','csv'),F('openTo','Open to','csv'),
+      F('name','Full name','text',{required:true}),F('slug','URL slug'),F('role','Role'),F('startupSlug','Current startup','dynamic-startup'),
+      F('country','Country'),F('flag','Country code / flag'),F('industry','Industry'),F('status','Publication status','select',{options:statusOptions}),
+      F('verified','Verified','checkbox'),F('featured','Feature at top of founders page','checkbox'),F('bio','Short bio','textarea',{span:2}),F('story','Founder story','textarea',{span:2}),
+      F('experience','Experience'),F('photo','Founder photo','file-url'),F('linkedin','LinkedIn URL','url'),
+      F('skills','Skills','csv',{span:2}),F('previousStartups','Previous startups','csv'),
+      F('openTo','Availability / Open to','multi-checkbox',{span:2,options:FOUNDER_OPEN_TO_OPTIONS}),
     ],
   },
   investors: {
-    title:'Investors', singular:'investor', idField:'slug', nameField:'name', description:'Manage investor profiles, investment thesis, ticket range, stage focus, portfolio, verification, and featured placement.',
+    title:'Investors', singular:'investor', idField:'slug', nameField:'name', description:'Everything shown on the public investor archive and investor profile is controlled here and stored in MySQL.',
     columns:[['name','Investor'],['type','Type'],['country','Country'],['ticketRange','Ticket range'],['status','Status'],['featured','Featured']],
     fields:[
-      F('name','Investor name','text',{required:true}),F('slug','URL slug'),F('type','Investor type'),F('country','Country'),F('flag','Flag / emoji'),
+      F('name','Investor name','text',{required:true}),F('slug','URL slug'),F('type','Investor type'),F('country','Country'),F('flag','Country code / flag'),
       F('status','Publication status','select',{options:statusOptions}),F('verified','Verified','checkbox'),F('featured','Featured','checkbox'),F('halalFocus','Halal focus','checkbox'),
-      F('ticketRange','Ticket range'),F('portfolioCount','Portfolio count','number'),F('website','Website URL','url'),
-      F('description','Description','textarea',{span:2}),F('focus','Sector focus','csv',{span:2}),F('stageFocus','Stage focus','csv'),F('portfolio','Portfolio startup slugs','csv',{span:2}),
+      F('ticketRange','Ticket range'),F('foundedYear','Founded year','number'),F('headquarters','Headquarters'),F('aum','Assets under management / AUM'),F('teamSize','Team size'),
+      F('website','Website URL','url'),F('linkedin','LinkedIn URL','url'),F('email','Public contact email','email'),F('phone','Public contact phone'),
+      F('description','Short description','textarea',{span:2}),F('thesis','Investment thesis','textarea',{span:2}),
+      F('focus','Sector focus','dynamic-categories-multi',{span:2}),F('stageFocus','Stage focus','csv',{span:2}),
+      F('portfolio','Portfolio companies','dynamic-startups-multi',{span:2}),
       F('logo.mark','Logo initials'),F('logo.color','Logo color','color'),
     ],
   },
@@ -127,9 +136,9 @@ const CONFIGS = {
     title:'Funding rounds', singular:'funding round', idField:'id', nameField:'roundName', description:'Track disclosed rounds, lead investors, syndicates, valuation, dates, notes, and public visibility.',
     columns:[['startupSlug','Startup'],['roundName','Round'],['amount','Amount'],['valuation','Valuation'],['date','Date'],['status','Status']],
     fields:[
-      F('startupSlug','Startup slug','text',{required:true}),F('roundName','Round name','text',{required:true}),F('stage','Stage'),F('date','Date','date'),
-      F('amount','Amount (USD)','number'),F('valuation','Valuation (USD)','number'),F('leadInvestorSlug','Lead investor slug'),F('status','Publication status','select',{options:statusOptions}),
-      F('investorSlugs','Investor slugs','csv',{span:2}),F('notes','Notes','textarea',{span:2}),
+      F('startupSlug','Startup','dynamic-startup',{required:true}),F('roundName','Round name','text',{required:true}),F('stage','Stage'),F('date','Date','date'),
+      F('amount','Amount (USD)','number'),F('valuation','Valuation (USD)','number'),F('leadInvestorSlug','Lead investor','dynamic-investor'),F('status','Publication status','select',{options:statusOptions}),
+      F('investorSlugs','Participating investors','dynamic-investors-multi',{span:2}),F('notes','Notes','textarea',{span:2}),
     ],
   },
   jobs: {
@@ -139,17 +148,20 @@ const CONFIGS = {
       F('title','Job title','text',{required:true}),F('startupSlug','Startup slug','text',{required:true}),F('location','Location'),
       F('arrangement','Arrangement','select',{options:['Remote','Hybrid','On-site']}),F('type','Employment type','select',{options:['Full-time','Part-time','Contract','Internship','Temporary']}),
       F('level','Seniority','select',{options:['Junior','Mid','Senior','Lead','Executive']}),F('posted','Posted date','date'),F('status','Publication status','select',{options:statusOptions}),
-      F('applications','Applications','number'),F('description','Description','textarea',{span:2}),
+      F('applications','Applications','number'),F('applicationUrl','Application URL','url'),F('description','Description','textarea',{span:2}),
     ],
   },
   opportunities: {
-    title:'Opportunities', singular:'opportunity', idField:'id', nameField:'title', description:'Manage accelerators, fellowships, grants, competitions, founder programs, deadlines, eligibility, and featured placement.',
+    title:'Opportunities', singular:'opportunity', idField:'id', nameField:'title', description:'Publish opportunity pages with categories, application links, eligibility, sidebar details and a visual content editor.',
     columns:[['title','Opportunity'],['type','Type'],['organization','Organization'],['country','Country'],['deadline','Deadline'],['status','Status']],
     fields:[
       F('title','Title','text',{required:true,span:2}),F('type','Opportunity type','select',{options:['Accelerator','Fellowship','Grant','Competition','Demo Day','Founder Program','Event']}),
+      F('category','Primary category (create by typing)'),F('categories','Additional categories (comma separated)','csv',{span:2}),
       F('organization','Organization'),F('country','Country'),F('remote','Remote','checkbox'),F('deadline','Deadline','date'),
       F('industry','Industry'),F('founderStage','Founder stage'),F('status','Publication status','select',{options:statusOptions}),F('featured','Featured','checkbox'),
-      F('image','Image URL','url',{span:2}),F('description','Description','textarea',{span:2}),
+      F('image','Featured image URL','file-url',{span:2}),F('applicationUrl','Application URL','url',{span:2}),
+      F('description','Short summary for cards','textarea',{span:2}),F('eligibility','Eligibility','textarea',{span:2}),F('benefits','Benefits','textarea',{span:2}),
+      F('overviewBlocks','Single-page content: headings, text, images and galleries','overview-blocks',{span:2}),
     ],
   },
   claims: {
@@ -329,6 +341,7 @@ function Overview({ setSection }) {
   ];
   const pending = data.startups.filter((x)=>x.status==='Pending').slice(0,5);
   const pendingPitches = data.pitches.filter((x)=>x.reviewStatus==='Pending').slice(0,4);
+  const pendingInvestors = data.investors.filter((x)=>x.status==='Pending').slice(0,5);
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
@@ -343,8 +356,9 @@ function Overview({ setSection }) {
         <div className="bg-white border border-line rounded-2xl p-5"><div className="font-display text-[18px]">Category mix</div><div className="text-[11.5px] text-slate2">Published and pending startups</div><div className="h-72 mt-4"><ResponsiveContainer><PieChart><Pie data={categoryData} innerRadius={50} outerRadius={85} paddingAngle={3} dataKey="value">{categoryData.map((_,i)=><Cell key={i} fill={['#D94B3D','#111827','#2F8F5B','#3B7DD8','#B58208','#7A55C7','#9B8F7B'][i%7]}/>)}</Pie><Tooltip/><Legend iconSize={7} wrapperStyle={{fontSize:10}}/></PieChart></ResponsiveContainer></div></div>
       </div>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-        <ReviewQueue title="Startup approval queue" empty="No startup submissions are waiting." items={pending} label={(x)=>x.name} meta={(x)=>`${x.category} · ${x.country}`} onApprove={(x)=>{updateItem('startups',x.slug,{status:'Published'});toast(`${x.name} published.`,{type:'success'});}} onReject={(x)=>updateItem('startups',x.slug,{status:'Rejected'})}/>
+        <ReviewQueue title="Startup approval queue" empty="No startup submissions are waiting." items={pending} label={(x)=>x.name} meta={(x)=>`${x.category} · ${countryLabel(x.country, x.flag)}`} onApprove={(x)=>{updateItem('startups',x.slug,{status:'Published'});toast(`${x.name} published.`,{type:'success'});}} onReject={(x)=>updateItem('startups',x.slug,{status:'Rejected'})}/>
         <ReviewQueue title="Pitch approval queue" empty="No pitches are waiting." items={pendingPitches} label={(x)=>x.pitchTitle} meta={(x)=>`${x.startupSlug} · ${formatCell(x.requested,'requested')}`} onApprove={(x)=>{updateItem('pitches',x.id,{reviewStatus:'Approved'});toast('Pitch approved.',{type:'success'});}} onReject={(x)=>updateItem('pitches',x.id,{reviewStatus:'Rejected'})}/>
+        <ReviewQueue title="Investor approval queue" empty="No investor profiles are waiting." items={pendingInvestors} label={(x)=>x.name} meta={(x)=>`${x.type || 'Investor'} · ${x.country || 'Location unspecified'}`} onApprove={(x)=>{const result=updateItem('investors',x.slug,{status:'Published'});result.savePromise?.then(()=>toast(`${x.name} published.`,{type:'success'})).catch((error)=>toast(error.message,{type:'warning'}));}} onReject={(x)=>{const result=updateItem('investors',x.slug,{status:'Rejected'});result.savePromise?.catch((error)=>toast(error.message,{type:'warning'}));}}/>
       </div>
       <div className="bg-white border border-line rounded-2xl p-5"><div className="flex items-center justify-between"><div className="font-display text-[18px]">Recent activity</div><button className="text-[12px] underline text-slate2" onClick={()=>setSection('activity')}>View all</button></div><div className="mt-4 divide-y divide-line">{data.activity.slice(0,6).map((a)=><div key={a.id} className="py-3 flex gap-3"><div className="w-8 h-8 rounded-lg bg-canvas flex items-center justify-center"><Activity className="w-3.5 h-3.5 text-coral"/></div><div className="flex-1"><div className="text-[13px] font-medium">{a.action}</div><div className="text-[11.5px] text-slate2">{a.detail}</div></div><div className="text-[10.5px] text-slate2 whitespace-nowrap">{new Date(a.createdAt).toLocaleString()}</div></div>)}</div></div>
     </div>
@@ -364,8 +378,9 @@ function EntityManager({ collection, config }) {
   const [selected, setSelected] = useState([]);
   const [editing, setEditing] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [workspaceSaving, setWorkspaceSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const rows = useMemo(() => data[collection] || [], [data, collection]);
+  const rows = data[collection] || [];
   const idField = idFields[collection] || config.idField || 'id';
 
   const statusValues = useMemo(() => Array.from(new Set(rows.map((x)=>x.status||x.reviewStatus).filter(Boolean))), [rows]);
@@ -385,6 +400,89 @@ function EntityManager({ collection, config }) {
       if(created?.savePromise)await created.savePromise;
     }
     setModalOpen(false); setEditing(null); toast(`${config.singular} ${editing?'updated':'created'}.`, { type:'success' });
+  };
+
+  const saveStartupWorkspace = async ({ startup, pitch, pitchEnabled, rounds, founders, originalSlug }) => {
+    setWorkspaceSaving(true);
+    try {
+      const sourceSlug = originalSlug || startup.slug;
+      let targetSlug = startup.slug;
+
+      if (editing) {
+        // The record key is the original slug. Keep it stable while editing to avoid orphaned relations.
+        targetSlug = editing.slug;
+        startup.slug = editing.slug;
+        await updateItem('startups', editing.slug, startup, currentUser?.name);
+      } else {
+        const created = addItem('startups', startup, currentUser?.name);
+        targetSlug = created.slug;
+        if (created.savePromise) await created.savePromise;
+      }
+
+      // Investment Pitch: one primary company pitch is managed from the company workspace.
+      const existingPitches = (data.pitches || []).filter((item) => item.startupSlug === sourceSlug);
+      const existingPrimary = existingPitches.find((item) => item.id === pitch?.id) || existingPitches.find((item) => item.status === 'Active') || existingPitches[0];
+      if (pitchEnabled && pitch && (pitch.pitchTitle || pitch.summary || pitch.requested)) {
+        const pitchPayload = { ...pitch, startupSlug: targetSlug, submitted: pitch.submitted || new Date().toISOString().slice(0,10) };
+        if (existingPrimary?.id) await updateItem('pitches', existingPrimary.id, pitchPayload, currentUser?.name);
+        else {
+          const createdPitch = addItem('pitches', pitchPayload, currentUser?.name);
+          if (createdPitch.savePromise) await createdPitch.savePromise;
+        }
+      } else if (!pitchEnabled && existingPrimary?.id) {
+        await removeItem('pitches', existingPrimary.id, currentUser?.name);
+      }
+
+      // Funding rounds: synchronize linked records to the workspace list.
+      const oldRounds = (data.rounds || []).filter((item) => item.startupSlug === sourceSlug);
+      const keptRoundIds = new Set();
+      for (const round of rounds || []) {
+        const payload = { ...round, startupSlug: targetSlug, status: round.status || 'Published', amount:Number(round.amount||0), valuation:Number(round.valuation||0) };
+        if (round.id && !String(round.id).startsWith('tmp-') && oldRounds.some((x)=>x.id===round.id)) {
+          keptRoundIds.add(round.id);
+          await updateItem('rounds', round.id, payload, currentUser?.name);
+        } else {
+          const { id, ...fresh } = payload;
+          const createdRound = addItem('rounds', fresh, currentUser?.name);
+          if (createdRound.savePromise) await createdRound.savePromise;
+        }
+      }
+      for (const old of oldRounds) if (!keptRoundIds.has(old.id) && !(rounds||[]).some((r)=>r.id===old.id)) await removeItem('rounds', old.id, currentUser?.name);
+
+      // Founders: synchronize linked founder records and keep startupSlug authoritative.
+      const oldFounders = (data.founders || []).filter((item) => item.startupSlug === sourceSlug || (editing?.founderSlugs || []).includes(item.slug));
+      const keptFounderSlugs = new Set();
+      const finalFounderSlugs = [];
+      for (const founder of founders || []) {
+        if (!String(founder.name || '').trim()) continue;
+        let founderSlug = String(founder.slug || '').trim();
+        if (!founderSlug || founderSlug.startsWith('tmp-')) founderSlug = slugify(founder.name);
+        if (!founderSlug) founderSlug = `${targetSlug}-founder-${Date.now()}`;
+        finalFounderSlugs.push(founderSlug);
+        const payload = { ...founder, slug: founderSlug, startupSlug: targetSlug, status: founder.status || 'Published' };
+        if (oldFounders.some((x)=>x.slug===founderSlug)) {
+          keptFounderSlugs.add(founderSlug);
+          await updateItem('founders', founderSlug, payload, currentUser?.name);
+        } else {
+          const createdFounder = addItem('founders', payload, currentUser?.name);
+          if (createdFounder.savePromise) await createdFounder.savePromise;
+        }
+      }
+      for (const old of oldFounders) if (!keptFounderSlugs.has(old.slug) && !finalFounderSlugs.includes(old.slug)) await removeItem('founders', old.slug, currentUser?.name);
+
+      // Keep the startup's founderSlugs in sync after related records have been saved.
+      if (editing) await updateItem('startups', targetSlug, { founderSlugs: finalFounderSlugs }, currentUser?.name);
+      else await updateItem('startups', targetSlug, { founderSlugs: finalFounderSlugs }, currentUser?.name);
+
+      setModalOpen(false);
+      setEditing(null);
+      toast(`Startup ${editing ? 'updated' : 'created'} with all public tabs.`, { type:'success' });
+    } catch (error) {
+      console.error('Company workspace save failed:', error);
+      toast(error?.message || 'The company workspace could not be saved. Please check the backend connection and try again.', { type:'warning' });
+    } finally {
+      setWorkspaceSaving(false);
+    }
   };
   const toggleAll = (checked) => setSelected(checked ? filtered.map((x)=>x[idField]) : []);
   const exportCsv = () => {
@@ -416,14 +514,14 @@ function EntityManager({ collection, config }) {
           <table className="w-full min-w-[950px] text-[12.5px]">
             <thead className="bg-canvas/70 text-slate2"><tr><th className="w-10 px-4 py-3 text-left"><input type="checkbox" checked={filtered.length>0&&selected.length===filtered.length} onChange={(e)=>toggleAll(e.target.checked)} /></th>{config.columns.map(([key,label])=><th key={key} className="text-left font-medium px-3 py-3">{label}</th>)}<th className="w-28 px-4 py-3 text-right">Actions</th></tr></thead>
             <tbody className="divide-y divide-line">
-              {filtered.map((item)=><tr key={item[idField]} className="hover:bg-canvas/35"><td className="px-4 py-3"><input type="checkbox" checked={selected.includes(item[idField])} onChange={(e)=>setSelected(e.target.checked?[...selected,item[idField]]:selected.filter((id)=>id!==item[idField]))}/></td>{config.columns.map(([key])=><td key={key} className="px-3 py-3 max-w-[260px]"><CellValue field={key} value={getPath(item,key)} item={item}/></td>)}<td className="px-4 py-3"><div className="flex justify-end gap-1"><button onClick={()=>openEdit(item)} className="admin-icon-btn" title="Edit"><Edit3 className="w-3.5 h-3.5"/></button>{!['claims','users','messages','subscribers','activity'].includes(collection)&&<button onClick={()=>duplicateItem(collection,item[idField],currentUser?.name)} className="admin-icon-btn" title="Duplicate"><Copy className="w-3.5 h-3.5"/></button>}<button onClick={()=>setDeleteTarget(item)} className="admin-icon-btn text-coral" title="Delete"><Trash2 className="w-3.5 h-3.5"/></button></div></td></tr>)}
+              {filtered.map((item)=><tr key={item[idField]} className="hover:bg-canvas/35"><td className="px-4 py-3"><input type="checkbox" checked={selected.includes(item[idField])} onChange={(e)=>setSelected(e.target.checked?[...selected,item[idField]]:selected.filter((id)=>id!==item[idField]))}/></td>{config.columns.map(([key])=><td key={key} className="px-3 py-3 max-w-[260px]"><CellValue field={key} value={getPath(item,key)} item={item}/></td>)}<td className="px-4 py-3"><div className="flex justify-end gap-1"><button onClick={()=>openEdit(item)} className="admin-icon-btn" title="Edit"><Edit3 className="w-3.5 h-3.5"/></button>{collection==='opportunities'&&<Link to={`/opportunities/${encodeURIComponent(item.id)}`} target="_blank" rel="noopener noreferrer" className="admin-icon-btn" title="View page"><ExternalLink className="w-3.5 h-3.5"/></Link>}{!['claims','users','messages','subscribers','activity'].includes(collection)&&<button onClick={()=>duplicateItem(collection,item[idField],currentUser?.name)} className="admin-icon-btn" title="Duplicate"><Copy className="w-3.5 h-3.5"/></button>}<button onClick={()=>setDeleteTarget(item)} className="admin-icon-btn text-coral" title="Delete"><Trash2 className="w-3.5 h-3.5"/></button></div></td></tr>)}
               {filtered.length===0&&<tr><td colSpan={config.columns.length+2} className="px-5 py-14 text-center text-slate2"><Inbox className="w-7 h-7 mx-auto opacity-40"/><div className="mt-2">No matching records found.</div></td></tr>}
             </tbody>
           </table>
         </div>
       </div>
 
-      <AnimatePresence>{modalOpen&&<RecordModal config={config} collection={collection} initial={editing} onClose={()=>{setModalOpen(false);setEditing(null);}} onSave={save}/>}</AnimatePresence>
+      <AnimatePresence>{modalOpen && (collection==='startups' ? <StartupWorkspaceEditor initial={editing} data={data} saving={workspaceSaving} onClose={()=>{setModalOpen(false);setEditing(null);}} onSave={saveStartupWorkspace}/> : <RecordModal config={config} collection={collection} initial={editing} onClose={()=>{setModalOpen(false);setEditing(null);}} onSave={save}/>)}</AnimatePresence>
       <AnimatePresence>{deleteTarget&&<ConfirmDelete label={deleteTarget[config.nameField]||deleteTarget[idField]} onCancel={()=>setDeleteTarget(null)} onConfirm={()=>{removeItem(collection,deleteTarget[idField],currentUser?.name);setDeleteTarget(null);toast('Record deleted.',{type:'success'});}}/>}</AnimatePresence>
     </div>
   );
@@ -442,10 +540,15 @@ function CellValue({ field, value, item }) {
 function RecordModal({ config, collection, initial, onClose, onSave }) {
   const { data } = useData();
   const [form, setForm] = useState(() => {
-    if (initial) return JSON.parse(JSON.stringify(initial));
+    if (initial) {
+      const copy = JSON.parse(JSON.stringify(initial));
+      if (collection === 'startups') copy.overviewBlocks = getOverviewBlocks(copy);
+      if (collection === 'opportunities') copy.overviewBlocks = normalizeOverviewBlocks(copy.overviewBlocks);
+      return copy;
+    }
     const blank = {};
     config.fields.forEach((field) => {
-      let value = field.type==='checkbox' ? false : field.type==='number' ? 0 : '';
+      let value = field.type==='overview-blocks' ? [] : field.type==='multi-checkbox' ? [] : field.type==='checkbox' ? false : field.type==='number' ? 0 : '';
       if (field.name==='status') value = collection==='categories' ? 'Active' : 'Published';
       if (field.name==='reviewStatus') value = 'Pending';
       if (field.name==='submitted'||field.name==='posted'||field.name==='addedAt'||field.name==='uploadedAt'||field.name==='subscribedAt'||field.name==='joinedAt'||field.name==='date') value = new Date().toISOString().slice(0,10);
@@ -470,18 +573,68 @@ function RecordModal({ config, collection, initial, onClose, onSave }) {
     const missing = config.fields.find((f)=>f.required&&!String(getPath(form,f.name)||'').trim());
     if (missing) return setError(`${missing.label} is required.`);
     setSaving(true);setError('');
-    try{await onSave(form);}catch(error){setError(error.message||'The record could not be saved.');}finally{setSaving(false);}
+    try{
+      let payload = form;
+      if (collection === 'startups') {
+        const overviewBlocks = normalizeOverviewBlocks(form.overviewBlocks);
+        payload = { ...form, overviewBlocks, description: overviewSummary(overviewBlocks, form.description || form.tagline || '') };
+      }
+      if (collection === 'opportunities') payload = { ...form, overviewBlocks: normalizeOverviewBlocks(form.overviewBlocks), categories: Array.isArray(form.categories) ? form.categories : [] };
+      await onSave(payload);
+    }catch(error){setError(error.message||'The record could not be saved.');}finally{setSaving(false);}
   };
 
-  return <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-[100] bg-navy/65 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-5" onMouseDown={onClose}><motion.form initial={{y:30,opacity:0}} animate={{y:0,opacity:1}} exit={{y:20,opacity:0}} transition={{duration:.2}} onSubmit={submit} onMouseDown={(e)=>e.stopPropagation()} className="bg-[#F9F7F2] w-full max-w-5xl max-h-[94vh] rounded-t-2xl md:rounded-2xl border border-line overflow-hidden flex flex-col"><div className="p-5 md:px-7 border-b border-line bg-white flex items-start gap-4"><div className="w-10 h-10 rounded-xl bg-coralSoft text-coral flex items-center justify-center">{initial?<Edit3 className="w-4 h-4"/>:<Plus className="w-4 h-4"/>}</div><div className="flex-1"><div className="eyebrow">{initial?'Edit record':'New record'}</div><h3 className="font-display text-[22px] mt-0.5">{initial?`Edit ${config.singular}`:`Add ${config.singular}`}</h3></div><button type="button" onClick={onClose} className="w-9 h-9 border border-line rounded-lg flex items-center justify-center"><X className="w-4 h-4"/></button></div><div className="p-5 md:p-7 overflow-y-auto thin-scroll"><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{config.fields.map((field)=><FormField key={field.name} field={field} value={getPath(form,field.name)} data={data} onChange={(v)=>change(field,v)}/>)}</div>{error&&<div className="mt-5 p-3 rounded-lg bg-coralSoft text-coral text-[12px] flex items-center gap-2"><AlertTriangle className="w-4 h-4"/>{error}</div>}</div><div className="p-4 md:px-7 border-t border-line bg-white flex items-center justify-end gap-2"><button type="button" onClick={onClose} className="btn btn-outline">Cancel</button><button disabled={saving} className="btn btn-coral disabled:opacity-60"><Save className="w-4 h-4"/>{saving?'Saving…':initial?'Save changes':'Create record'}</button></div></motion.form></motion.div>;
+  return <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-[100] bg-navy/65 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-5" onMouseDown={onClose}><motion.form initial={{y:30,opacity:0}} animate={{y:0,opacity:1}} exit={{y:20,opacity:0}} transition={{duration:.2}} onSubmit={submit} onMouseDown={(e)=>e.stopPropagation()} className="bg-[#F9F7F2] w-full max-w-5xl max-h-[94vh] rounded-t-2xl md:rounded-2xl border border-line overflow-hidden flex flex-col"><div className="p-5 md:px-7 border-b border-line bg-white flex items-start gap-4"><div className="w-10 h-10 rounded-xl bg-coralSoft text-coral flex items-center justify-center">{initial?<Edit3 className="w-4 h-4"/>:<Plus className="w-4 h-4"/>}</div><div className="flex-1"><div className="eyebrow">{initial?'Edit record':'New record'}</div><h3 className="font-display text-[22px] mt-0.5">{initial?`Edit ${config.singular}`:`Add ${config.singular}`}</h3></div><button type="button" onClick={onClose} className="w-9 h-9 border border-line rounded-lg flex items-center justify-center"><X className="w-4 h-4"/></button></div><div className="p-5 md:p-7 overflow-y-auto thin-scroll"><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{config.fields.map((field)=><FormField key={field.name} field={field} value={getPath(form,field.name)} data={data} collection={collection} onChange={(v)=>change(field,v)}/>)}</div>{error&&<div className="mt-5 p-3 rounded-lg bg-coralSoft text-coral text-[12px] flex items-center gap-2"><AlertTriangle className="w-4 h-4"/>{error}</div>}</div><div className="p-4 md:px-7 border-t border-line bg-white flex items-center justify-end gap-2"><button type="button" onClick={onClose} className="btn btn-outline">Cancel</button><button disabled={saving} className="btn btn-coral disabled:opacity-60"><Save className="w-4 h-4"/>{saving?'Saving…':initial?'Save changes':'Create record'}</button></div></motion.form></motion.div>;
 }
 
-function FormField({ field, value, data, onChange }) {
+function FormField({ field, value, data, collection, onChange }) {
+  if (field.type === 'overview-blocks') {
+    return <div className="md:col-span-2 lg:col-span-3"><OverviewBlockEditor value={value} onChange={onChange} subject={collection === 'opportunities' ? 'opportunity' : 'company'} /></div>;
+  }
+  if (['dynamic-startups-multi','dynamic-categories-multi','dynamic-investors-multi'].includes(field.type)) {
+    const selected = Array.isArray(value) ? value : [];
+    const choices = field.type === 'dynamic-startups-multi'
+      ? (data.startups || []).filter((item) => !['Rejected','Archived','Blocked'].includes(item.status)).map((item) => ({ value: item.slug, label: item.name, detail: item.category || item.country || item.slug }))
+      : field.type === 'dynamic-investors-multi'
+        ? (data.investors || []).filter((item) => !['Rejected','Archived','Blocked'].includes(item.status)).map((item) => ({ value: item.slug, label: item.name, detail: item.type || item.country || item.slug }))
+        : (data.categories || []).filter((item) => item.status !== 'Inactive').map((item) => ({ value: item.name, label: item.name, detail: item.description || '' }));
+    return <div className="md:col-span-2 lg:col-span-3">
+      <div className="flex items-center justify-between gap-3 mb-2"><span className="block text-[11.5px] text-slate2">{field.label}</span><span className="mono text-[10px] text-slate2">{selected.length} selected</span></div>
+      <div className="max-h-64 overflow-y-auto thin-scroll grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 border border-line rounded-xl bg-canvas/30 p-2">
+        {choices.map((option) => {
+          const checked = selected.includes(option.value);
+          return <label key={option.value} className={`cursor-pointer rounded-lg border p-3 flex items-start gap-3 transition-colors ${checked?'border-coral bg-coralSoft/40':'border-line bg-white hover:border-ink/30'}`}>
+            <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked ? [...selected, option.value] : selected.filter((item) => item !== option.value))} className="w-4 h-4 mt-0.5 accent-[#D94B3D]" />
+            <span className="min-w-0"><span className="block text-[12.5px] font-medium truncate">{option.label}</span>{option.detail&&<span className="block text-[10.5px] text-slate2 mt-0.5 truncate">{option.detail}</span>}</span>
+          </label>;
+        })}
+        {choices.length===0&&<div className="col-span-full p-4 text-[12px] text-slate2">No backend records are available to select yet.</div>}
+      </div>
+      <div className="text-[10.5px] text-slate2 mt-2">These selections are saved on the investor record and immediately drive the public investor profile and filters.</div>
+    </div>;
+  }
+  if (field.type === 'multi-checkbox') {
+    const selected = Array.isArray(value) ? value : [];
+    const choices = (field.options || []).map((option) => typeof option === 'string' ? { value: option, label: option } : option);
+    return <div className={`${field.span===2?'md:col-span-2 lg:col-span-3':''}`}>
+      <span className="block text-[11.5px] text-slate2 mb-2">{field.label}</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2">
+        {choices.map((option) => {
+          const checked = selected.includes(option.value);
+          return <label key={option.value} className={`cursor-pointer rounded-xl border p-3.5 flex items-center gap-3 transition-colors ${checked?'border-coral bg-coralSoft/40':'border-line bg-white hover:border-ink/30'}`}>
+            <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked ? [...selected, option.value] : selected.filter((item) => item !== option.value))} className="w-4 h-4 accent-[#D94B3D]" />
+            <span className="text-[12.5px] font-medium">{option.label}</span>
+          </label>;
+        })}
+      </div>
+      <div className="text-[10.5px] text-slate2 mt-2">These selections appear on the founder profile and power the public founders filter.</div>
+    </div>;
+  }
   const cls = `w-full bg-white border border-line rounded-lg px-3 py-2.5 text-[13px] outline-none focus:border-ink ${field.type==='textarea'?'min-h-[110px] resize-y':''}`;
   const display = field.type==='csv' && Array.isArray(value) ? value.join(', ') : value ?? '';
-  const options = field.type==='dynamic-category' ? data.categories.map((x)=>({value:x.name,label:x.name})) : field.type==='dynamic-startup' ? data.startups.map((x)=>({value:x.slug,label:`${x.name} (${x.slug})`})) : (field.options || []).map((x)=>({value:x,label:x}));
+  const options = field.type==='dynamic-category' ? data.categories.map((x)=>({value:x.name,label:x.name})) : field.type==='dynamic-startup' ? data.startups.map((x)=>({value:x.slug,label:`${x.name} (${x.slug})`})) : field.type==='dynamic-investor' ? data.investors.map((x)=>({value:x.slug,label:`${x.name} (${x.type || x.slug})`})) : (field.options || []).map((x)=>({value:x,label:x}));
   return <label className={`${field.span===2?'md:col-span-2 lg:col-span-3':''} ${field.type==='checkbox'?'flex items-center gap-3 bg-white border border-line rounded-lg px-3 py-3 self-end':''}`}>
-    {field.type==='checkbox' ? <><input type="checkbox" checked={Boolean(value)} onChange={(e)=>onChange(e.target.checked)} className="w-4 h-4 accent-[#D94B3D]"/><span className="text-[12.5px]">{field.label}</span></> : <><span className="block text-[11.5px] text-slate2 mb-1.5">{field.label}{field.required&&<span className="text-coral"> *</span>}</span>{field.type==='textarea'?<textarea value={display} onChange={(e)=>onChange(e.target.value)} className={cls}/>:['select','dynamic-category','dynamic-startup'].includes(field.type)?<select value={display} onChange={(e)=>onChange(e.target.value)} className={cls}><option value="">Select</option>{options.map((o)=><option key={o.value} value={o.value}>{o.label}</option>)}</select>:field.type==='color'?<div className="flex gap-2"><input type="color" value={display||'#D94B3D'} onChange={(e)=>onChange(e.target.value)} className="h-10 w-12 bg-white border border-line rounded-lg p-1"/><input value={display} onChange={(e)=>onChange(e.target.value)} className={cls}/></div>:field.type==='file-url'?<div className="space-y-2"><input value={display} onChange={(e)=>onChange(e.target.value)} className={cls} placeholder="https://… or upload below"/><input type="file" accept="image/*,.pdf" className="block w-full text-[11px] text-slate2 file:mr-3 file:rounded-md file:border-0 file:bg-canvas file:px-3 file:py-2 file:text-[11px]" onChange={(e)=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>onChange(reader.result);reader.readAsDataURL(file);}}/>{display&&String(display).startsWith('data:image')&&<img src={display} alt="Preview" className="h-24 rounded-lg border border-line object-cover"/>}</div>:<input type={field.type==='csv'?'text':field.type} value={display} onChange={(e)=>onChange(e.target.value)} className={cls}/>}</>}
+    {field.type==='checkbox' ? <><input type="checkbox" checked={Boolean(value)} onChange={(e)=>onChange(e.target.checked)} className="w-4 h-4 accent-[#D94B3D]"/><span className="text-[12.5px]">{field.label}</span></> : <><span className="block text-[11.5px] text-slate2 mb-1.5">{field.label}{field.required&&<span className="text-coral"> *</span>}</span>{field.type==='textarea'?<textarea value={display} onChange={(e)=>onChange(e.target.value)} className={cls}/>:['select','dynamic-category','dynamic-startup','dynamic-investor'].includes(field.type)?<select value={display} onChange={(e)=>onChange(e.target.value)} className={cls}><option value="">Select</option>{options.map((o)=><option key={o.value} value={o.value}>{o.label}</option>)}</select>:field.type==='color'?<div className="flex gap-2"><input type="color" value={display||'#D94B3D'} onChange={(e)=>onChange(e.target.value)} className="h-10 w-12 bg-white border border-line rounded-lg p-1"/><input value={display} onChange={(e)=>onChange(e.target.value)} className={cls}/></div>:field.type==='file-url'?<div className="space-y-2"><input value={display} onChange={(e)=>onChange(e.target.value)} className={cls} placeholder="https://… or upload below"/><input type="file" accept="image/*,.pdf" className="block w-full text-[11px] text-slate2 file:mr-3 file:rounded-md file:border-0 file:bg-canvas file:px-3 file:py-2 file:text-[11px]" onChange={(e)=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>onChange(reader.result);reader.readAsDataURL(file);}}/>{display&&String(display).startsWith('data:image')&&<img src={display} alt="Preview" className="h-24 rounded-lg border border-line object-cover"/>}</div>:<input type={field.type==='csv'?'text':field.type} value={display} onChange={(e)=>onChange(e.target.value)} className={cls}/>}</>}
   </label>;
 }
 
@@ -515,32 +668,11 @@ function DataTools() {
   const { data, exportData, importData, resetData } = useData();
   const { toast } = useToast();
   const fileRef=useRef(null);
-  const isDevelopment=process.env.NODE_ENV !== 'production';
   const download=()=>downloadBlob(JSON.stringify(exportData(),null,2),`crescent-cms-backup-${new Date().toISOString().slice(0,10)}.json`,'application/json');
   const upload=(e)=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{importData(JSON.parse(reader.result));toast('Backup imported successfully.',{type:'success'});}catch{toast('The selected JSON backup is invalid.',{type:'warning'});}};reader.readAsText(file);e.target.value='';};
   const counts=Object.entries(data).filter(([,v])=>Array.isArray(v)).map(([k,v])=>[k,v.length]);
-  return (
-    <div className="space-y-5">
-      <div>
-        <div className="eyebrow">MySQL database tools</div>
-        <h2 className="font-display text-[30px] mt-1">Backup & data tools</h2>
-        <p className="text-[13px] text-slate2 mt-1">Export the complete MySQL dataset or import a compatible backup.</p>
-      </div>
-      <div className={`grid grid-cols-1 ${isDevelopment?'md:grid-cols-3':'md:grid-cols-2'} gap-4`}>
-        <ToolCard icon={Download} title="Export complete backup" text="Download startups, founders, investors, pitches, funding, jobs, users, settings, and every other CMS record as JSON." action="Download JSON" onClick={download}/>
-        <ToolCard icon={Upload} title="Import a backup" text="Replace the current MySQL CMS records using a compatible JSON backup file." action="Select JSON" onClick={()=>fileRef.current?.click()}/>
-        {isDevelopment&&<ToolCard icon={RefreshCcw} title="Reset local demo database" text="Restore the original local-only demo dataset and known development accounts." action="Reset local data" danger onClick={()=>{if(window.confirm('Reset all LOCAL CMS data to the original demo?')){resetData();toast('Local demo data restored.',{type:'success'});}}}/>} 
-      </div>
-      <input ref={fileRef} type="file" accept="application/json" className="hidden" onChange={upload}/>
-      <div className="bg-white border border-line rounded-2xl p-5">
-        <div className="font-display text-[18px]">Dataset summary</div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-4">{counts.map(([key,count])=><div key={key} className="border border-line rounded-xl p-3"><div className="font-display text-[22px]">{count}</div><div className="text-[10.5px] text-slate2 capitalize mt-1">{key}</div></div>)}</div>
-      </div>
-      <div className="bg-amberSoft border border-amber/20 rounded-2xl p-5 flex gap-3"><AlertTriangle className="w-5 h-5 text-amber shrink-0"/><div><div className="text-[13px] font-medium">MySQL database connected</div><div className="text-[12px] text-slate2 mt-1">All CMS records are stored in MySQL through the Node/Express API. Authentication uses hashed passwords and signed sessions. Use JSON export as an additional backup, not as the primary database.</div></div></div>
-    </div>
-  );
+  return <div className="space-y-5"><div><div className="eyebrow">MySQL database tools</div><h2 className="font-display text-[30px] mt-1">Backup & data tools</h2><p className="text-[13px] text-slate2 mt-1">Export the complete MySQL dataset, import a compatible backup, or restore all populated seed records.</p></div><div className="grid grid-cols-1 md:grid-cols-3 gap-4"><ToolCard icon={Download} title="Export complete backup" text="Download startups, founders, investors, pitches, funding, jobs, users, settings, and every other CMS record as JSON." action="Download JSON" onClick={download}/><ToolCard icon={Upload} title="Import a backup" text="Replace the current MySQL CMS records using a compatible JSON backup file." action="Select JSON" onClick={()=>fileRef.current?.click()}/><ToolCard icon={RefreshCcw} title="Reset demo database" text="Reset the MySQL tables and restore every populated startup, investor, founder, pitch, job, and CMS record." action="Reset data" danger onClick={()=>{if(window.confirm('Reset all local CMS data to the original demo?')){resetData();toast('Demo data restored.',{type:'success'});}}}/></div><input ref={fileRef} type="file" accept="application/json" className="hidden" onChange={upload}/><div className="bg-white border border-line rounded-2xl p-5"><div className="font-display text-[18px]">Dataset summary</div><div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-4">{counts.map(([key,count])=><div key={key} className="border border-line rounded-xl p-3"><div className="font-display text-[22px]">{count}</div><div className="text-[10.5px] text-slate2 capitalize mt-1">{key}</div></div>)}</div></div><div className="bg-amberSoft border border-amber/20 rounded-2xl p-5 flex gap-3"><AlertTriangle className="w-5 h-5 text-amber shrink-0"/><div><div className="text-[13px] font-medium">MySQL database connected</div><div className="text-[12px] text-slate2 mt-1">All CMS records are stored in MySQL through the Node/Express API. Authentication uses hashed passwords and signed sessions. Use JSON export as an additional backup, not as the primary database.</div></div></div></div>;
 }
-
 function ToolCard({icon:Icon,title,text,action,onClick,danger}) {return <div className="bg-white border border-line rounded-2xl p-5"><div className={`w-10 h-10 rounded-xl flex items-center justify-center ${danger?'bg-coralSoft text-coral':'bg-canvas text-ink'}`}><Icon className="w-4 h-4"/></div><h3 className="font-display text-[17px] mt-4">{title}</h3><p className="text-[12px] text-slate2 mt-2 min-h-[54px]">{text}</p><button onClick={onClick} className={`btn mt-5 ${danger?'btn-coral':'btn-outline'}`}>{action}</button></div>}
 
 function downloadBlob(content, filename, type) {

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowUpRight, MapPin, BadgeCheck, Flame, Handshake, Briefcase } from 'lucide-react';
 import { StartupLogo } from './Logo';
 import SaveButton from './SaveButton';
+import CountryLabel from './CountryLabel';
 import { formatMoney, getFoundersByStartup } from '@/data/mockData';
 
 // Editorial ranked list row — used in Featured Companies list
@@ -28,7 +29,7 @@ export function StartupListRow({ startup, index, active, onSelect }) {
       </div>
       <div className="hidden md:block col-span-2 text-[12.5px] text-slate2">
         <div>{startup.category}</div>
-        <div className="mono text-[11px] text-slate3">{startup.flag} {startup.country}</div>
+        <div className="mono text-[11px] text-slate3"><CountryLabel country={startup.country} explicitFlag={startup.flag} /></div>
       </div>
       <div className="hidden md:block col-span-1 mono text-[11.5px] text-slate2">{startup.stage}</div>
       <div className="col-span-3 md:col-span-2 text-right md:text-left">
@@ -71,7 +72,7 @@ export function CompanyPreview({ startup }) {
       </div>
       <div className="p-5 space-y-2 text-[13px]">
         <Row k="Category" v={startup.category} />
-        <Row k="Country" v={<span>{startup.flag} {startup.country}</span>} />
+        <Row k="Country" v={<CountryLabel country={startup.country} explicitFlag={startup.flag} />} />
         <Row k="Stage" v={<span className="mono">{startup.stage}</span>} />
         <Row k="Total raised" v={<span className="mono">{formatMoney(startup.totalRaised)}</span>} />
         <Row k="Team" v={<span className="mono">{startup.teamSize}</span>} />
@@ -113,7 +114,7 @@ export default function StartupCard({ startup, index = 0 }) {
           <StartupLogo startup={startup} />
           <div>
             <Link to={`/startups/${startup.slug}`} className="font-display font-medium link-under text-[15px]">{startup.name}</Link>
-            <div className="text-[11.5px] text-slate2 flex items-center gap-1"><MapPin className="w-3 h-3" /> {startup.country}</div>
+            <div className="text-[11.5px] text-slate2 flex items-center gap-1"><MapPin className="w-3 h-3" /> <CountryLabel country={startup.country} explicitFlag={startup.flag} /></div>
           </div>
         </div>
         <SaveButton type="startups" id={startup.slug} />

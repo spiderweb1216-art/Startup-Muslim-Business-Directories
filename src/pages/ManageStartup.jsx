@@ -8,6 +8,9 @@ import { useAuth } from '@/context/AuthContext';
 import { useData } from '@/context/DataContext';
 import { useToast } from '@/context/ToastContext';
 import { StartupLogo } from '@/components/common/Logo';
+import OverviewBlockEditor from '@/components/common/OverviewBlockEditor';
+import MemberCompanyWorkspace from '@/components/member/MemberCompanyWorkspace';
+import { getOverviewBlocks, normalizeOverviewBlocks, overviewSummary } from '@/lib/overviewBlocks';
 
 const TODAY = () => new Date().toISOString().slice(0,10);
 const splitCsv = (value) => Array.isArray(value) ? value : String(value || '').split(',').map((x)=>x.trim()).filter(Boolean);
@@ -24,7 +27,7 @@ const SECTIONS = [
 const MANAGERS = {
   pitches: {
     title:'Investment pitches', singular:'pitch', idField:'id', nameField:'pitchTitle', statusField:'reviewStatus',
-    description:'Create and maintain fundraising pitches for this startup. New and edited pitches return to the admin review queue.',
+    description:'Create and maintain fundraising pitches for this startup.',
     defaults:{ pitchTitle:'', summary:'', problem:'', solution:'', market:'', businessModel:'', traction:'', requested:'', equity:'', valuation:'', minTicket:'', useOfFunds:'', visibility:'Private' },
     fields:[
       ['pitchTitle','Pitch title','text',true],['visibility','Visibility','select',false,['Private','Public','Members only']],
@@ -33,7 +36,7 @@ const MANAGERS = {
       ['requested','Funding requested (USD)','number'],['equity','Equity offered (%)','number'],['valuation','Valuation (USD)','number'],['minTicket','Minimum ticket (USD)','number'],
       ['useOfFunds','Use of funds','textarea'],
     ],
-    build:(form,startup)=>({ ...form, startupSlug:startup.slug, status:'Active', reviewStatus:'Pending', submitted:TODAY(), requested:Number(form.requested||0), equity:Number(form.equity||0), valuation:Number(form.valuation||0), minTicket:Number(form.minTicket||0) }),
+    build:(form,startup)=>({ ...form, startupSlug:startup.slug, status:'Active', reviewStatus:startup.status==='Published'?'Approved':'Pending', submitted:TODAY(), requested:Number(form.requested||0), equity:Number(form.equity||0), valuation:Number(form.valuation||0), minTicket:Number(form.minTicket||0) }),
   },
   founders: {
     title:'Team and founders', singular:'founder', idField:'slug', nameField:'name', statusField:'status',
@@ -43,7 +46,7 @@ const MANAGERS = {
       ['name','Full name','text',true],['role','Role'],['country','Country'],['industry','Industry'],['photo','Photo URL'],['linkedin','LinkedIn URL'],
       ['bio','Short bio','textarea'],['story','Founder story','textarea'],['skills','Skills (comma separated)'],
     ],
-    build:(form,startup)=>({ ...form, startupSlug:startup.slug, status:'Pending', verified:false, skills:splitCsv(form.skills) }),
+    build:(form,startup)=>({ ...form, startupSlug:startup.slug, status:startup.status==='Published'?'Published':'Pending', verified:false, skills:splitCsv(form.skills) }),
   },
   rounds: {
     title:'Funding rounds', singular:'funding round', idField:'id', nameField:'roundName', statusField:'status',
@@ -53,17 +56,17 @@ const MANAGERS = {
       ['roundName','Round name','text',true],['stage','Stage','select',false,['Pre-Seed','Seed','Series A','Series B','Series C+','Grant','Debt']],['date','Round date','date'],
       ['amount','Amount raised (USD)','number'],['valuation','Valuation (USD)','number'],['leadInvestorSlug','Lead investor slug'],['investorSlugs','Investor slugs (comma separated)'],['notes','Notes','textarea'],
     ],
-    build:(form,startup)=>({ ...form, startupSlug:startup.slug, status:'Pending', amount:Number(form.amount||0), valuation:Number(form.valuation||0), investorSlugs:splitCsv(form.investorSlugs) }),
+    build:(form,startup)=>({ ...form, startupSlug:startup.slug, status:startup.status==='Published'?'Published':'Pending', amount:Number(form.amount||0), valuation:Number(form.valuation||0), investorSlugs:splitCsv(form.investorSlugs) }),
   },
   jobs: {
     title:'Startup jobs', singular:'job', idField:'id', nameField:'title', statusField:'status',
-    description:'Publish roles for this startup. New jobs remain pending until the administrator reviews them.',
-    defaults:{ title:'', location:'Remote', arrangement:'Remote', type:'Full-time', level:'Mid', description:'' },
+    description:'Publish and maintain roles for this startup.',
+    defaults:{ title:'', location:'Remote', arrangement:'Remote', type:'Full-time', level:'Mid', description:'', applicationUrl:'' },
     fields:[
       ['title','Job title','text',true],['location','Location'],['arrangement','Arrangement','select',false,['Remote','Hybrid','On-site']],
-      ['type','Employment type','select',false,['Full-time','Part-time','Contract','Internship','Temporary']],['level','Seniority','select',false,['Junior','Mid','Senior','Lead','Executive']],['description','Description','textarea'],
+      ['type','Employment type','select',false,['Full-time','Part-time','Contract','Internship','Temporary']],['level','Seniority','select',false,['Junior','Mid','Senior','Lead','Executive']],['applicationUrl','Application URL'],['description','Description','textarea'],
     ],
-    build:(form,startup)=>({ ...form, startupSlug:startup.slug, status:'Pending', posted:TODAY(), applications:0 }),
+    build:(form,startup)=>({ ...form, startupSlug:startup.slug, status:startup.status==='Published'?'Published':'Pending', posted:TODAY(), applications:0 }),
   },
   opportunities: {
     title:'Startup opportunities', singular:'opportunity', idField:'id', nameField:'title', statusField:'status',
@@ -73,7 +76,7 @@ const MANAGERS = {
       ['title','Title','text',true],['type','Opportunity type','select',false,['Accelerator','Fellowship','Grant','Competition','Demo Day','Founder Program','Event']],
       ['country','Country'],['remote','Remote','checkbox'],['deadline','Deadline','date'],['industry','Industry'],['founderStage','Founder stage'],['image','Image URL'],['description','Description','textarea'],
     ],
-    build:(form,startup)=>({ ...form, startupSlug:startup.slug, organization:startup.name, status:'Pending', featured:false }),
+    build:(form,startup)=>({ ...form, startupSlug:startup.slug, organization:startup.name, status:startup.status==='Published'?'Published':'Pending', featured:false }),
   },
 };
 
@@ -83,6 +86,7 @@ export default function ManageStartup() {
   const { data, loading, updateItem, addItem, removeItem } = useData();
   const { toast } = useToast();
   const [section,setSection] = useState('profile');
+  const [fullEditorOpen,setFullEditorOpen] = useState(false);
 
   const startup = data.startups.find((item)=>item.slug===slug);
   const approvedClaim = data.claims.find((claim)=>claim.startupSlug===slug && claim.ownerId===currentUser?.id && claim.status==='Approved');
@@ -105,11 +109,12 @@ export default function ManageStartup() {
       <div className="mt-5 border border-line bg-white rounded-2xl p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-4">
         <StartupLogo startup={startup} size={64} rounded={12}/>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap"><h1 className="font-display text-[28px] truncate">Manage {startup.name}</h1><span className="tag tag-emerald"><BadgeCheck className="w-3 h-3"/> Claimed profile</span></div>
+          <div className="flex items-center gap-2 flex-wrap"><h1 className="font-display text-[28px] truncate">Manage {startup.name}</h1>{(startup.claimed || approvedClaim) && <span className="tag tag-emerald"><BadgeCheck className="w-3 h-3"/> Claimed profile</span>}<span className={`tag ${startup.status==='Published'?'tag-emerald':'tag-amber'}`}>{startup.status}</span></div>
           <p className="text-[12.5px] text-slate2 mt-1">You can update the company profile and manage its pitches, team, funding rounds, jobs, and opportunities.</p>
         </div>
-        <Link to={`/startups/${startup.slug}`} className="btn btn-outline"><ExternalLink className="w-4 h-4"/> View public profile</Link>
+        <div className="flex flex-wrap gap-2"><button onClick={()=>setFullEditorOpen(true)} className="btn btn-coral"><Building2 className="w-4 h-4"/> Edit full company</button>{startup.status==='Published'&&<Link to={`/startups/${startup.slug}`} className="btn btn-outline"><ExternalLink className="w-4 h-4"/> View public profile</Link>}</div>
       </div>
+      {fullEditorOpen && <MemberCompanyWorkspace initial={startup} onClose={()=>setFullEditorOpen(false)}/>}
 
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
         <aside className="lg:col-span-3">
@@ -131,7 +136,7 @@ function ProfileEditor({ startup, categories, updateItem, toast }) {
     setForm({
       name:startup.name||'', tagline:startup.tagline||'', category:startup.category||'', country:startup.country||'', stage:startup.stage||'Pre-Seed', fundingStage:startup.fundingStage||startup.stage||'Pre-Seed',
       businessModel:startup.businessModel||'', hq:startup.hq||'', website:startup.website||'', foundedYear:startup.foundedYear||'', teamSize:startup.teamSize||'', totalRaised:startup.totalRaised||0,
-      revenue:startup.revenue||'', users:startup.users||'', growth:startup.growth||'', description:startup.description||'', banner:startup.banner||'', productImages:(startup.productImages||[]).join(', '),
+      revenue:startup.revenue||'', users:startup.users||'', growth:startup.growth||'', description:startup.description||'', overviewBlocks:getOverviewBlocks(startup), banner:startup.banner||'', productImages:(startup.productImages||[]).join(', '),
       openToFunding:Boolean(startup.openToFunding), hiring:Boolean(startup.hiring), pitching:Boolean(startup.pitching),
     });
   },[startup]);
@@ -139,7 +144,8 @@ function ProfileEditor({ startup, categories, updateItem, toast }) {
   const submit=async(e)=>{
     e.preventDefault();
     try{
-      await updateItem('startups',startup.slug,{...form,foundedYear:Number(form.foundedYear||0),teamSize:Number(form.teamSize||0),totalRaised:Number(form.totalRaised||0),productImages:splitCsv(form.productImages)});
+      const overviewBlocks = normalizeOverviewBlocks(form.overviewBlocks);
+      await updateItem('startups',startup.slug,{...form,overviewBlocks,description:overviewSummary(overviewBlocks,form.description||form.tagline||''),foundedYear:Number(form.foundedYear||0),teamSize:Number(form.teamSize||0),totalRaised:Number(form.totalRaised||0),productImages:splitCsv(form.productImages)});
       toast('Startup profile updated successfully.',{type:'success'});
     }catch(error){toast(error.message||'The profile could not be updated.',{type:'warning'});}
   };
@@ -160,8 +166,8 @@ function ProfileEditor({ startup, categories, updateItem, toast }) {
     <Field label="Users / customers"><input value={form.users||''} onChange={(e)=>set('users',e.target.value)} className={INPUT}/></Field>
     <Field label="Growth"><input value={form.growth||''} onChange={(e)=>set('growth',e.target.value)} className={INPUT}/></Field>
     <Field label="Banner image URL" wide><input value={form.banner||''} onChange={(e)=>set('banner',e.target.value)} className={INPUT}/></Field>
-    <Field label="Product image URLs (comma separated)" wide><input value={form.productImages||''} onChange={(e)=>set('productImages',e.target.value)} className={INPUT}/></Field>
-    <Field label="Description" wide><textarea value={form.description||''} onChange={(e)=>set('description',e.target.value)} className={`${INPUT} min-h-[140px]`}/></Field>
+    <Field label="Product tab image URLs (comma separated)" wide><input value={form.productImages||''} onChange={(e)=>set('productImages',e.target.value)} className={INPUT}/></Field>
+    <div className="md:col-span-2"><OverviewBlockEditor value={form.overviewBlocks||[]} onChange={(blocks)=>set('overviewBlocks',blocks)} /></div>
     <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-3">{[['openToFunding','Open to funding'],['hiring','Currently hiring'],['pitching','Currently pitching']].map(([key,label])=><label key={key} className="border border-line rounded-xl p-4 flex items-center justify-between gap-3"><span className="text-[13px]">{label}</span><input type="checkbox" checked={Boolean(form[key])} onChange={(e)=>set(key,e.target.checked)} className="w-5 h-5 accent-[#D94B3D]"/></label>)}</div>
   </div><div className="p-4 md:px-6 border-t border-line bg-canvas/40 flex justify-end"><button className="btn btn-coral"><Save className="w-4 h-4"/> Save profile</button></div></form>;
 }
@@ -194,7 +200,7 @@ function OwnerRecordManager({ collection, config, startup, records, addItem, upd
     try{await removeItem(collection,record[config.idField]);toast(`${config.singular} deleted.`,{type:'success'});}catch(error){toast(error.message||'The record could not be deleted.',{type:'warning'});}
   };
   return <div className="space-y-5"><div className="border border-line bg-white rounded-2xl p-5 md:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"><div><div className="font-display text-[22px]">{config.title}</div><p className="text-[12.5px] text-slate2 mt-1 max-w-2xl">{config.description}</p></div><button onClick={startCreate} className="btn btn-coral"><Plus className="w-4 h-4"/> Add {config.singular}</button></div>
-    {open&&<form onSubmit={save} className="border border-line bg-white rounded-2xl overflow-hidden"><div className="p-5 border-b border-line flex items-center justify-between"><div><div className="eyebrow">{editing?'Edit record':'New record'}</div><div className="font-display text-[20px] mt-1">{editing?`Edit ${config.singular}`:`Add ${config.singular}`}</div></div><button type="button" onClick={close} className="w-9 h-9 rounded-lg border border-line flex items-center justify-center"><X className="w-4 h-4"/></button></div><div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">{config.fields.map(([name,label,type='text',required=false,options=[]])=><ManagerField key={name} name={name} label={label} type={type} required={required} options={options} value={form[name]} onChange={(value)=>setForm((prev)=>({...prev,[name]:value}))}/>)}</div><div className="p-4 border-t border-line flex justify-end gap-2"><button type="button" onClick={close} className="btn btn-outline">Cancel</button><button className="btn btn-coral"><Save className="w-4 h-4"/> {editing?'Save changes':'Submit for review'}</button></div></form>}
+    {open&&<form onSubmit={save} className="border border-line bg-white rounded-2xl overflow-hidden"><div className="p-5 border-b border-line flex items-center justify-between"><div><div className="eyebrow">{editing?'Edit record':'New record'}</div><div className="font-display text-[20px] mt-1">{editing?`Edit ${config.singular}`:`Add ${config.singular}`}</div></div><button type="button" onClick={close} className="w-9 h-9 rounded-lg border border-line flex items-center justify-center"><X className="w-4 h-4"/></button></div><div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">{config.fields.map(([name,label,type='text',required=false,options=[]])=><ManagerField key={name} name={name} label={label} type={type} required={required} options={options} value={form[name]} onChange={(value)=>setForm((prev)=>({...prev,[name]:value}))}/>)}</div><div className="p-4 border-t border-line flex justify-end gap-2"><button type="button" onClick={close} className="btn btn-outline">Cancel</button><button className="btn btn-coral"><Save className="w-4 h-4"/> {editing?'Save changes':startup.status==='Published'?'Publish record':'Submit for review'}</button></div></form>}
     <div className="border border-line bg-white rounded-2xl overflow-hidden">{records.length===0?<div className="p-12 text-center"><ImagePlus className="w-8 h-8 text-slate2/50 mx-auto"/><div className="font-medium text-[14px] mt-3">No {config.title.toLowerCase()} yet</div><div className="text-[12px] text-slate2 mt-1">Use the button above to add the first record.</div></div>:<div className="divide-y divide-line">{records.map((record)=><div key={record[config.idField]} className="p-4 md:p-5 flex items-center gap-4"><div className="w-10 h-10 rounded-xl bg-canvas flex items-center justify-center"><RecordIcon collection={collection}/></div><div className="flex-1 min-w-0"><div className="font-medium text-[14px] truncate">{record[config.nameField]}</div><div className="text-[11.5px] text-slate2 mt-1 truncate">{record.summary||record.description||record.role||record.stage||record.location||record.type||'Linked to this startup'}</div></div><Status value={record[config.statusField]||record.status}/><button onClick={()=>startEdit(record)} className="btn btn-outline btn-sm">Edit</button><button onClick={()=>remove(record)} className="w-9 h-9 rounded-lg border border-line text-coral flex items-center justify-center"><Trash2 className="w-4 h-4"/></button></div>)}</div>}</div>
   </div>;
 }

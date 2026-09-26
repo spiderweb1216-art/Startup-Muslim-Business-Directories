@@ -4,7 +4,7 @@ const { optionalAuth, requireAuth } = require('../middleware/auth');
 const { COLLECTIONS, MEMBER_OWNED, STARTUP_LINKED } = require('../services/collectionConfig');
 const {
   listCollection, getRecord, createRecord, updateRecord, deleteRecord, addActivity,
-  getSettings, updateSettings, userOwnsStartup, applyClaimDecision,
+  getSettings, updateSettings, userOwnsStartup, applyClaimDecision, ensureStartupPitchingForApprovedPitch,
 } = require('../services/recordService');
 
 const router = express.Router();
@@ -23,6 +23,12 @@ function ensureKnown(collection) {
   }
 }
 function actor(req) { return req.user?.name || req.user?.email || 'Website visitor'; }
+function memberCanManage(user, collection) {
+  if (user?.role === 'Admin') return true;
+  if (user?.role === 'Investor') return collection === 'investors';
+  if (user?.role === 'Founder') return collection !== 'investors';
+  return collection !== 'investors';
+}
 
 async function assertOwnedStartup(req, startupSlug) {
   if (!startupSlug) {
@@ -37,7 +43,7 @@ async function assertOwnedStartup(req, startupSlug) {
   }
 }
 
-function memberDefaults(collection, item, user) {
+function memberDefaults(collection, item, user, live = false) {
   const next = { ...item, ownerId:user.id };
   if (collection === 'startups') {
     next.status = 'Pending';
@@ -49,12 +55,17 @@ function memberDefaults(collection, item, user) {
   }
   if (collection === 'pitches') {
     next.status = next.status === 'Closed' ? 'Closed' : 'Active';
-    next.reviewStatus = 'Pending';
+    next.reviewStatus = live ? 'Approved' : 'Pending';
     next.featured = false;
     next.views = Number(next.views || 0);
   }
-  if (['founders','rounds','jobs','opportunities'].includes(collection)) {
+  if (collection === 'investors') {
     next.status = 'Pending';
+    next.verified = false;
+    next.featured = false;
+  }
+  if (['founders','rounds','jobs','opportunities'].includes(collection)) {
+    next.status = live ? 'Published' : 'Pending';
     next.featured = false;
     next.verified = false;
   }
@@ -76,6 +87,7 @@ function sanitizeMemberChanges(collection, changes) {
     delete next.slug;
     delete next.status;
   }
+  if (collection === 'investors') { delete next.status; delete next.slug; }
   if (collection === 'pitches') {
     delete next.reviewStatus;
     delete next.startupSlug;
@@ -92,6 +104,21 @@ function sanitizeMemberChanges(collection, changes) {
     return allowed;
   }
   return next;
+}
+
+async function publishSubmittedCompanyRecords(startup) {
+  if (!startup || startup.status !== 'Published' || !startup.ownerId) return;
+  for (const collection of ['founders','rounds','jobs','opportunities','pitches']) {
+    const records = await listCollection(collection,{role:'Admin'});
+    for (const record of records.filter((entry)=>entry.startupSlug===startup.slug && entry.ownerId===startup.ownerId)) {
+      if (collection === 'pitches' && record.reviewStatus === 'Pending') {
+        const published = await updateRecord(collection,record.id,{reviewStatus:'Approved'});
+        await ensureStartupPitchingForApprovedPitch(published);
+      } else if (collection !== 'pitches' && record.status === 'Pending') {
+        await updateRecord(collection,record[COLLECTIONS[collection].idField],{status:'Published'});
+      }
+    }
+  }
 }
 
 router.get('/bootstrap', optionalAuth, async (req, res, next) => {
@@ -114,14 +141,23 @@ router.post('/collections/:collection', requireAuth, async (req, res, next) => {
   try {
     const collection = req.params.collection; ensureKnown(collection);
     if (req.user.role !== 'Admin' && !MEMBER_OWNED.has(collection)) return res.status(403).json({ message:'You cannot create records in this section.' });
+    if (!memberCanManage(req.user,collection)) return res.status(403).json({message:'This account role cannot submit records in this section.'});
+    if (collection === 'startups' && req.user.role !== 'Admin' && (await getSettings()).submissionsEnabled === false) return res.status(403).json({message:'Company submissions are currently paused.'});
     const config = COLLECTIONS[collection];
     let item = { ...req.body };
     if (collection === 'users' && req.user.role !== 'Admin') return res.status(403).json({ message:'Administrator access is required.' });
 
     if (collection !== 'users') {
       if (!item[config.idField]) item[config.idField] = config.idField === 'slug' ? slugify(item[config.nameField] || generatedId(collection)) : generatedId(collection);
+      if (config.idField === 'slug' && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(String(item[config.idField]))) return res.status(400).json({message:'Enter a valid URL slug.'});
+      if (await getRecord(collection, String(item[config.idField]))) return res.status(409).json({message:'A record with this ID or slug already exists. Edit the existing record instead.'});
       if (req.user.role !== 'Admin') {
-        if (STARTUP_LINKED.has(collection)) await assertOwnedStartup(req, item.startupSlug);
+        let live = false;
+        if (STARTUP_LINKED.has(collection)) {
+          await assertOwnedStartup(req, item.startupSlug);
+          const startup = await getRecord('startups', item.startupSlug);
+          live = startup?.status === 'Published';
+        }
         if (collection === 'claims') {
           const startup = await getRecord('startups', item.startupSlug);
           if (!startup) return res.status(404).json({ message:'The startup profile no longer exists.' });
@@ -131,10 +167,11 @@ router.post('/collections/:collection', requireAuth, async (req, res, next) => {
           const duplicate = claims.find((claim) => claim.startupSlug === item.startupSlug && ['Pending','Under Review','More Information Required','Approved'].includes(claim.status));
           if (duplicate) return res.status(409).json({ message:`You already have a ${String(duplicate.status).toLowerCase()} claim for this startup.` });
         }
-        item = memberDefaults(collection, item, req.user);
+        item = memberDefaults(collection, item, req.user, live);
       }
     }
     const created = await createRecord(collection, item);
+    if (collection === 'pitches') await ensureStartupPitchingForApprovedPitch(created);
     await addActivity(`${collection} created`, `${created[config?.nameField] || created.name || created.email || created.id} was added.`, actor(req));
     res.status(201).json({ item:created });
   } catch (error) { next(error); }
@@ -142,6 +179,7 @@ router.post('/collections/:collection', requireAuth, async (req, res, next) => {
 
 async function assertCanChange(req, collection, id) {
   if (req.user.role === 'Admin') return true;
+  if (!memberCanManage(req.user,collection)) return false;
   if (!MEMBER_OWNED.has(collection)) return false;
   const record = await getRecord(collection,id);
   if (!record) return false;
@@ -162,11 +200,22 @@ router.put('/collections/:collection/:id', requireAuth, async (req, res, next) =
       item = await applyClaimDecision(req.params.id, req.body, req.user);
     } else {
       const changes = req.user.role === 'Admin' ? { ...req.body } : sanitizeMemberChanges(collection, req.body);
-      if(req.user.role!=='Admin'&&collection==='pitches')changes.reviewStatus='Pending';
-      if(req.user.role!=='Admin'&&['founders','rounds','jobs','opportunities'].includes(collection))changes.status='Pending';
+      if(req.user.role!=='Admin' && collection==='investors') {
+        const existing = await getRecord(collection,req.params.id);
+        changes.status = existing?.status === 'Published' ? 'Published' : 'Pending';
+      }
+      if(req.user.role!=='Admin' && STARTUP_LINKED.has(collection)) {
+        const existing = await getRecord(collection,req.params.id);
+        const startup = await getRecord('startups',existing?.startupSlug);
+        const live = startup?.status === 'Published' && await userOwnsStartup(req.user.id, existing.startupSlug);
+        if(collection==='pitches') changes.reviewStatus=live?'Approved':'Pending';
+        else changes.status=live?'Published':'Pending';
+      }
       item = await updateRecord(collection,req.params.id,changes);
     }
     if (!item) return res.status(404).json({ message:'Record not found.' });
+    if (collection === 'pitches') await ensureStartupPitchingForApprovedPitch(item);
+    if (collection === 'startups' && req.user.role === 'Admin') await publishSubmittedCompanyRecords(item);
     await addActivity(`${collection} updated`, collection === 'claims' && item.status === 'Approved' ? `${item.startupSlug} ownership was assigned to ${item.requester}.` : `Record ${req.params.id} was updated.`, actor(req));
     res.json({ item });
   } catch(error){next(error);}
@@ -179,6 +228,10 @@ router.delete('/collections/:collection/:id', requireAuth, async (req,res,next)=
     if (req.user.role !== 'Admin' && collection === 'startups') {
       const startup = await getRecord('startups', req.params.id);
       if (startup?.claimed || startup?.status === 'Published') return res.status(403).json({ message:'Published or claimed startups cannot be deleted by members. Contact an administrator for removal.' });
+    }
+    if (req.user.role !== 'Admin' && collection === 'investors') {
+      const investor = await getRecord('investors',req.params.id);
+      if (investor?.status === 'Published') return res.status(403).json({message:'Ask an administrator to remove a published investor profile.'});
     }
     const removed=await deleteRecord(collection,req.params.id);
     if(!removed)return res.status(404).json({message:'Record not found.'});
@@ -197,7 +250,10 @@ router.post('/collections/:collection/bulk-update', requireAuth, async(req,res,n
       const item = collection === 'claims'
         ? await applyClaimDecision(id, req.body.changes || {}, req.user)
         : await updateRecord(collection,id,req.body.changes||{});
-      if(item)items.push(item);
+      if(item) {
+        if(collection === 'startups') await publishSubmittedCompanyRecords(item);
+        items.push(item);
+      }
     }
     await addActivity(`${collection} bulk updated`,`${items.length} records were updated.`,actor(req));
     res.json({items});

@@ -178,7 +178,14 @@ async function getRecord(collection, id, executor = pool) {
 
 async function createRecord(collection, record) {
   if (collection === 'users') return createUser(record);
-  await upsertRecord(collection, record);
+  const config = COLLECTIONS[collection];
+  if (!config) throw new Error(`Unknown collection: ${collection}`);
+  const row = buildRecordRow(collection, record);
+  const columns = Object.keys(row);
+  await pool.query(
+    `INSERT INTO \`${config.table}\` (${columns.map((name)=>`\`${name}\``).join(',')}) VALUES (${columns.map(()=>'?').join(',')})`,
+    Object.values(row)
+  );
   return record;
 }
 
@@ -338,6 +345,58 @@ async function reconcileApprovedClaims() {
   return repaired;
 }
 
+
+function safeContactSlug(startup = {}) {
+  const raw = String(startup.slug || startup.name || 'company').toLowerCase();
+  return raw.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'company';
+}
+
+function demoPhoneForStartup(startup = {}) {
+  // NANP 555-0100 through 555-0199 is reserved for fictional/example use.
+  const source = safeContactSlug(startup);
+  const hash = [...source].reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  const suffix = String(100 + (hash % 100)).padStart(4, '0');
+  return `+1 202 555 ${suffix}`;
+}
+
+function buildStartupContactDefaults(startup = {}) {
+  const existing = startup.contact && typeof startup.contact === 'object' ? startup.contact : {};
+  const slug = safeContactSlug(startup);
+  const name = String(startup.name || 'Company').trim() || 'Company';
+  const safePhone = demoPhoneForStartup(startup);
+  const linkedinSearch = `https://www.linkedin.com/search/results/companies/?keywords=${encodeURIComponent(name)}`;
+  return {
+    ...existing,
+    public: existing.public !== false,
+    name: String(existing.name || startup.contactName || '').trim() || `${name} Partnerships Team`,
+    role: String(existing.role || startup.contactRole || '').trim() || 'Partnerships & company enquiries',
+    email: String(existing.email || startup.contactEmail || '').trim() || `hello@${slug}.example.com`,
+    phone: String(existing.phone || startup.contactPhone || '').trim() || safePhone,
+    whatsapp: String(existing.whatsapp || startup.contactWhatsapp || '').trim() || safePhone,
+    address: String(existing.address || startup.contactAddress || startup.hq || startup.country || '').trim(),
+    linkedin: String(existing.linkedin || startup.contactLinkedin || '').trim() || linkedinSearch,
+    note: String(existing.note || startup.contactNote || '').trim() || 'For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.',
+    demo: existing.demo !== false,
+  };
+}
+
+async function ensureStartupContacts() {
+  const startups = await listRaw('startups');
+  let updated = 0;
+  for (const startup of startups) {
+    if (!startup?.slug) continue;
+    const nextContact = buildStartupContactDefaults(startup);
+    const before = startup.contact && typeof startup.contact === 'object' ? startup.contact : {};
+    const slug = safeContactSlug(startup);
+    const nextWebsite = !startup.website || startup.website === '#' ? `https://${slug}.example.com` : startup.website;
+    const changed = JSON.stringify(before) !== JSON.stringify(nextContact) || nextWebsite !== startup.website;
+    if (!changed) continue;
+    await upsertRecord('startups', { ...startup, website: nextWebsite, contact: nextContact });
+    updated += 1;
+  }
+  return updated;
+}
+
 async function addActivity(action, detail, actor = 'System') {
   const record = { id:`a-${Date.now()}-${crypto.randomBytes(2).toString('hex')}`, action, detail, actor, createdAt:new Date().toISOString() };
   await upsertRecord('activity', record);
@@ -380,5 +439,5 @@ module.exports = {
   safeUser, listUsers, getUserByEmail, getUserById, createUser, updateUser, deleteUser,
   listCollection, getRecord, createRecord, updateRecord, deleteRecord, upsertRecord,
   addActivity, getSettings, updateSettings, getSavedItems, toggleSavedItem,
-  getOwnedStartupSlugs, userOwnsStartup, applyClaimDecision, reconcileApprovedClaims,
+  getOwnedStartupSlugs, userOwnsStartup, applyClaimDecision, reconcileApprovedClaims, ensureStartupContacts, buildStartupContactDefaults,
 };

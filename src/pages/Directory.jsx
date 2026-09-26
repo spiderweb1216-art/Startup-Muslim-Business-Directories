@@ -5,6 +5,7 @@ import { Search, Filter, X, LayoutGrid, List, SlidersHorizontal } from 'lucide-r
 import { CATEGORIES, COUNTRIES, STARTUPS } from '@/data/mockData';
 import { StartupListRow, CompanyPreview } from '@/components/common/StartupCard';
 import { EmptyState, SkeletonRow } from '@/components/common/Section';
+import { countryLabel } from '@/lib/countryAtlas';
 
 const STAGES = ['Pre-Seed','Seed','Series A','Series B'];
 const MODELS = ['B2C','B2B SaaS','B2B Marketplace','D2C','Marketplace','B2B2C','B2C SaaS','B2C Subscription'];
@@ -53,7 +54,7 @@ export default function Directory() {
 
   const chips = [];
   if (filters.category) chips.push({ k:'category', label:filters.category, remove: () => setFilters(f => ({ ...f, category:'' })) });
-  if (filters.country) chips.push({ k:'country', label:filters.country, remove: () => setFilters(f => ({ ...f, country:'' })) });
+  if (filters.country) chips.push({ k:'country', label:countryLabel(filters.country), remove: () => setFilters(f => ({ ...f, country:'' })) });
   filters.stage.forEach(s => chips.push({ k:'s'+s, label:s, remove: () => toggleArr('stage', s) }));
   filters.model.forEach(m => chips.push({ k:'m'+m, label:m, remove: () => toggleArr('model', m) }));
   STATUS.forEach(([k, l]) => { if (filters[k]) chips.push({ k, label:l, remove: () => setFilters(f => ({ ...f, [k]: false })) }); });
@@ -180,7 +181,7 @@ function FilterRail({ filters, setFilters, toggleArr, clearAll }) {
       <div><div className="eyebrow mb-2">Country</div>
         <select value={filters.country} onChange={e => setFilters(f => ({ ...f, country:e.target.value }))} className="w-full bg-white border border-line rounded-md p-2 text-[13px]" data-testid="filter-country">
           <option value="">All countries</option>
-          {COUNTRIES.map(c => <option key={c}>{c}</option>)}
+          {COUNTRIES.map(c => <option key={c} value={c}>{countryLabel(c)}</option>)}
         </select>
       </div>
       <div><div className="eyebrow mb-2">Stage</div>

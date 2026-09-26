@@ -5,6 +5,7 @@ import { SectionHeading } from '@/components/common/Section';
 import { StartupLogo } from '@/components/common/Logo';
 import { ArrowRight, ArrowUpRight, BadgeCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
+import CountryLabel from '@/components/common/CountryLabel';
 
 export default function RecentlyAdded() {
   const list = [...STARTUPS].sort((a,b) => new Date(b.addedAt) - new Date(a.addedAt)).slice(0, 8);
@@ -32,7 +33,7 @@ export default function RecentlyAdded() {
                   </div>
                   <div className="text-[12.5px] text-subtle mt-0.5 truncate">{s.tagline}</div>
                   <div className="text-[11.5px] text-subtle mt-1 flex items-center gap-2 flex-wrap">
-                    <span>{s.flag} {s.country}</span><span className="dot-sep" />
+                    <span><CountryLabel country={s.country} explicitFlag={s.flag} /></span><span className="dot-sep" />
                     <span>{s.category}</span><span className="dot-sep" />
                     <span>{s.stage}</span><span className="dot-sep" />
                     <span>Added {formatDate(s.addedAt)}</span>

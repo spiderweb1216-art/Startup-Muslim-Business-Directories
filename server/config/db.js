@@ -1,7 +1,6 @@
 const mysql = require('mysql2/promise');
-const { boolEnv, requireProductionDatabaseConfig } = require('./env');
-
-requireProductionDatabaseConfig();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 const baseConfig = {
   host: process.env.DB_HOST || '127.0.0.1',
@@ -13,17 +12,9 @@ const baseConfig = {
   queueLimit: 0,
   charset: 'utf8mb4',
   timezone: 'Z',
-  enableKeepAlive: true,
-  keepAliveInitialDelay: 0,
 };
 
-if (boolEnv('DB_SSL', false)) {
-  baseConfig.ssl = {
-    rejectUnauthorized: boolEnv('DB_SSL_REJECT_UNAUTHORIZED', true),
-  };
-}
-
-const database = process.env.DB_NAME || 'startup_muslim_directory_local_v312';
+const database = process.env.DB_NAME || 'crescent_startup_lab';
 const pool = mysql.createPool({ ...baseConfig, database });
 
 async function testConnection() {
@@ -36,9 +27,4 @@ async function testConnection() {
   }
 }
 
-async function closePool() {
-  await pool.end();
-}
-
-
-module.exports = { mysql, baseConfig, database, pool, testConnection, closePool };
+module.exports = { mysql, baseConfig, database, pool, testConnection };

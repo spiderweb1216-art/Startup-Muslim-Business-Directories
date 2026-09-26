@@ -6,6 +6,7 @@ import { STARTUPS, CATEGORIES } from '@/data/mockData';
 import { StartupLogo } from '@/components/common/Logo';
 import { CompanyPreview } from '@/components/common/StartupCard';
 import { SectionHeading } from '@/components/common/Section';
+import CountryLabel from '@/components/common/CountryLabel';
 
 // Replaces the previous scrolling logo marquee.
 // Manual, interactive company gallery grouped by category with a company preview panel.
@@ -81,7 +82,7 @@ export default function ExploreEcosystem() {
                     >
                       <StartupLogo startup={s} size={40} />
                       <div className="mt-3 font-display font-medium text-[13.5px] text-ink truncate">{s.name}</div>
-                      <div className="mono text-[10.5px] text-slate3 mt-0.5 truncate uppercase tracking-widest">{s.country}</div>
+                      <div className="mono text-[10.5px] text-slate3 mt-0.5 truncate uppercase tracking-widest"><CountryLabel country={s.country} explicitFlag={s.flag} /></div>
                       <div className="text-[11px] text-slate2 mt-1 truncate">{s.category}</div>
                     </button>
                   ))}

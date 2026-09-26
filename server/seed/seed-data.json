@@ -31,7 +31,7 @@
         "color": "#C93636"
       },
       "banner": "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://halalpay.example.com",
       "description": "HalalPay lets Muslim households pay in interest-free installments while staying compliant with Islamic finance principles. Merchants integrate in a day and reach a fast-growing halal consumer segment.",
       "productImages": [
         "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1600&auto=format&fit=crop&q=70",
@@ -41,7 +41,19 @@
       "featured": true,
       "ownerId": "u-founder",
       "updatedAt": "2025-11-12",
-      "views": 420
+      "views": 420,
+      "contact": {
+        "public": true,
+        "name": "HalalPay Team",
+        "role": "Company enquiries",
+        "email": "hello@halalpay.example.com",
+        "phone": "+1 202 555 0144",
+        "whatsapp": "+1 202 555 0144",
+        "address": "London, UK",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=HalalPay",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     },
     {
       "id": "s2",
@@ -74,7 +86,7 @@
         "color": "#2F8F5B"
       },
       "banner": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://ummahcart.example.com",
       "description": "UmmahCart is the world’s largest halal-verified marketplace, connecting Muslim brands with buyers in 40+ countries.",
       "productImages": [
         "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&auto=format&fit=crop&q=70"
@@ -83,7 +95,19 @@
       "featured": true,
       "ownerId": "u-founder",
       "updatedAt": "2025-10-30",
-      "views": 493
+      "views": 493,
+      "contact": {
+        "public": true,
+        "name": "UmmahCart Team",
+        "role": "Company enquiries",
+        "email": "hello@ummahcart.example.com",
+        "phone": "+1 202 555 0162",
+        "whatsapp": "+1 202 555 0162",
+        "address": "Dubai, UAE",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=UmmahCart",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     },
     {
       "id": "s3",
@@ -116,7 +140,7 @@
         "color": "#B58208"
       },
       "banner": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://zakatflow.example.com",
       "description": "ZakatFlow automates zakat calculation, categorization, and disbursement to vetted causes — with full on-chain transparency.",
       "productImages": [
         "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&auto=format&fit=crop&q=70"
@@ -125,7 +149,19 @@
       "featured": true,
       "ownerId": "u-founder",
       "updatedAt": "2025-12-01",
-      "views": 566
+      "views": 566,
+      "contact": {
+        "public": true,
+        "name": "ZakatFlow Team",
+        "role": "Company enquiries",
+        "email": "hello@zakatflow.example.com",
+        "phone": "+1 202 555 0179",
+        "whatsapp": "+1 202 555 0179",
+        "address": "Paris, France",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=ZakatFlow",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     },
     {
       "id": "s4",
@@ -158,7 +194,7 @@
         "color": "#7A55C7"
       },
       "banner": "https://images.unsplash.com/photo-1531973576160-7125cd663d86?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://modestly.example.com",
       "description": "Modestly builds thoughtfully-engineered modest athleisure and hijabs, sold in 20+ countries.",
       "productImages": [
         "https://images.unsplash.com/photo-1531973576160-7125cd663d86?w=1600&auto=format&fit=crop&q=70"
@@ -167,7 +203,19 @@
       "featured": true,
       "ownerId": "",
       "updatedAt": "2025-10-14",
-      "views": 639
+      "views": 639,
+      "contact": {
+        "public": true,
+        "name": "Modestly Team",
+        "role": "Company enquiries",
+        "email": "hello@modestly.example.com",
+        "phone": "+1 202 555 0181",
+        "whatsapp": "+1 202 555 0181",
+        "address": "Brooklyn, USA",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=Modestly",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     },
     {
       "id": "s5",
@@ -200,7 +248,7 @@
         "color": "#2F8F5B"
       },
       "banner": "https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://hajjmate.example.com",
       "description": "HajjMate powers Hajj and Umrah operators with logistics, pilgrim apps, and real-time coordination.",
       "productImages": [
         "https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&auto=format&fit=crop&q=70"
@@ -209,7 +257,19 @@
       "featured": true,
       "ownerId": "",
       "updatedAt": "2025-11-22",
-      "views": 712
+      "views": 712,
+      "contact": {
+        "public": true,
+        "name": "HajjMate Team",
+        "role": "Company enquiries",
+        "email": "hello@hajjmate.example.com",
+        "phone": "+1 202 555 0136",
+        "whatsapp": "+1 202 555 0136",
+        "address": "Jeddah, KSA",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=HajjMate",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     },
     {
       "id": "s6",
@@ -242,7 +302,7 @@
         "color": "#3B7DD8"
       },
       "banner": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://deenai.example.com",
       "description": "DeenAI helps students and researchers explore Islamic texts with faith-aligned models trained on classical sources.",
       "productImages": [
         "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600&auto=format&fit=crop&q=70"
@@ -251,7 +311,19 @@
       "featured": true,
       "ownerId": "",
       "updatedAt": "2025-12-08",
-      "views": 785
+      "views": 785,
+      "contact": {
+        "public": true,
+        "name": "DeenAI Team",
+        "role": "Company enquiries",
+        "email": "hello@deenai.example.com",
+        "phone": "+1 202 555 0114",
+        "whatsapp": "+1 202 555 0114",
+        "address": "Toronto, Canada",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=DeenAI",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     },
     {
       "id": "s7",
@@ -284,7 +356,7 @@
         "color": "#C93636"
       },
       "banner": "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://sadaqahcloud.example.com",
       "description": "SadaqahCloud gives masajid and charities a Stripe-like platform for recurring giving and campaigns.",
       "productImages": [
         "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1600&auto=format&fit=crop&q=70"
@@ -293,7 +365,19 @@
       "featured": false,
       "ownerId": "",
       "updatedAt": "2025-11-05",
-      "views": 858
+      "views": 858,
+      "contact": {
+        "public": true,
+        "name": "SadaqahCloud Team",
+        "role": "Company enquiries",
+        "email": "hello@sadaqahcloud.example.com",
+        "phone": "+1 202 555 0158",
+        "whatsapp": "+1 202 555 0158",
+        "address": "Lagos, Nigeria",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=SadaqahCloud",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     },
     {
       "id": "s8",
@@ -326,7 +410,7 @@
         "color": "#B58208"
       },
       "banner": "https://images.unsplash.com/photo-1520333789090-1afc82db536a?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://noorlearn.example.com",
       "description": "NoorLearn is a structured Islamic learning platform combining live classes with self-paced modules.",
       "productImages": [
         "https://images.unsplash.com/photo-1520333789090-1afc82db536a?w=1600&auto=format&fit=crop&q=70"
@@ -335,7 +419,19 @@
       "featured": false,
       "ownerId": "",
       "updatedAt": "2025-10-02",
-      "views": 931
+      "views": 931,
+      "contact": {
+        "public": true,
+        "name": "NoorLearn Team",
+        "role": "Company enquiries",
+        "email": "hello@noorlearn.example.com",
+        "phone": "+1 202 555 0176",
+        "whatsapp": "+1 202 555 0176",
+        "address": "Karachi, Pakistan",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=NoorLearn",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     },
     {
       "id": "s9",
@@ -368,7 +464,7 @@
         "color": "#3B7DD8"
       },
       "banner": "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://barakahbooks.example.com",
       "description": "BarakahBooks builds beautifully illustrated Muslim children's stories with a classroom reading platform.",
       "productImages": [
         "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1600&auto=format&fit=crop&q=70"
@@ -377,7 +473,19 @@
       "featured": false,
       "ownerId": "",
       "updatedAt": "2025-11-18",
-      "views": 1004
+      "views": 1004,
+      "contact": {
+        "public": true,
+        "name": "BarakahBooks Team",
+        "role": "Company enquiries",
+        "email": "hello@barakahbooks.example.com",
+        "phone": "+1 202 555 0156",
+        "whatsapp": "+1 202 555 0156",
+        "address": "Manchester, UK",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=BarakahBooks",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     },
     {
       "id": "s10",
@@ -410,7 +518,7 @@
         "color": "#2F8F5B"
       },
       "banner": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://halalsupply.example.com",
       "description": "HalalSupply connects halal-certified ingredient suppliers with F&B manufacturers across Southeast Asia.",
       "productImages": [
         "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&auto=format&fit=crop&q=70"
@@ -419,7 +527,19 @@
       "featured": false,
       "ownerId": "",
       "updatedAt": "2025-09-28",
-      "views": 1077
+      "views": 1077,
+      "contact": {
+        "public": true,
+        "name": "HalalSupply Team",
+        "role": "Company enquiries",
+        "email": "hello@halalsupply.example.com",
+        "phone": "+1 202 555 0199",
+        "whatsapp": "+1 202 555 0199",
+        "address": "Jakarta, Indonesia",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=HalalSupply",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     },
     {
       "id": "s11",
@@ -452,7 +572,7 @@
         "color": "#B58208"
       },
       "banner": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://tayyibtech.example.com",
       "description": "TayyibTech automates halal certification workflows for manufacturers across the Middle East and Europe.",
       "productImages": [
         "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&auto=format&fit=crop&q=70"
@@ -461,7 +581,19 @@
       "featured": false,
       "ownerId": "",
       "updatedAt": "2025-10-21",
-      "views": 1150
+      "views": 1150,
+      "contact": {
+        "public": true,
+        "name": "TayyibTech Team",
+        "role": "Company enquiries",
+        "email": "hello@tayyibtech.example.com",
+        "phone": "+1 202 555 0178",
+        "whatsapp": "+1 202 555 0178",
+        "address": "Istanbul, Turkey",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=TayyibTech",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     },
     {
       "id": "s12",
@@ -492,7 +624,7 @@
         "color": "#7A55C7"
       },
       "banner": "https://images.unsplash.com/photo-1531973576160-7125cd663d86?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://umrahgo.example.com",
       "description": "UmrahGo lets travelers compare and book Umrah packages transparently.",
       "productImages": [
         "https://images.unsplash.com/photo-1531973576160-7125cd663d86?w=1600&auto=format&fit=crop&q=70"
@@ -501,7 +633,19 @@
       "featured": false,
       "ownerId": "",
       "updatedAt": "2025-12-05",
-      "views": 1223
+      "views": 1223,
+      "contact": {
+        "public": true,
+        "name": "UmrahGo Team",
+        "role": "Company enquiries",
+        "email": "hello@umrahgo.example.com",
+        "phone": "+1 202 555 0155",
+        "whatsapp": "+1 202 555 0155",
+        "address": "Cairo, Egypt",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=UmrahGo",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     },
     {
       "id": "s13",
@@ -534,7 +678,7 @@
         "color": "#C93636"
       },
       "banner": "https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://sukuksoft.example.com",
       "description": "SukukSoft is used by Islamic banks and treasury desks to structure, price, and issue sukuk instruments.",
       "productImages": [
         "https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&auto=format&fit=crop&q=70"
@@ -543,7 +687,19 @@
       "featured": false,
       "ownerId": "",
       "updatedAt": "2025-11-30",
-      "views": 1296
+      "views": 1296,
+      "contact": {
+        "public": true,
+        "name": "SukukSoft Team",
+        "role": "Company enquiries",
+        "email": "hello@sukuksoft.example.com",
+        "phone": "+1 202 555 0107",
+        "whatsapp": "+1 202 555 0107",
+        "address": "Kuala Lumpur, Malaysia",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=SukukSoft",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     },
     {
       "id": "s14",
@@ -574,7 +730,7 @@
         "color": "#3B7DD8"
       },
       "banner": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://qiblacommerce.example.com",
       "description": "QiblaCommerce provides halal-first Shopify tools including certification labels and prayer-aware fulfillment.",
       "productImages": [
         "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600&auto=format&fit=crop&q=70"
@@ -583,7 +739,19 @@
       "featured": false,
       "ownerId": "",
       "updatedAt": "2025-08-11",
-      "views": 1369
+      "views": 1369,
+      "contact": {
+        "public": true,
+        "name": "QiblaCommerce Team",
+        "role": "Company enquiries",
+        "email": "hello@qiblacommerce.example.com",
+        "phone": "+1 202 555 0164",
+        "whatsapp": "+1 202 555 0164",
+        "address": "Manama, Bahrain",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=QiblaCommerce",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     },
     {
       "id": "s15",
@@ -614,7 +782,7 @@
         "color": "#2F8F5B"
       },
       "banner": "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://waqfworks.example.com",
       "description": "WaqfWorks digitizes endowment (waqf) management for foundations and community trusts.",
       "productImages": [
         "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1600&auto=format&fit=crop&q=70"
@@ -623,7 +791,19 @@
       "featured": false,
       "ownerId": "",
       "updatedAt": "2025-09-19",
-      "views": 1442
+      "views": 1442,
+      "contact": {
+        "public": true,
+        "name": "WaqfWorks Team",
+        "role": "Company enquiries",
+        "email": "hello@waqfworks.example.com",
+        "phone": "+1 202 555 0197",
+        "whatsapp": "+1 202 555 0197",
+        "address": "Abu Dhabi, UAE",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=WaqfWorks",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     },
     {
       "id": "s16",
@@ -654,7 +834,7 @@
         "color": "#C93636"
       },
       "banner": "https://images.unsplash.com/photo-1520333789090-1afc82db536a?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://tayyibmeals.example.com",
       "description": "TayyibMeals delivers chef-prepared halal meals to Muslim families across the US Midwest.",
       "productImages": [
         "https://images.unsplash.com/photo-1520333789090-1afc82db536a?w=1600&auto=format&fit=crop&q=70"
@@ -663,7 +843,19 @@
       "featured": false,
       "ownerId": "",
       "updatedAt": "2025-11-01",
-      "views": 1515
+      "views": 1515,
+      "contact": {
+        "public": true,
+        "name": "TayyibMeals Team",
+        "role": "Company enquiries",
+        "email": "hello@tayyibmeals.example.com",
+        "phone": "+1 202 555 0188",
+        "whatsapp": "+1 202 555 0188",
+        "address": "Chicago, USA",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=TayyibMeals",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     },
     {
       "id": "s17",
@@ -694,7 +886,7 @@
         "color": "#7A55C7"
       },
       "banner": "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://salaamhealth.example.com",
       "description": "SalaamHealth connects Muslim users with culturally competent therapists and mental health resources.",
       "productImages": [
         "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1600&auto=format&fit=crop&q=70"
@@ -703,7 +895,19 @@
       "featured": false,
       "ownerId": "",
       "updatedAt": "2025-12-10",
-      "views": 1588
+      "views": 1588,
+      "contact": {
+        "public": true,
+        "name": "SalaamHealth Team",
+        "role": "Company enquiries",
+        "email": "hello@salaamhealth.example.com",
+        "phone": "+1 202 555 0153",
+        "whatsapp": "+1 202 555 0153",
+        "address": "Sydney, Australia",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=SalaamHealth",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     },
     {
       "id": "s18",
@@ -734,7 +938,7 @@
         "color": "#3B7DD8"
       },
       "banner": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://masjidsync.example.com",
       "description": "MasjidSync provides masajid with events, donations, prayer times, and community management in one place.",
       "productImages": [
         "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&auto=format&fit=crop&q=70"
@@ -743,7 +947,19 @@
       "featured": false,
       "ownerId": "",
       "updatedAt": "2025-07-14",
-      "views": 1661
+      "views": 1661,
+      "contact": {
+        "public": true,
+        "name": "MasjidSync Team",
+        "role": "Company enquiries",
+        "email": "hello@masjidsync.example.com",
+        "phone": "+1 202 555 0177",
+        "whatsapp": "+1 202 555 0177",
+        "address": "Houston, USA",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=MasjidSync",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     },
     {
       "id": "s19",
@@ -774,7 +990,7 @@
         "color": "#B58208"
       },
       "banner": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://ihsanstudio.example.com",
       "description": "IhsanStudio helps Muslim creators monetize podcasts, courses, and content with halal-friendly tooling.",
       "productImages": [
         "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&auto=format&fit=crop&q=70"
@@ -783,7 +999,19 @@
       "featured": false,
       "ownerId": "",
       "updatedAt": "2025-11-27",
-      "views": 1734
+      "views": 1734,
+      "contact": {
+        "public": true,
+        "name": "IhsanStudio Team",
+        "role": "Company enquiries",
+        "email": "hello@ihsanstudio.example.com",
+        "phone": "+1 202 555 0195",
+        "whatsapp": "+1 202 555 0195",
+        "address": "London, UK",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=IhsanStudio",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     },
     {
       "id": "s20",
@@ -814,7 +1042,7 @@
         "color": "#2F8F5B"
       },
       "banner": "https://images.unsplash.com/photo-1531973576160-7125cd663d86?w=1600&auto=format&fit=crop&q=70",
-      "website": "#",
+      "website": "https://khayrjobs.example.com",
       "description": "KhayrJobs matches Muslim professionals with values-aligned employers across North America.",
       "productImages": [
         "https://images.unsplash.com/photo-1531973576160-7125cd663d86?w=1600&auto=format&fit=crop&q=70"
@@ -823,7 +1051,19 @@
       "featured": false,
       "ownerId": "",
       "updatedAt": "2025-12-14",
-      "views": 1807
+      "views": 1807,
+      "contact": {
+        "public": true,
+        "name": "KhayrJobs Team",
+        "role": "Company enquiries",
+        "email": "hello@khayrjobs.example.com",
+        "phone": "+1 202 555 0173",
+        "whatsapp": "+1 202 555 0173",
+        "address": "Toronto, Canada",
+        "linkedin": "https://www.linkedin.com/search/results/companies/?keywords=KhayrJobs",
+        "note": "For partnerships, investment, media and product enquiries. Sample directory contact for local testing; replace with verified company contact details before production.",
+        "demo": true
+      }
     }
   ],
   "founders": [

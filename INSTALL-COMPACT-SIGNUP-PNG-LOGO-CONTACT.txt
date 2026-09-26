@@ -1,0 +1,10 @@
+Startup Muslim replacement files — PNG logo, compact signup, contact popups
+
+1. Back up your current project and MySQL database.
+2. Extract this ZIP in the existing project directory containing package.json. Merge its src, server, and public folders, replacing matching files. Keep your .env, node_modules, and database.
+3. Restart from the project directory with npm start.
+4. /register and /sign-in now open as centered, compact pages without the regular site header and footer. Signup retains the Company / Founder and Investor choices. Subtle CSS background movement pauses for visitors who prefer reduced motion. Very short or zoomed screens retain scrolling so fields remain reachable.
+5. The website header, footer, and dashboard now use public/assets/startup-muslim-logo.png, a transparent high resolution PNG derived from the current supplied site logo. No logo is displayed on the account pages.
+6. Investor public profiles have a Contact popup. A public company profile has a Contact popup, including the Contact founder button on its Investment Pitch tab. Both are centered and designed to fit ordinary screens. Contact information remains managed in the existing backend editors.
+
+This ZIP includes the earlier opportunity, member account, investor approval, and company jobs replacement files. Use this ZIP alone. No database migration or npm install is required. Do not run npm run db:setup on a populated database.

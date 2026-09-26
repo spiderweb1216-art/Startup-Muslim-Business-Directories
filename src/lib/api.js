@@ -1,5 +1,4 @@
-const defaultApiUrl = process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5000/api';
-const API_URL = (process.env.REACT_APP_API_URL || defaultApiUrl).replace(/\/$/, '');
+const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/$/, '');
 const TOKEN_KEY = 'csl_mysql_auth_token_v3';
 const USER_KEY = 'csl_mysql_auth_user_v3';
 

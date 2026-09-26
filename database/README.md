@@ -1,17 +1,21 @@
-# Database files
+# MySQL database files
 
-- `hostinger-schema.sql` — recommended production schema; no `CREATE DATABASE` or `USE`
-- `schema.sql` — optional manual local schema for `startup_muslim_directory_local_v312`
-- `seed.sql` — local demo seed containing known demo users
-- `full-database.sql` — local all-in-one demo import
+- `schema.sql` — database and table structure
+- `seed.sql` — populated demo records
+- `full-database.sql` — schema and populated records in one importable file
 
-## Production recommendation
+## Recommended automatic setup
 
-Create a MySQL database and user in Hostinger hPanel, add those credentials as environment variables, and use either:
+Start MySQL, then run:
 
-1. `DB_AUTO_MIGRATE=true` on the first deployment, or
-2. Import `hostinger-schema.sql` into the selected database using phpMyAdmin.
+```powershell
+npm run db:setup
+```
 
-Use `DB_SEED_CONTENT=true` only when you want the sanitized starter directory content inserted into an empty production database.
+This uses the connection values in `.env`, creates the database, and inserts all startup, founder, investor, funding, pitch, job, opportunity, user, CMS, and settings data.
 
-Do not import `seed.sql` or `full-database.sql` into a public website because they contain known local demo login accounts.
+## phpMyAdmin alternative
+
+Open phpMyAdmin → **Import** → choose `database/full-database.sql`.
+
+The default database name is `crescent_startup_lab`.

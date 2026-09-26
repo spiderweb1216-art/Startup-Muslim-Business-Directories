@@ -4,6 +4,7 @@ import { Search as SearchIcon, ArrowUpRight, Building2, Users2, Coins, FileText,
 import { STARTUPS, FOUNDERS, INVESTORS, PITCHES, OPPORTUNITIES, JOBS } from '@/data/mockData';
 import { StartupLogo, InvestorLogo } from '@/components/common/Logo';
 import { EmptyState } from '@/components/common/Section';
+import CountryLabel from '@/components/common/CountryLabel';
 
 const TABS = [
   { id:'all', label:'All' },
@@ -105,7 +106,7 @@ export default function Search() {
             {active.investors.map(i => (
               <Link key={i.slug} to={`/investors/${i.slug}`} className="flex items-center gap-3 p-3 rounded-xl border border-line bg-white hover:border-coral/30">
                 <InvestorLogo investor={i} />
-                <div className="flex-1"><div className="font-medium">{highlight(i.name, q)}</div><div className="text-[12.5px] text-slate2">{i.type} · {i.country}</div></div>
+                <div className="flex-1"><div className="font-medium">{highlight(i.name, q)}</div><div className="text-[12.5px] text-slate2">{i.type} · <CountryLabel country={i.country} explicitFlag={i.flag} /></div></div>
                 <ArrowUpRight className="w-4 h-4 text-slate2" />
               </Link>
             ))}
@@ -124,7 +125,7 @@ export default function Search() {
           <SearchGroup title="Opportunities" icon={HandHeart}>
             {active.opportunities.map(o => (
               <Link key={o.id} to="/opportunities" className="p-3 rounded-xl border border-line bg-white hover:border-coral/30 block">
-                <div className="font-medium">{highlight(o.title, q)}</div><div className="text-[12.5px] text-slate2">{o.organization} · {o.country}</div>
+                <div className="font-medium">{highlight(o.title, q)}</div><div className="text-[12.5px] text-slate2">{o.organization} · <CountryLabel country={o.country} explicitFlag={o.flag} /></div>
               </Link>
             ))}
           </SearchGroup>

@@ -6,6 +6,7 @@ import { OPPORTUNITIES, formatDate } from '@/data/mockData';
 import { SectionHeading } from '@/components/common/Section';
 import SaveButton from '@/components/common/SaveButton';
 import { useToast } from '@/context/ToastContext';
+import CountryLabel from '@/components/common/CountryLabel';
 
 const FILTERS = ['Upcoming','Closing soon','Global','Grants','Accelerators'];
 
@@ -65,11 +66,11 @@ export default function OpportunitiesTimeline() {
                         {o.remote && <span className="tag tag-emerald"><Globe2 className="w-3 h-3" /> Global</span>}
                       </div>
                       <div className="font-display font-medium text-[16px] mt-2">{o.title}</div>
-                      <div className="text-[12.5px] text-slate2 mt-1"><MapPin className="w-3 h-3 inline" /> {o.country}</div>
+                      <div className="text-[12.5px] text-slate2 mt-1"><MapPin className="w-3 h-3 inline" /> <CountryLabel country={o.country} explicitFlag={o.flag} /></div>
                     </div>
                     <div className="hidden md:block col-span-2 text-[12px] text-slate2">{o.industry}</div>
                     <div className="col-span-12 md:col-span-2 flex items-center gap-2 md:justify-end">
-                      <button className="btn btn-navy btn-sm" onClick={() => toast('Applied (mock).', { type: 'success' })}>Apply</button>
+                      <Link className="btn btn-navy btn-sm" to={`/opportunities/${encodeURIComponent(o.id)}`}>View details</Link>
                       <SaveButton type="opportunities" id={o.id} />
                     </div>
                   </motion.div>

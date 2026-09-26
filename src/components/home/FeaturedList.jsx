@@ -7,6 +7,7 @@ import { StartupListRow } from '@/components/common/StartupCard';
 import { StartupLogo } from '@/components/common/Logo';
 import { SectionHeading } from '@/components/common/Section';
 import { formatMoney, getFoundersByStartup } from '@/data/mockData';
+import CountryLabel from '@/components/common/CountryLabel';
 
 export default function FeaturedList() {
   const list = STARTUPS.filter(s => s.verified).slice(0, 10);
@@ -57,7 +58,7 @@ function FeaturedPanel({ startup }) {
         <div className="absolute inset-0 bg-gradient-to-t from-navy/70 via-navy/20 to-transparent" />
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between text-white text-[11px]">
           <span className="mono uppercase tracking-widest">{startup.stage}</span>
-          <span className="mono">{startup.flag} {startup.country}</span>
+          <span className="mono"><CountryLabel country={startup.country} explicitFlag={startup.flag} /></span>
         </div>
         <div className="absolute bottom-3 left-3 flex items-center gap-3">
           <StartupLogo startup={startup} size={48} />

@@ -1,16 +1,14 @@
 const express = require('express');
 const crypto = require('crypto');
-const { optionalAuth } = require('../middleware/auth');
-const { createRateLimiter } = require('../middleware/rateLimit');
+const { optionalAuth, requireAuth } = require('../middleware/auth');
 const { createRecord, getSettings, addActivity, listCollection, getRecord, userOwnsStartup } = require('../services/recordService');
 
 const router=express.Router();
 const today=()=>new Date().toISOString().slice(0,10);
 const slugify=(v='')=>String(v).toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
 const id=(prefix)=>`${prefix}-${Date.now()}-${crypto.randomBytes(2).toString('hex')}`;
-const publicFormLimiter=createRateLimiter({windowMs:60*60*1000,max:40,message:'Too many form submissions. Please try again later.'});
 
-router.post('/contact', publicFormLimiter, optionalAuth, async(req,res,next)=>{
+router.post('/contact', optionalAuth, async(req,res,next)=>{
   try{
     const item={id:id('m'),name:String(req.body.name||req.user?.name||'Website visitor'),email:String(req.body.email||req.user?.email||''),topic:String(req.body.topic||'General inquiry'),message:String(req.body.message||''),status:'Unread',submittedAt:new Date().toISOString()};
     await createRecord('messages',item);await addActivity('Contact message submitted',`${item.topic} message received from ${item.email||item.name}.`,item.name);
@@ -18,7 +16,7 @@ router.post('/contact', publicFormLimiter, optionalAuth, async(req,res,next)=>{
   }catch(error){next(error);}
 });
 
-router.post('/newsletter', publicFormLimiter, async(req,res,next)=>{
+router.post('/newsletter', async(req,res,next)=>{
   try{
     const email=String(req.body.email||'').trim().toLowerCase();
     if(!/^\S+@\S+\.\S+$/.test(email))return res.status(400).json({message:'Enter a valid email address.'});
@@ -30,21 +28,24 @@ router.post('/newsletter', publicFormLimiter, async(req,res,next)=>{
   }catch(error){next(error);}
 });
 
-router.post('/submit-startup', publicFormLimiter, optionalAuth, async(req,res,next)=>{
+router.post('/submit-startup', requireAuth, async(req,res,next)=>{
   try{
     const settings=await getSettings();
     if(settings.submissionsEnabled===false)return res.status(403).json({message:'Startup submissions are currently disabled.'});
     const form=req.body||{};const slug=slugify(form.name);
     if(!slug)return res.status(400).json({message:'Startup name is required.'});
+    if(await getRecord('startups',slug))return res.status(409).json({message:'A company with this name already exists. Use the Claim profile option if it is yours.'});
+    const overviewBlocks=Array.isArray(form.overviewBlocks)?form.overviewBlocks.slice(0,50):[];
+    const overviewDescription=overviewBlocks.find((block)=>block?.type==='paragraph'&&String(block.text||'').trim())?.text;
     const item={
-      id:id('s'),slug,name:form.name,tagline:form.tagline||'',category:form.category||'',country:form.country||'',flag:'🌍',stage:form.stage||'Pre-Seed',fundingStage:form.stage||'Pre-Seed',businessModel:form.model||'',verified:false,openToFunding:true,hiring:false,pitching:false,totalRaised:Number(form.raised||0),foundedYear:Number(form.foundedYear||new Date().getFullYear()),teamSize:Number(form.teamSize||1),hq:form.hq||form.country||'',founderSlugs:[],revenue:form.revenue||'Not disclosed',users:form.users||'Not disclosed',growth:form.growth||'Not disclosed',addedAt:today(),logo:{mark:String(form.name).slice(0,2).toUpperCase(),color:'#D94B3D'},banner:form.bannerUrl||'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&auto=format&fit=crop&q=70',website:form.website||'#',description:form.description||form.tagline||'',productImages:form.bannerUrl?[form.bannerUrl]:[],status:settings.requireListingApproval?'Pending':'Published',featured:false,ownerId:req.user?.id||'',submitterName:form.founderName||req.user?.name||'',submitterEmail:form.founderEmail||req.user?.email||'',views:0,updatedAt:today()
+      id:id('s'),slug,name:form.name,tagline:form.tagline||'',category:form.category||'',country:form.country||'',flag:'🌍',stage:form.stage||'Pre-Seed',fundingStage:form.stage||'Pre-Seed',businessModel:form.model||'',verified:false,openToFunding:true,hiring:false,pitching:false,totalRaised:Number(form.raised||0),foundedYear:Number(form.foundedYear||new Date().getFullYear()),teamSize:Number(form.teamSize||1),hq:form.hq||form.country||'',founderSlugs:[],revenue:form.revenue||'Not disclosed',users:form.users||'Not disclosed',growth:form.growth||'Not disclosed',addedAt:today(),logo:{mark:String(form.name).slice(0,2).toUpperCase(),color:'#D94B3D'},banner:form.bannerUrl||'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&auto=format&fit=crop&q=70',website:form.website||'#',overviewBlocks,description:String(overviewDescription||form.description||form.tagline||'').slice(0,2000),productImages:form.bannerUrl?[form.bannerUrl]:[],status:'Pending',featured:false,ownerId:req.user.id,submitterName:form.founderName||req.user.name||'',submitterEmail:form.founderEmail||req.user.email||'',views:0,updatedAt:today()
     };
     await createRecord('startups',item);await addActivity('Startup submitted',`${item.name} entered the review queue.`,req.user?.name||item.submitterName||'Visitor');
     res.status(201).json({item});
   }catch(error){if(error.code==='ER_DUP_ENTRY')return res.status(409).json({message:'A startup with this name or slug already exists.'});next(error);}
 });
 
-router.post('/submit-pitch', publicFormLimiter, optionalAuth, async(req,res,next)=>{
+router.post('/submit-pitch', optionalAuth, async(req,res,next)=>{
   try{
     const settings=await getSettings();
     if(settings.submissionsEnabled===false)return res.status(403).json({message:'Pitch submissions are currently disabled.'});

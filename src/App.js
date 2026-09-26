@@ -20,12 +20,14 @@ import Investors from '@/pages/Investors';
 import InvestorDetail from '@/pages/InvestorDetail';
 import Funding from '@/pages/Funding';
 import Opportunities from '@/pages/Opportunities';
+import OpportunityDetail from '@/pages/OpportunityDetail';
 import Pitches from '@/pages/Pitches';
 import Jobs from '@/pages/Jobs';
 import SubmitStartup from '@/pages/SubmitStartup';
 import SubmitPitch from '@/pages/SubmitPitch';
 import Search from '@/pages/Search';
 import Dashboard from '@/pages/Dashboard';
+import InvestorDashboard from '@/pages/InvestorDashboard';
 import ManageStartup from '@/pages/ManageStartup';
 import Admin from '@/pages/Admin';
 import Auth from '@/pages/Auth';
@@ -52,6 +54,10 @@ function DynamicMeta() {
       const slug = pathname.split('/')[2];
       const startup = data.startups.find((x) => x.slug === slug);
       if (startup) { title = `${startup.name} — ${data.settings.siteName}`; description = startup.tagline || startup.description; }
+    } else if (pathname.startsWith('/opportunities/')) {
+      const id = decodeURIComponent(pathname.split('/')[2] || '');
+      const opportunity = data.opportunities.find((x) => String(x.id) === id);
+      if (opportunity) { title = `${opportunity.title} — ${data.settings.siteName}`; description = opportunity.description || description; }
     } else {
       const label = pathname.split('/').filter(Boolean)[0];
       if (label) title = `${label.replaceAll('-', ' ').replace(/\b\w/g, (m) => m.toUpperCase())} — ${data.settings.siteName}`;
@@ -60,7 +66,7 @@ function DynamicMeta() {
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
     meta.content = description || '';
-  }, [pathname, data.pages, data.settings, data.startups]);
+  }, [pathname, data.pages, data.settings, data.startups, data.opportunities]);
   return null;
 }
 
@@ -112,16 +118,19 @@ function AppRoutes() {
         <Route path="/investors/:slug" element={<Layout><InvestorDetail /></Layout>} />
         <Route path="/funding" element={<Layout><Funding /></Layout>} />
         <Route path="/opportunities" element={<Layout><Opportunities /></Layout>} />
+        <Route path="/opportunities/:id" element={<Layout><OpportunityDetail /></Layout>} />
         <Route path="/pitches" element={<Layout><Pitches /></Layout>} />
         <Route path="/jobs" element={<Layout><Jobs /></Layout>} />
-        <Route path="/submit-startup" element={<Layout><SubmitStartup /></Layout>} />
+        <Route path="/submit-startup" element={<Layout><ProtectedRoute><SubmitStartup /></ProtectedRoute></Layout>} />
         <Route path="/submit-pitch" element={<Layout><SubmitPitch /></Layout>} />
         <Route path="/search" element={<Layout><Search /></Layout>} />
         <Route path="/dashboard" element={<Layout><ProtectedRoute><Dashboard /></ProtectedRoute></Layout>} />
+        <Route path="/dashboard/investor" element={<Layout><ProtectedRoute><InvestorDashboard /></ProtectedRoute></Layout>} />
         <Route path="/dashboard/startups/:slug" element={<Layout><ProtectedRoute><ManageStartup /></ProtectedRoute></Layout>} />
         <Route path="/admin" element={<Layout hideChrome><ProtectedRoute adminOnly><Admin /></ProtectedRoute></Layout>} />
-        <Route path="/sign-in" element={<Layout><Auth mode="signin" /></Layout>} />
-        <Route path="/register" element={<Layout><Auth mode="register" /></Layout>} />
+        <Route path="/sign-in" element={<Layout hideChrome><Auth mode="signin" /></Layout>} />
+        <Route path="/register" element={<Layout hideChrome><Auth mode="register" /></Layout>} />
+        <Route path="/admin/login" element={<Layout hideChrome><Auth mode="signin" admin /></Layout>} />
         <Route path="/about-directory" element={<Layout><About /></Layout>} />
         <Route path="/contact" element={<Layout><Contact /></Layout>} />
         <Route path="*" element={<Layout><Home /></Layout>} />

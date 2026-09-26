@@ -1,143 +1,73 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, ArrowRight, ShieldCheck, UserRound } from 'lucide-react';
-import { Wordmark } from '@/components/common/Logo';
-import { useToast } from '@/context/ToastContext';
+import React, { useState } from 'react';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useData } from '@/context/DataContext';
 
-export default function Auth({ mode = 'signin' }) {
-  const [tab, setTab] = useState(mode);
-  const [show, setShow] = useState(false);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [pw, setPw] = useState('');
-  const [country, setCountry] = useState('');
-  const [role, setRole] = useState('Founder');
-  const [remember, setRemember] = useState(true);
-  const nav = useNavigate();
-  const location = useLocation();
-  const { toast } = useToast();
-  const { login, register, currentUser } = useAuth();
+const INPUT = 'w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm outline-none focus:border-coral focus:ring-2 focus:ring-coral/10';
+
+export default function Auth({ mode = 'signin', admin = false }) {
+  const registerMode = mode === 'register' && !admin;
+  const { login, register, logout, currentUser } = useAuth();
   const { data } = useData();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [form,setForm] = useState({name:'',email:'',password:'',confirm:'',country:'',role:'Founder'});
+  const [show,setShow] = useState(false);
+  const [remember,setRemember] = useState(true);
+  const [busy,setBusy] = useState(false);
+  const [error,setError] = useState('');
+  const set=(key,value)=>{setForm((previous)=>({...previous,[key]:value}));setError('');};
 
-  useEffect(() => setTab(mode), [mode]);
-  useEffect(() => {
-    if (currentUser) nav(currentUser.role === 'Admin' ? '/admin' : '/dashboard', { replace: true });
-  }, [currentUser, nav]);
-
-  const submit = async (e) => {
-    e.preventDefault();
-    if (tab === 'register' && !name.trim()) return toast('Please enter your full name.', { type: 'warning' });
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast('Enter a valid email.', { type: 'warning' });
-    if (pw.length < 8) return toast('Password must be at least 8 characters.', { type: 'warning' });
-
-    if (tab === 'signin') {
-      const result = await login({ email, password: pw, remember });
-      if (!result.ok) return toast(result.message, { type: 'warning' });
-      toast(`Welcome back, ${result.user.name}.`, { type: 'success' });
-      const from = location.state?.from;
-      nav(from || (result.user.role === 'Admin' ? '/admin' : '/dashboard'), { replace: true });
-      return;
-    }
-
-    if (!data.settings.registrationsEnabled) return toast('New registrations are currently disabled by the administrator.', { type:'warning' });
-    const result = await register({ name, email, password: pw, role, country });
-    if (!result.ok) return toast(result.message, { type: 'warning' });
-    toast('Your account has been created.', { type: 'success' });
-    nav('/dashboard', { replace: true });
+  if (currentUser) return <Navigate to={currentUser.role === 'Admin' ? '/admin' : currentUser.role === 'Investor' ? '/dashboard/investor' : '/dashboard'} replace/>;
+  const submit = async (event) => {
+    event.preventDefault();
+    if (busy) return;
+    if (registerMode && !form.name.trim()) return setError('Please enter your full name.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return setError('Enter a valid email address.');
+    if (form.password.length < 6) return setError('Password must be at least 6 characters.');
+    if (registerMode && form.password !== form.confirm) return setError('Passwords do not match.');
+    setBusy(true);
+    try {
+      if (registerMode) {
+        if (data.settings.registrationsEnabled === false) return setError('Registration is currently paused.');
+        const result = await register({name:form.name.trim(),email:form.email.trim(),password:form.password,role:form.role,country:form.country.trim()});
+        if (!result.ok) return setError(result.message);
+        navigate(result.user.role === 'Investor' ? '/dashboard/investor' : '/dashboard',{replace:true});
+      } else {
+        const result = await login({email:form.email.trim(),password:form.password,remember});
+        if (!result.ok) return setError(result.message);
+        if (admin && result.user.role !== 'Admin') {
+          logout();
+          return setError('This page is for administrators. Use the member sign-in page.');
+        }
+        navigate(result.user.role === 'Admin' ? '/admin' : location.state?.from || (result.user.role === 'Investor' ? '/dashboard/investor' : '/dashboard'),{replace:true});
+      }
+    } finally { setBusy(false); }
   };
 
-
-
-  return (
-    <div className="min-h-[calc(100vh-68px)] grid grid-cols-1 md:grid-cols-2" data-testid={`auth-${tab}-page`}>
-      <div className="relative overflow-hidden hidden md:block bg-ink text-white">
-        <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1400&auto=format&fit=crop&q=70" alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-ink via-ink/70 to-transparent" />
-        <div className="relative p-12 h-full flex flex-col">
-          <Wordmark dark />
-          <div className="mt-auto max-w-md">
-            <div className="eyebrow text-white/60">Crescent Startup Lab</div>
-            <h2 className="font-display text-[40px] leading-[1.05] mt-2">Manage the ecosystem from one secure workspace.</h2>
-            <p className="text-white/70 text-[14px] mt-4">Create listings, review submissions, publish funding data, manage users, and control the complete directory.</p>
-            <div className="mt-7 grid grid-cols-2 gap-3">
-              <div className="text-left border border-white/15 rounded-xl p-4">
-                <ShieldCheck className="w-5 h-5 text-coral" />
-                <div className="text-[13px] font-medium mt-2">Directory administration</div>
-                <div className="text-[11px] text-white/55 mt-1">Secure CMS workspace</div>
-              </div>
-              <div className="text-left border border-white/15 rounded-xl p-4">
-                <UserRound className="w-5 h-5 text-coral" />
-                <div className="text-[13px] font-medium mt-2">Founder workspace</div>
-                <div className="text-[11px] text-white/55 mt-1">Listings and submissions</div>
-              </div>
-            </div>
-          </div>
+  const title = admin ? 'Admin sign in' : registerMode ? 'Create your account' : 'Welcome back';
+  return <div className="auth-screen relative min-h-[100dvh] isolate overflow-hidden flex items-center justify-center px-4 py-5 sm:px-6" data-testid={admin?'admin-login-page':registerMode?'auth-register-page':'auth-signin-page'}>
+    <div className="auth-orb auth-orb-one" aria-hidden="true"/><div className="auth-orb auth-orb-two" aria-hidden="true"/>
+    <div className="relative w-full max-w-[560px] rounded-[26px] bg-white/95 border border-white/80 shadow-[0_24px_80px_rgba(17,24,39,.14)] px-5 py-5 sm:px-8 sm:py-6 backdrop-blur-md">
+      <div className="flex items-center justify-between gap-3"><span className="text-[10px] tracking-[.19em] uppercase text-coral font-bold">{admin?'Administrator':'Startup Muslim · Member access'}</span><Link to="/" className="text-xs text-slate2 hover:text-ink">Back to website ↗</Link></div>
+      <h1 className="font-display text-[29px] sm:text-[34px] leading-tight mt-2">{title}</h1>
+      <p className="text-xs text-slate2 mt-1">{admin?'Manage listings and approvals.':registerMode?'Choose your role and create your account.':'Manage your company or investor profile.'}</p>
+      <form onSubmit={submit} className="mt-4 space-y-3">
+        {registerMode && <>
+          <fieldset><legend className="text-[11px] font-semibold mb-1.5">I am joining as</legend><div className="grid grid-cols-2 gap-2">{[['Founder','Company / Founder','Create a company and pitch'],['Investor','Investor','Share an investment profile']].map(([role,label,detail])=><button key={role} type="button" aria-pressed={form.role===role} onClick={()=>set('role',role)} className={`rounded-xl border px-3 py-2.5 text-left transition ${form.role===role?'bg-coralSoft border-coral shadow-[inset_0_0_0_1px_rgba(217,75,61,.25)]':'bg-white border-line hover:border-coral/50'}`}><span className="block text-[12px] font-semibold">{label}</span><span className="block text-[10px] text-slate2 leading-snug mt-0.5">{detail}</span></button>)}</div></fieldset>
+          <div className="grid sm:grid-cols-2 gap-3"><label className="block text-[11px] font-medium">Full name<input required autoComplete="name" value={form.name} onChange={(e)=>set('name',e.target.value)} placeholder="Your full name" className={`${INPUT} mt-1`}/></label><label className="block text-[11px] font-medium">Country <span className="text-slate2 font-normal">(optional)</span><input autoComplete="country-name" value={form.country} onChange={(e)=>set('country',e.target.value)} placeholder="Country" className={`${INPUT} mt-1`}/></label></div>
+        </>}
+        <label className="block text-[11px] font-medium">Email address<input required type="email" autoComplete="email" value={form.email} onChange={(e)=>set('email',e.target.value)} placeholder="you@example.com" className={`${INPUT} mt-1`}/></label>
+        <div className={registerMode?'grid sm:grid-cols-2 gap-3':''}>
+          <label className="block text-[11px] font-medium">Password<div className="relative mt-1"><input required minLength={6} type={show?'text':'password'} autoComplete={registerMode?'new-password':'current-password'} value={form.password} onChange={(e)=>set('password',e.target.value)} placeholder={registerMode?'At least 6 characters':'Enter password'} className={`${INPUT} pr-10`}/><button type="button" onClick={()=>setShow(!show)} aria-label={show?'Hide password':'Show password'} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate2">{show?<EyeOff size={16}/>:<Eye size={16}/>}</button></div></label>
+          {registerMode && <label className="block text-[11px] font-medium mt-3 sm:mt-0">Confirm password<input required type={show?'text':'password'} autoComplete="new-password" value={form.confirm} onChange={(e)=>set('confirm',e.target.value)} placeholder="Repeat password" className={`${INPUT} mt-1`}/></label>}
         </div>
-      </div>
-
-      <div className="p-6 md:p-12 flex items-center justify-center">
-        <div className="w-full max-w-md">
-          <div className="flex items-center gap-1 bg-white border border-line rounded-full p-1 w-fit">
-            <button onClick={() => setTab('signin')} className={`px-4 py-1.5 rounded-full text-[13px] ${tab==='signin'?'bg-ink text-white':'text-ink'}`}>Sign in</button>
-            <button onClick={() => setTab('register')} className={`px-4 py-1.5 rounded-full text-[13px] ${tab==='register'?'bg-ink text-white':'text-ink'}`}>Register</button>
-          </div>
-
-          <h1 className="font-display text-[38px] mt-6">{tab === 'signin' ? 'Welcome back.' : 'Create your account.'}</h1>
-          <p className="text-slate2 mt-2">{tab === 'signin' ? 'Sign in to access your dashboard.' : 'Register to submit, save, claim, and manage listings.'}</p>
-
-          <form onSubmit={submit} className="mt-6 space-y-4">
-            {tab === 'register' && (
-              <>
-                <div>
-                  <label className="text-[12.5px] text-slate2">Full name</label>
-                  <input value={name} onChange={e=>setName(e.target.value)} className="mt-1 w-full bg-white border border-line rounded-xl p-3 outline-none focus:border-ink" placeholder="Your full name" />
-                </div>
-                <div>
-                  <label className="text-[12.5px] text-slate2">I am a</label>
-                  <div className="mt-1 grid grid-cols-2 gap-2">
-                    {['Founder','Investor','Ecosystem Partner','General User'].map(r => (
-                      <button type="button" key={r} onClick={() => setRole(r)} className={`chip ${role===r?'active':''}`}>{r}</button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-[12.5px] text-slate2">Country</label>
-                  <input value={country} onChange={e=>setCountry(e.target.value)} className="mt-1 w-full bg-white border border-line rounded-xl p-3 outline-none focus:border-ink" placeholder="Country" />
-                </div>
-              </>
-            )}
-
-            <div>
-              <label className="text-[12.5px] text-slate2">Email</label>
-              <input value={email} onChange={e=>setEmail(e.target.value)} type="email" className="mt-1 w-full bg-white border border-line rounded-xl p-3 outline-none focus:border-ink" placeholder="you@example.com" />
-            </div>
-
-            <div>
-              <label className="text-[12.5px] text-slate2">Password</label>
-              <div className="mt-1 relative">
-                <input value={pw} onChange={e=>setPw(e.target.value)} type={show ? 'text' : 'password'} className="w-full bg-white border border-line rounded-xl p-3 pr-11 outline-none focus:border-ink" placeholder="At least 8 characters" />
-                <button type="button" onClick={() => setShow(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate2" aria-label="Toggle password visibility">{show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
-              </div>
-            </div>
-
-            {tab === 'signin' && (
-              <div className="flex items-center justify-between text-[12.5px]">
-                <label className="flex items-center gap-2"><input type="checkbox" checked={remember} onChange={e=>setRemember(e.target.checked)} className="w-4 h-4 accent-brand" /> Remember me</label>
-                <span className="text-slate2">Use your registered account credentials.</span>
-              </div>
-            )}
-
-            <button className="btn btn-coral w-full justify-center">{tab === 'signin' ? 'Sign in' : 'Create account'} <ArrowRight className="w-4 h-4" /></button>
-          </form>
-
-          <p className="text-[12.5px] text-slate2 mt-6">
-            {tab === 'signin' ? (<>New here? <button className="text-ink underline" onClick={() => setTab('register')}>Create an account</button></>) : (<>Already registered? <button className="text-ink underline" onClick={() => setTab('signin')}>Sign in</button></>)}
-          </p>
-          <Link to="/" className="inline-block mt-5 text-[12.5px] text-slate2 underline">Back to website</Link>
-        </div>
-      </div>
+        {!registerMode && <label className="flex items-center gap-2 text-xs text-slate2"><input type="checkbox" checked={remember} onChange={(e)=>setRemember(e.target.checked)} className="accent-[#D94B3D]"/> Keep me signed in</label>}
+        {error && <p role="alert" className="rounded-lg bg-coralSoft text-coral px-3 py-2 text-xs">{error}</p>}
+        <button disabled={busy} className="btn btn-coral w-full justify-center !py-2.5 disabled:opacity-60">{busy?'Please wait…':registerMode?'Create account':'Sign in'} <ArrowRight size={16}/></button>
+      </form>
+      <div className="text-xs text-slate2 text-center mt-3">{admin?<Link to="/sign-in" className="text-ink underline underline-offset-4">Member sign in</Link>:registerMode?<>Already have an account? <Link to="/sign-in" className="text-ink underline underline-offset-4">Sign in</Link></>:<>New here? <Link to="/register" className="text-ink underline underline-offset-4">Create an account</Link></>}</div>
     </div>
-  );
+  </div>;
 }

@@ -1,2 +1,10 @@
 /* App-level tweaks */
 .App { min-height: 100vh; }
+
+/* Compact account screens with subtle motion and no decorative image assets. */
+.auth-screen { background: linear-gradient(135deg, #edf4f0 0%, #f7f3ee 42%, #f6ebea 100%); }
+.auth-orb { position: absolute; width: 36vw; height: 36vw; min-width: 270px; min-height: 270px; border-radius: 50%; filter: blur(64px); opacity: .35; pointer-events: none; animation: auth-float 16s ease-in-out infinite alternate; }
+.auth-orb-one { top: -16%; left: -9%; background: #e7a7a2; }
+.auth-orb-two { bottom: -24%; right: -9%; background: #9cc9b9; animation-delay: -8s; }
+@keyframes auth-float { from { transform: translate3d(-16px, 0, 0) scale(.95); } to { transform: translate3d(24px, 24px, 0) scale(1.1); } }
+@media (prefers-reduced-motion: reduce) { .auth-orb { animation: none; } }

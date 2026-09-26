@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
-const { jwtSecret } = require('../config/env');
+
+const secret = process.env.JWT_SECRET || 'change-this-development-secret';
 
 function readToken(req) {
   const header = req.headers.authorization || '';
@@ -14,7 +15,7 @@ function optionalAuth(req, _res, next) {
     return next();
   }
   try {
-    req.user = jwt.verify(token, jwtSecret);
+    req.user = jwt.verify(token, secret);
   } catch {
     req.user = null;
   }
@@ -25,7 +26,7 @@ function requireAuth(req, res, next) {
   const token = readToken(req);
   if (!token) return res.status(401).json({ message: 'Authentication is required.' });
   try {
-    req.user = jwt.verify(token, jwtSecret);
+    req.user = jwt.verify(token, secret);
     next();
   } catch {
     return res.status(401).json({ message: 'Your session is invalid or has expired.' });
@@ -42,7 +43,7 @@ function requireAdmin(req, res, next) {
 function signUser(user) {
   return jwt.sign(
     { id: user.id, email: user.email, name: user.name, role: user.role },
-    jwtSecret,
+    secret,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
 }

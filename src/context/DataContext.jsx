@@ -4,6 +4,7 @@ import {
 } from '@/data/mockData';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+import { normalizeOverviewBlocks, overviewSummary } from '@/lib/overviewBlocks';
 
 const DataContext = createContext(null);
 const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -93,7 +94,7 @@ export function DataProvider({children}) {
 
   const addItem=(collection,item,actor='Crescent Admin')=>{
     const idField=ID_FIELDS[collection]||'id';let value={...item};
-    if(idField==='slug')value.slug=value.slug||slugify(value.name||value.title||`${collection}-${Date.now()}`);else value.id=value.id||`${collection.slice(0,2)}-${Date.now()}`;
+    if(idField==='slug')value.slug=value.slug||slugify(value.name||value.title||`${collection}-${Date.now()}`);else value.id=value.id||`${collection.slice(0,2)}-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
     if(currentUser && ['startups','founders','rounds','pitches','jobs','opportunities','claims'].includes(collection) && currentUser.role!=='Admin') value.ownerId=currentUser.id;
     value.updatedAt=value.updatedAt||today();
     commit((prev)=>({...prev,[collection]:[value,...(prev[collection]||[])]}),{action:`${collection} created`,detail:`${value.name||value.title||value.pitchTitle||value.email||value[idField]} was added.`,actor});
@@ -137,7 +138,8 @@ export function DataProvider({children}) {
     persist(api('/newsletter',{method:'POST',body:{email,source},auth:false}));return true;
   };
   const submitStartup=(form,user)=>{
-    const value={id:`s-${Date.now()}`,slug:slugify(form.name),name:form.name,tagline:form.tagline,category:form.category,country:form.country,flag:'🌍',stage:form.stage||'Pre-Seed',fundingStage:form.stage||'Pre-Seed',businessModel:form.model||'',verified:false,openToFunding:true,hiring:false,pitching:false,totalRaised:Number(form.raised||0),foundedYear:Number(form.foundedYear||new Date().getFullYear()),teamSize:Number(form.teamSize||1),hq:form.hq||form.country,founderSlugs:[],revenue:form.revenue||'Not disclosed',users:form.users||'Not disclosed',growth:form.growth||'Not disclosed',addedAt:today(),logo:{mark:String(form.name).slice(0,2).toUpperCase(),color:'#D94B3D'},banner:form.bannerUrl||'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&auto=format&fit=crop&q=70',website:form.website||'#',description:form.description||form.tagline,productImages:form.bannerUrl?[form.bannerUrl]:[],status:data.settings.requireListingApproval?'Pending':'Published',featured:false,ownerId:user?.id||'',submitterName:form.founderName,submitterEmail:form.founderEmail,views:0,updatedAt:today()};
+    const overviewBlocks=normalizeOverviewBlocks(form.overviewBlocks||[]);
+    const value={id:`s-${Date.now()}`,slug:slugify(form.name),name:form.name,tagline:form.tagline,category:form.category,country:form.country,flag:'🌍',stage:form.stage||'Pre-Seed',fundingStage:form.stage||'Pre-Seed',businessModel:form.model||'',verified:false,openToFunding:true,hiring:false,pitching:false,totalRaised:Number(form.raised||0),foundedYear:Number(form.foundedYear||new Date().getFullYear()),teamSize:Number(form.teamSize||1),hq:form.hq||form.country,founderSlugs:[],revenue:form.revenue||'Not disclosed',users:form.users||'Not disclosed',growth:form.growth||'Not disclosed',addedAt:today(),logo:{mark:String(form.name).slice(0,2).toUpperCase(),color:'#D94B3D'},banner:form.bannerUrl||'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&auto=format&fit=crop&q=70',website:form.website||'#',overviewBlocks,description:overviewSummary(overviewBlocks,form.description||form.tagline),productImages:form.bannerUrl?[form.bannerUrl]:[],status:data.settings.requireListingApproval?'Pending':'Published',featured:false,ownerId:user?.id||'',submitterName:form.founderName,submitterEmail:form.founderEmail,views:0,updatedAt:today()};
     commit((prev)=>({...prev,startups:[value,...prev.startups]}));const savePromise=persist(api('/submit-startup',{method:'POST',body:form}));return {...value,savePromise};
   };
   const submitPitch=(form,user)=>{

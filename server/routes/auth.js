@@ -1,14 +1,11 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { signUser, requireAuth } = require('../middleware/auth');
-const { createRateLimiter } = require('../middleware/rateLimit');
 const { getUserByEmail, getUserById, createUser, updateUser, getSettings, addActivity } = require('../services/recordService');
 
 const router = express.Router();
-const loginLimiter = createRateLimiter({ windowMs:15 * 60 * 1000, max:10, message:'Too many sign-in attempts. Please wait 15 minutes and try again.' });
-const registerLimiter = createRateLimiter({ windowMs:60 * 60 * 1000, max:20, message:'Too many registration attempts. Please try again later.' });
 
-router.post('/login', loginLimiter, async (req, res, next) => {
+router.post('/login', async (req, res, next) => {
   try {
     const email = String(req.body.email || '').trim().toLowerCase();
     const password = String(req.body.password || '');
@@ -23,18 +20,18 @@ router.post('/login', loginLimiter, async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/register', registerLimiter, async (req, res, next) => {
+router.post('/register', async (req, res, next) => {
   try {
     const settings = await getSettings();
     if (settings.registrationsEnabled === false) return res.status(403).json({ message:'New registrations are currently disabled.' });
     const name = String(req.body.name || '').trim();
     const email = String(req.body.email || '').trim().toLowerCase();
     const password = String(req.body.password || '');
-    if (!name || !/^\S+@\S+\.\S+$/.test(email) || password.length < 8) {
-      return res.status(400).json({ message:'Name, valid email, and a password of at least 8 characters are required.' });
+    if (!name || !/^\S+@\S+\.\S+$/.test(email) || password.length < 6) {
+      return res.status(400).json({ message:'Name, valid email, and a password of at least 6 characters are required.' });
     }
     if (await getUserByEmail(email)) return res.status(409).json({ message:'An account already exists with this email.' });
-    const allowedRoles = ['Founder','Investor','Ecosystem Partner','General User'];
+    const allowedRoles = ['Founder','Investor'];
     const user = await createUser({
       name, email, password,
       role: allowedRoles.includes(req.body.role) ? req.body.role : 'General User',
