@@ -1,4 +1,13 @@
-const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/$/, '');
+// Production uses the same Hostinger domain for React + Express.
+// If an old .env still contains localhost, never bake that localhost URL into
+// the production bundle. For development, localhost remains supported.
+const configuredApiUrl = (process.env.REACT_APP_API_URL || '').trim();
+const isLocalConfiguredUrl = /localhost|127\.0\.0\.1/i.test(configuredApiUrl);
+const API_URL = (
+  process.env.NODE_ENV === 'production'
+    ? (configuredApiUrl && !isLocalConfiguredUrl ? configuredApiUrl : '/api')
+    : (configuredApiUrl || 'http://localhost:5000/api')
+).replace(/\/$/, '');
 const TOKEN_KEY = 'csl_mysql_auth_token_v3';
 const USER_KEY = 'csl_mysql_auth_user_v3';
 
