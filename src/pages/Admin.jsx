@@ -22,6 +22,8 @@ import StartupWorkspaceEditor from '@/components/admin/StartupWorkspaceEditor';
 import { countryLabel } from '@/lib/countryAtlas';
 import { getOverviewBlocks, normalizeOverviewBlocks, overviewSummary } from '@/lib/overviewBlocks';
 import { FOUNDER_OPEN_TO_OPTIONS } from '@/constants/founderOptions';
+import { api } from '@/lib/api';
+import { parseCompanyCsv, companyCsvTemplate, COMPANY_CSV_MAX_BYTES } from '@/lib/companyCsv';
 
 const NAV_GROUPS = [
   {
@@ -370,7 +372,7 @@ function ReviewQueue({ title, empty, items, label, meta, onApprove, onReject }) 
 }
 
 function EntityManager({ collection, config }) {
-  const { data, idFields, addItem, updateItem, removeItem, duplicateItem, bulkUpdate, bulkRemove } = useData();
+  const { data, idFields, addItem, updateItem, removeItem, duplicateItem, bulkUpdate, bulkRemove, refreshData } = useData();
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const [query, setQuery] = useState('');
@@ -379,6 +381,7 @@ function EntityManager({ collection, config }) {
   const [editing, setEditing] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [workspaceSaving, setWorkspaceSaving] = useState(false);
+  const [csvOpen, setCsvOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const rows = data[collection] || [];
   const idField = idFields[collection] || config.idField || 'id';
@@ -498,7 +501,7 @@ function EntityManager({ collection, config }) {
     <div className="space-y-5">
       <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-4">
         <div><div className="eyebrow">Manage records</div><h2 className="font-display text-[30px] mt-1">{config.title}</h2><p className="text-[13px] text-slate2 max-w-3xl mt-1">{config.description}</p></div>
-        <div className="flex flex-wrap gap-2"><button onClick={exportCsv} className="btn btn-outline bg-white"><Download className="w-4 h-4"/> Export CSV</button><button onClick={openCreate} className="btn btn-coral"><Plus className="w-4 h-4"/> Add {config.singular}</button></div>
+        <div className="flex flex-wrap gap-2">{collection==='startups'&&<button onClick={()=>setCsvOpen(true)} className="btn btn-outline bg-white"><Upload className="w-4 h-4"/> Import CSV</button>}<button onClick={exportCsv} className="btn btn-outline bg-white"><Download className="w-4 h-4"/> Export CSV</button><button onClick={openCreate} className="btn btn-coral"><Plus className="w-4 h-4"/> Add {config.singular}</button></div>
       </div>
 
       <div className="bg-white border border-line rounded-2xl overflow-hidden">
@@ -521,10 +524,90 @@ function EntityManager({ collection, config }) {
         </div>
       </div>
 
+      {collection==='startups' && csvOpen && <CompanyCsvImportModal existing={rows} refreshData={refreshData} onClose={()=>setCsvOpen(false)} toast={toast} />}
       <AnimatePresence>{modalOpen && (collection==='startups' ? <StartupWorkspaceEditor initial={editing} data={data} saving={workspaceSaving} onClose={()=>{setModalOpen(false);setEditing(null);}} onSave={saveStartupWorkspace}/> : <RecordModal config={config} collection={collection} initial={editing} onClose={()=>{setModalOpen(false);setEditing(null);}} onSave={save}/>)}</AnimatePresence>
       <AnimatePresence>{deleteTarget&&<ConfirmDelete label={deleteTarget[config.nameField]||deleteTarget[idField]} onCancel={()=>setDeleteTarget(null)} onConfirm={()=>{removeItem(collection,deleteTarget[idField],currentUser?.name);setDeleteTarget(null);toast('Record deleted.',{type:'success'});}}/>}</AnimatePresence>
     </div>
   );
+}
+
+function CompanyCsvImportModal({ existing, refreshData, onClose, toast }) {
+  const [filename, setFilename] = useState('');
+  const [preview, setPreview] = useState(null);
+  const [error, setError] = useState('');
+  const [mode, setMode] = useState('skip');
+  const [importing, setImporting] = useState(false);
+  const fileInput = useRef(null);
+  const existingSlugs = useMemo(() => new Set(existing.map((company) => company.slug)), [existing]);
+  const duplicates = preview ? preview.items.filter((company) => existingSlugs.has(company.slug)).length : 0;
+  const canImport = preview?.items?.length > 0 && preview.errors.length === 0 && !importing;
+
+  const loadCsv = async (file) => {
+    setPreview(null); setError(''); setFilename(file?.name || '');
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith('.csv')) return setError('Please select a .csv file.');
+    if (file.size > COMPANY_CSV_MAX_BYTES) return setError('CSV files must be smaller than 2 MB.');
+    try { setPreview(parseCompanyCsv(await file.text())); }
+    catch (parseError) { setError(parseError.message || 'Unable to read the CSV file.'); }
+  };
+
+  const doImport = async (event) => {
+    event.preventDefault();
+    if (!canImport) return;
+    setImporting(true); setError('');
+    try {
+      const result = await api('/admin/startups/import-csv', {
+        method:'POST', body:{items:preview.items,onDuplicate:mode},
+      });
+      try { await refreshData(); }
+      catch (_) { toast('CSV saved to MySQL, but the page could not refresh. Reload to see the imported companies.', {type:'warning'}); }
+      toast(`CSV imported: ${result.created} added, ${result.updated} updated, ${result.skipped} skipped.`, {type:'success'});
+      onClose();
+    } catch (importError) {
+      setError(importError.message || 'Import failed. No changes were saved.');
+    } finally { setImporting(false); }
+  };
+
+  return <div className="fixed inset-0 z-[105] bg-navy/70 backdrop-blur-sm flex items-end md:items-center justify-center md:p-5" onMouseDown={()=>{if (!importing) onClose();}}>
+    <form onSubmit={doImport} onMouseDown={(event)=>event.stopPropagation()} className="bg-[#F7F4EE] w-full max-w-[680px] max-h-[94vh] md:rounded-2xl border border-line overflow-hidden shadow-2xl flex flex-col">
+      <div className="bg-white border-b border-line p-5 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-coralSoft text-coral flex items-center justify-center"><Upload className="w-5 h-5" /></div>
+        <div className="flex-1 min-w-0"><div className="eyebrow">Admin · Companies</div><h3 className="font-display text-[22px] mt-0.5">Import companies from CSV</h3></div>
+        <button type="button" disabled={importing} onClick={onClose} className="w-9 h-9 border border-line rounded-lg flex items-center justify-center disabled:opacity-50" aria-label="Close CSV import"><X className="w-4 h-4"/></button>
+      </div>
+      <div className="p-5 overflow-y-auto space-y-5 text-[13px]">
+        <div className="bg-white border border-line rounded-xl p-4 space-y-2">
+          <div className="font-medium">1. Prepare a CSV file</div>
+          <p className="text-slate2 text-[12px] leading-relaxed">One company per row. A <strong>name</strong> column is required; <strong>slug</strong> is optional. Other fields may include category, country, tagline, website, description, stage, status, funding, and contact details. Quoted commas and multiline text are supported.</p>
+          <button type="button" onClick={()=>downloadBlob(companyCsvTemplate(), 'companies-import-template.csv', 'text/csv;charset=utf-8')} className="inline-flex items-center gap-2 text-coral font-medium hover:underline"><Download className="w-4 h-4"/> Download example CSV template</button>
+        </div>
+        <div className="space-y-2">
+          <div className="font-medium">2. Select your CSV</div>
+          <input ref={fileInput} type="file" className="hidden" accept=".csv,text/csv" onChange={(event)=>loadCsv(event.target.files?.[0])}/>
+          <button type="button" className="w-full rounded-xl border-2 border-dashed border-line bg-white p-6 text-center hover:border-coral transition-colors" onClick={()=>{if (fileInput.current) {fileInput.current.value='';fileInput.current.click();}}}>
+            <Upload className="w-6 h-6 mx-auto text-slate2"/>
+            <span className="block font-medium mt-2">{filename || 'Choose a .csv file'}</span>
+            <span className="block text-slate2 text-[11px] mt-1">Up to 500 companies · 2 MB maximum</span>
+          </button>
+        </div>
+        {preview && <div className="bg-white border border-line rounded-xl p-4 space-y-3">
+          <div className="font-medium">3. Review the import</div>
+          <div className="grid grid-cols-3 gap-2 text-center"><div className="bg-canvas rounded-lg p-3"><div className="font-display text-[23px]">{preview.items.length}</div><div className="text-slate2 text-[11px]">Valid rows</div></div><div className="bg-canvas rounded-lg p-3"><div className="font-display text-[23px]">{duplicates}</div><div className="text-slate2 text-[11px]">Existing slugs</div></div><div className="bg-canvas rounded-lg p-3"><div className="font-display text-[23px]">{preview.errors.length}</div><div className="text-slate2 text-[11px]">Errors</div></div></div>
+          {preview.items.length>0 && <div className="overflow-x-auto"><table className="w-full text-[12px]"><thead><tr className="text-left text-slate2 border-b border-line"><th className="py-2 pr-2">Company</th><th className="py-2 pr-2">Slug</th><th className="py-2">Result</th></tr></thead><tbody>{preview.items.slice(0,5).map((company)=><tr key={company.slug} className="border-b border-line last:border-0"><td className="py-2 pr-2">{company.name}</td><td className="py-2 pr-2 text-slate2">{company.slug}</td><td className="py-2">{existingSlugs.has(company.slug)?mode==='skip'?'Skip':'Update':'Create'}</td></tr>)}</tbody></table>{preview.items.length>5 && <div className="text-[11px] text-slate2 mt-2">Showing first 5 of {preview.items.length} companies</div>}</div>}
+          <label className="block font-medium" htmlFor="csv-duplicate-mode">When a company slug already exists</label>
+          <select id="csv-duplicate-mode" value={mode} onChange={(event)=>setMode(event.target.value)} className="w-full border border-line rounded-lg px-3 py-2.5 bg-white text-[12px]"><option value="skip">Skip existing companies (recommended)</option><option value="update">Update existing companies with supplied nonblank fields</option></select>
+          <p className="text-slate2 text-[11px]">Blank CSV cells never erase existing values. Existing ownership, linked records, and fields omitted from the CSV are preserved when updating. New companies default to Published unless the CSV specifies another status.</p>
+          {preview.ignored.length>0 && <p className="text-amber text-[11px]">Unrecognized columns ignored: {preview.ignored.join(', ')}</p>}
+          {preview.errors.length>0 && <div role="alert" className="text-coral text-[12px] bg-coralSoft p-3 rounded-lg"><strong>Correct these issues before importing:</strong><ul className="mt-1 space-y-1 list-disc ml-4">{preview.errors.slice(0,8).map((item,index)=><li key={index}>{item}</li>)}</ul>{preview.errors.length>8 && <span>…and {preview.errors.length-8} more.</span>}</div>}
+        </div>}
+        {error && <div role="alert" className="bg-coralSoft text-coral p-3 rounded-lg text-[12px]">{error}</div>}
+      </div>
+      <div className="bg-white border-t border-line p-4 flex items-center justify-between gap-3">
+        <div className="text-slate2 text-[11px]">The import is saved directly to MySQL.</div>
+        <div className="flex items-center gap-2"><button type="button" disabled={importing} onClick={onClose} className="btn btn-outline disabled:opacity-50">Cancel</button><button type="submit" disabled={!canImport} className="btn btn-coral disabled:opacity-50">{importing?'Importing…':`Import ${preview?.items?.length || 0} companies`}</button></div>
+      </div>
+    </form>
+  </div>;
 }
 
 function CellValue({ field, value, item }) {
