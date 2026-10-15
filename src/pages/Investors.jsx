@@ -7,6 +7,9 @@ import InvestorCard from '@/components/common/InvestorCard';
 import SaveButton from '@/components/common/SaveButton';
 import CountryLabel from '@/components/common/CountryLabel';
 import { useData } from '@/context/DataContext';
+import { isPublicFundingRound } from '@/lib/fundingDisplay';
+import { paginateRecords } from '@/lib/pagination';
+import ResultsPagination from '@/components/common/ResultsPagination';
 import {
   asArray,
   formatInvestorDate,
@@ -15,6 +18,7 @@ import {
   getPortfolioCount,
   isPublicInvestorRecord,
   latestInvestorRound,
+  roundInvestorSlugs,
 } from '@/lib/investorData';
 
 export default function Investors() {
@@ -23,6 +27,9 @@ export default function Investors() {
   const [type, setType] = useState('All');
   const [stage, setStage] = useState('All');
   const [view, setView] = useState('table');
+  const [funding, setFunding] = useState('all');
+  const [page, setPage] = useState(1);
+  const investorsWithRounds = useMemo(() => new Set((data.rounds || []).filter(isPublicFundingRound).flatMap(roundInvestorSlugs)), [data.rounds]);
 
   const investors = useMemo(() => (data.investors || [])
     .filter(isPublicInvestorRecord)
@@ -46,8 +53,13 @@ export default function Investors() {
     }
     if (type !== 'All') list = list.filter((item) => item.type === type);
     if (stage !== 'All') list = list.filter((item) => asArray(item.stageFocus).includes(stage));
+    if (funding === 'with') list = list.filter((item) => investorsWithRounds.has(item.slug));
+    if (funding === 'without') list = list.filter((item) => !investorsWithRounds.has(item.slug));
     return list;
-  }, [investors, q, type, stage]);
+  }, [investors, q, type, stage, funding, investorsWithRounds]);
+
+  const current = useMemo(() => paginateRecords(results, page), [results, page]);
+  const goToPage = (nextPage) => { setPage(nextPage); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
   if (databaseStatus === 'error') {
     return <div className="wrap py-20"><div className="border border-line bg-white rounded-2xl p-8 max-w-2xl"><DatabaseZap className="w-7 h-7 text-coral"/><h1 className="font-display text-[28px] mt-4">Investor database unavailable</h1><p className="text-[13px] text-slate2 mt-2">The Investors directory is configured to use backend data only. Start the API/MySQL connection and refresh the page.</p>{databaseError && <div className="mono text-[11px] mt-4 p-3 rounded-lg bg-canvas break-all">{databaseError}</div>}</div></div>;
@@ -60,16 +72,21 @@ export default function Investors() {
   return (
     <div className="wrap py-10 pb-24" data-testid="investors-page">
       <SectionHeading number="01" eyebrow="Investors" title="Follow the capital." subtitle="Funds, syndicates, angels, and studios backing Muslim founders." />
-      <div className="mt-8 flex flex-col md:flex-row gap-3">
+      <div className="mt-8 flex flex-col md:flex-row md:flex-wrap gap-3">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate2 absolute left-4 top-1/2 -translate-y-1/2" />
-          <input value={q} onChange={(event) => setQ(event.target.value)} placeholder="Search investors" className="w-full bg-white border border-line rounded-md pl-11 pr-3 py-2.5 text-[13.5px] outline-none focus:border-ink" />
+          <input value={q} onChange={(event) => { setQ(event.target.value); setPage(1); }} placeholder="Search investors" className="w-full bg-white border border-line rounded-md pl-11 pr-3 py-2.5 text-[13.5px] outline-none focus:border-ink" />
         </div>
-        <select value={type} onChange={(event) => setType(event.target.value)} className="bg-white border border-line rounded-md px-3 py-2 text-[13px]">
+        <select value={type} onChange={(event) => { setType(event.target.value); setPage(1); }} className="bg-white border border-line rounded-md px-3 py-2 text-[13px]">
           {types.map((item) => <option key={item}>{item}</option>)}
         </select>
-        <select value={stage} onChange={(event) => setStage(event.target.value)} className="bg-white border border-line rounded-md px-3 py-2 text-[13px]">
+        <select value={stage} onChange={(event) => { setStage(event.target.value); setPage(1); }} className="bg-white border border-line rounded-md px-3 py-2 text-[13px]">
           {stages.map((item) => <option key={item}>{item}</option>)}
+        </select>
+        <select value={funding} onChange={(event) => { setFunding(event.target.value); setPage(1); }} className="bg-white border border-line rounded-md px-3 py-2 text-[13px]" aria-label="Filter investors by linked funding rounds" data-testid="investors-funding-filter">
+          <option value="all">All funding activity</option>
+          <option value="with">Linked funding rounds</option>
+          <option value="without">No linked rounds</option>
         </select>
         <div className="flex items-center bg-white border border-line rounded-md p-1">
           <button type="button" onClick={() => setView('table')} className={`w-8 h-8 rounded-md flex items-center justify-center ${view === 'table' ? 'bg-navy text-white' : 'text-ink'}`}><List className="w-3.5 h-3.5" /></button>
@@ -81,7 +98,7 @@ export default function Investors() {
         <EmptyState title="No investors match" />
       ) : view === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
-          {results.map((investor) => <InvestorCard key={investor.slug} investor={investor} portfolioCount={getPortfolioCount(investor, data.startups, data.rounds)} />)}
+          {current.items.map((investor) => <InvestorCard key={investor.slug} investor={investor} portfolioCount={getPortfolioCount(investor, data.startups, data.rounds)} />)}
         </div>
       ) : (
         <div className="mt-8 border border-line rounded-md bg-white overflow-hidden">
@@ -94,7 +111,7 @@ export default function Investors() {
             <div className="col-span-4 md:col-span-1 eyebrow">Portfolio</div>
             <div className="col-span-4 md:col-span-1 eyebrow text-right"></div>
           </div>
-          {results.map((investor) => {
+          {current.items.map((investor) => {
             const recent = latestInvestorRound(data.rounds, investor.slug);
             const portfolioCount = getPortfolioCount(investor, data.startups, data.rounds);
             return (
@@ -118,6 +135,7 @@ export default function Investors() {
           })}
         </div>
       )}
+      <ResultsPagination {...current} onPageChange={goToPage} noun="investors" />
     </div>
   );
 }

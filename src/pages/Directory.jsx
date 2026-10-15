@@ -6,7 +6,9 @@ import { useData } from '@/context/DataContext';
 import { StartupListRow, CompanyPreview } from '@/components/common/StartupCard';
 import { EmptyState, SkeletonRow } from '@/components/common/Section';
 import { countryLabel } from '@/lib/countryAtlas';
-import { getFundingSummary } from '@/lib/fundingDisplay';
+import { getFundingSummary, isPublicFundingRound } from '@/lib/fundingDisplay';
+import { paginateRecords } from '@/lib/pagination';
+import ResultsPagination from '@/components/common/ResultsPagination';
 
 const STAGES = ['Pre-Seed','Seed','Series A','Series B'];
 const MODELS = ['B2C','B2B SaaS','B2B Marketplace','D2C','Marketplace','B2B2C','B2C SaaS','B2C Subscription'];
@@ -18,6 +20,7 @@ export default function Directory() {
   const categories = useMemo(() => databaseStatus === 'connected' ? (data.categories || []).filter((c) => c.status !== 'Inactive') : [], [data.categories, databaseStatus]);
   const countries = useMemo(() => Array.from(new Set(companies.map((s) => s.country).filter(Boolean))).sort(), [companies]);
   const raisedTotals = useMemo(() => new Map(companies.map((company) => [company.slug, getFundingSummary(data.rounds, company.slug).totalRaised])), [companies, data.rounds]);
+  const fundedCompanySlugs = useMemo(() => new Set((data.rounds || []).filter(isPublicFundingRound).map((round) => round.startupSlug).filter(Boolean)), [data.rounds]);
   const [sp, setSp] = useSearchParams();
   const [q, setQ] = useState(sp.get('q') || '');
   const [view, setView] = useState('list');
@@ -25,15 +28,18 @@ export default function Directory() {
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState('recent');
   const [selected, setSelected] = useState(null);
+  const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({
     category: sp.get('category') || '',
     country: '',
+    funding: 'all',
     stage: [],
     model: [],
     verified: false, openToFunding: false, hiring: false, pitching: false,
   });
 
   useEffect(() => { setLoading(true); const t = setTimeout(() => setLoading(false), 320); return () => clearTimeout(t); }, [filters, q, sort]);
+  useEffect(() => { setPage(1); }, [filters, q, sort]);
 
   const toggleArr = (k, v) => setFilters(f => ({ ...f, [k]: f[k].includes(v) ? f[k].filter(x => x !== v) : [...f[k], v] }));
 
@@ -45,6 +51,8 @@ export default function Directory() {
     }
     if (filters.category) l = l.filter(s => s.category === filters.category);
     if (filters.country) l = l.filter(s => s.country === filters.country);
+    if (filters.funding === 'with') l = l.filter(s => fundedCompanySlugs.has(s.slug));
+    if (filters.funding === 'without') l = l.filter(s => !fundedCompanySlugs.has(s.slug));
     if (filters.stage.length) l = l.filter(s => filters.stage.includes(s.stage));
     if (filters.model.length) l = l.filter(s => filters.model.includes(s.businessModel));
     STATUS.forEach(([k]) => { if (filters[k]) l = l.filter(s => s[k]); });
@@ -52,15 +60,18 @@ export default function Directory() {
     if (sort === 'raised') l.sort((a,b) => (raisedTotals.get(b.slug) || 0) - (raisedTotals.get(a.slug) || 0));
     if (sort === 'alpha') l.sort((a,b) => a.name.localeCompare(b.name));
     return l;
-  }, [q, filters, sort, companies, raisedTotals]);
+  }, [q, filters, sort, companies, raisedTotals, fundedCompanySlugs]);
 
-  const liveSelected = results.find((item) => item.slug === selected?.slug) || results[0] || null;
+  const current = useMemo(() => paginateRecords(results, page), [results, page]);
+  const liveSelected = current.items.find((item) => item.slug === selected?.slug) || current.items[0] || null;
+  const goToPage = (nextPage) => { setPage(nextPage); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
-  const clearAll = () => { setFilters({ category:'', country:'', stage:[], model:[], verified:false, openToFunding:false, hiring:false, pitching:false }); setQ(''); setSp({}); };
+  const clearAll = () => { setFilters({ category:'', country:'', funding:'all', stage:[], model:[], verified:false, openToFunding:false, hiring:false, pitching:false }); setQ(''); setPage(1); setSp({}); };
 
   const chips = [];
   if (filters.category) chips.push({ k:'category', label:filters.category, remove: () => setFilters(f => ({ ...f, category:'' })) });
   if (filters.country) chips.push({ k:'country', label:countryLabel(filters.country), remove: () => setFilters(f => ({ ...f, country:'' })) });
+  if (filters.funding !== 'all') chips.push({ k:'funding', label: filters.funding === 'with' ? 'With funding rounds' : 'Without funding rounds', remove: () => setFilters(f => ({ ...f, funding:'all' })) });
   filters.stage.forEach(s => chips.push({ k:'s'+s, label:s, remove: () => toggleArr('stage', s) }));
   filters.model.forEach(m => chips.push({ k:'m'+m, label:m, remove: () => toggleArr('model', m) }));
   STATUS.forEach(([k, l]) => { if (filters[k]) chips.push({ k, label:l, remove: () => setFilters(f => ({ ...f, [k]: false })) }); });
@@ -134,13 +145,14 @@ export default function Directory() {
                 <div className="hidden md:block col-span-1 eyebrow">Team</div>
                 <div className="col-span-2 md:col-span-1"></div>
               </div>
-              {results.map((s, i) => (
+              {current.items.map((s, i) => (
                 <div key={s.slug} onMouseEnter={() => setSelected(s)} onClick={() => setSelected(s)}>
-                  <StartupListRow startup={s} index={i} active={liveSelected?.slug === s.slug} onSelect={setSelected} />
+                  <StartupListRow startup={s} index={current.offset + i} active={liveSelected?.slug === s.slug} onSelect={setSelected} />
                 </div>
               ))}
             </div>
           )}
+          {!loading && <ResultsPagination {...current} onPageChange={goToPage} noun="companies" />}
         </section>
 
         {/* Right preview */}
@@ -188,6 +200,13 @@ function FilterRail({ filters, setFilters, toggleArr, clearAll, categories, coun
         <select value={filters.country} onChange={e => setFilters(f => ({ ...f, country:e.target.value }))} className="w-full bg-white border border-line rounded-md p-2 text-[13px]" data-testid="filter-country">
           <option value="">All countries</option>
           {countries.map(c => <option key={c} value={c}>{countryLabel(c)}</option>)}
+        </select>
+      </div>
+      <div><div className="eyebrow mb-2">Funding rounds</div>
+        <select value={filters.funding} onChange={e => setFilters(f => ({ ...f, funding:e.target.value }))} className="w-full bg-white border border-line rounded-md p-2 text-[13px]" data-testid="filter-funding">
+          <option value="all">All funding activity</option>
+          <option value="with">With funding rounds</option>
+          <option value="without">Without funding rounds</option>
         </select>
       </div>
       <div><div className="eyebrow mb-2">Stage</div>
