@@ -41,18 +41,42 @@ const COMPANY_FIELDS = new Set([
   'businessModel','status','website','banner','description','revenue','users',
   'growth','addedAt','ownerId','foundedYear','teamSize','totalRaised','views',
   'featured','verified','hiring','pitching','openToFunding','claimed',
-  'claimVerified','founderSlugs','similarSlugs','productImages','products',
+  'claimVerified','founderSlugs','founderProfiles','similarSlugs','productImages','products',
   'overviewBlocks','logo','contact',
 ]);
 const COMPANY_BOOL = new Set(['featured','verified','hiring','pitching','openToFunding','claimed','claimVerified']);
 const COMPANY_NUM = new Set(['foundedYear','teamSize','totalRaised','views']);
-const COMPANY_ARRAY = new Set(['founderSlugs','similarSlugs','productImages','products','overviewBlocks']);
+const COMPANY_ARRAY = new Set(['founderSlugs','founderProfiles','similarSlugs','productImages','products','overviewBlocks']);
 const COMPANY_STATUS = new Set(['Published','Pending','Draft','Rejected','Archived']);
 const logoFields = new Set(['mark','color']);
 const contactFields = new Set(['public','name','role','email','phone','whatsapp','address','linkedin','note','demo']);
 const companySlug = (name) => String(name).toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
 const plainObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
 const csvError = (message) => Object.assign(new Error(message), {status:400});
+
+// Founder names are NOT the same as founderSlugs. CSV founderProfiles creates
+// real founder records on existing companies, in the same transaction.
+const FOUNDER_CSV_FIELDS = new Set(['name','slug','role','bio','linkedin','photo']);
+function cleanFounderProfiles(value, row) {
+  if (!Array.isArray(value) || value.length > 15) throw csvError(`Row ${row}: founderProfiles must be an array with at most 15 founders.`);
+  const seen = new Set();
+  return value.map((raw, index) => {
+    if (!plainObject(raw) || Object.keys(raw).some((key) => !FOUNDER_CSV_FIELDS.has(key))) throw csvError(`Row ${row}, founder ${index+1}: unsupported founder field.`);
+    const founder = {};
+    for (const field of FOUNDER_CSV_FIELDS) {
+      if (raw[field] == null || raw[field] === '') continue;
+      if (typeof raw[field] !== 'string') throw csvError(`Row ${row}, founder ${index+1}: ${field} must be text.`);
+      founder[field] = raw[field].trim();
+    }
+    if (!founder.name || founder.name.length > 190) throw csvError(`Row ${row}, founder ${index+1}: name is required (max 190).`);
+    if (!founder.slug || founder.slug.length > 191 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(founder.slug)) throw csvError(`Row ${row}, founder ${index+1}: invalid slug.`);
+    if (seen.has(founder.slug)) throw csvError(`Row ${row}: duplicate founder slug ${founder.slug}.`);
+    seen.add(founder.slug);
+    if ((founder.role || '').length > 190 || (founder.bio || '').length > 4000) throw csvError(`Row ${row}, founder ${index+1}: role or bio too long.`);
+    for (const field of ['photo','linkedin']) if (founder[field] && (founder[field].length > 2048 || !/^https:\/\/[^\s]+$/i.test(founder[field]))) throw csvError(`Row ${row}, founder ${index+1}: ${field} must be a valid HTTPS URL.`);
+    return founder;
+  });
+}
 
 function cleanCompanyImport(raw, row) {
   if (!plainObject(raw)) throw csvError(`Row ${row}: a company object is required.`);
@@ -69,6 +93,7 @@ function cleanCompanyImport(raw, row) {
     if (COMPANY_BOOL.has(key) && typeof value !== 'boolean') throw csvError(`Row ${row}: ${key} must be true or false.`);
     if (COMPANY_NUM.has(key) && (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || (key !== 'totalRaised' && !Number.isInteger(value)))) throw csvError(`Row ${row}: ${key} must be a nonnegative number.`);
     if (COMPANY_ARRAY.has(key) && !Array.isArray(value)) throw csvError(`Row ${row}: ${key} must be an array.`);
+    if (key === 'founderProfiles') { incoming.founderProfiles = cleanFounderProfiles(value,row); continue; }
     if (!COMPANY_BOOL.has(key) && !COMPANY_NUM.has(key) && !COMPANY_ARRAY.has(key) && typeof value !== 'string') throw csvError(`Row ${row}: ${key} must be text.`);
     incoming[key] = value;
   }
@@ -100,18 +125,55 @@ router.post('/startups/import-csv', async (req,res,next) => {
     });
   } catch (error) { return next(error); }
 
+  const importingFounders = normalized.some((item) => item.founderProfiles?.length);
+  if (importingFounders && onDuplicate !== 'update') return next(csvError('Choose Update existing companies to import founder profiles.'));
   let connection;
   try {
     connection = await pool.getConnection();
     await connection.beginTransaction();
-    let created = 0, updated = 0, skipped = 0;
+    let created = 0, updated = 0, skipped = 0, foundersCreated = 0, foundersLinked = 0;
     const cfg = COLLECTIONS.startups;
+    const founderCfg = COLLECTIONS.founders;
     for (const item of normalized) {
       const [found] = await connection.query('SELECT data FROM startups WHERE record_key=? FOR UPDATE',[item.slug]);
       const existing = found.length ? JSON.parse(found[0].data) : null;
       if (existing && onDuplicate === 'skip') { skipped += 1; continue; }
+      const { founderProfiles = [], ...companyFields } = item;
+      if (founderProfiles.length && !existing) throw csvError(`Company ${item.slug} is not in your website database. Founder-only imports must match an existing company.`);
+      const linkedSlugs = new Set(Array.isArray(existing?.founderSlugs) ? existing.founderSlugs : []);
+      for (const profile of founderProfiles) {
+        // Reuse existing profiles by company+name, even if their slug differs.
+        const [named] = await connection.query('SELECT record_key, data FROM founders WHERE startup_slug=? AND name=? LIMIT 1',[item.slug,profile.name]);
+        if (named.length) {
+          linkedSlugs.add(named[0].record_key);
+          foundersLinked += 1;
+          continue;
+        }
+        const [sameSlug] = await connection.query('SELECT record_key, data FROM founders WHERE record_key=? FOR UPDATE',[profile.slug]);
+        if (sameSlug.length) {
+          const saved = JSON.parse(sameSlug[0].data);
+          if (saved.startupSlug !== item.slug) throw csvError(`Founder slug ${profile.slug} already belongs to a different company. No records were saved.`);
+          linkedSlugs.add(profile.slug);
+          foundersLinked += 1;
+          continue;
+        }
+        const founder = {
+          ...profile, id:`f-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`,
+          slug:profile.slug, startupSlug:item.slug,
+          country: existing?.country || '', flag:existing?.flag || '', industry:existing?.category || '',
+          status:'Draft', verified:false, featured:false,
+          photo: profile.photo || 'https://api.dicebear.com/9.x/icons/svg?seed=StartupMuslimFounder&backgroundColor=f0f3ed',
+          updatedAt:new Date().toISOString().slice(0,10),
+        };
+        const founderRow = {record_key:founder.slug,name:founder.name,data:JSON.stringify(founder),...founderCfg.indexed(founder)};
+        const columns = Object.keys(founderRow);
+        await connection.query(`INSERT INTO founders (${columns.map((key)=>'`'+key+'`').join(',')}) VALUES (${columns.map(()=>'?').join(',')})`,Object.values(founderRow));
+        linkedSlugs.add(founder.slug);
+        foundersCreated += 1;
+      }
       const merged = {
-        ...(existing || {}), ...item,
+        ...(existing || {}), ...companyFields,
+        ...(founderProfiles.length ? {founderSlugs:[...linkedSlugs]} : {}),
         ...(existing ? { id:existing.id, ownerId:existing.ownerId, claimed:existing.claimed, claimVerified:existing.claimVerified } : { id:`s-${Date.now()}-${crypto.randomBytes(4).toString('hex')}` }),
         slug:item.slug,
         status:item.status || existing?.status || 'Published',
@@ -135,11 +197,11 @@ router.post('/startups/import-csv', async (req,res,next) => {
         created += 1;
       }
     }
-    const action = {id:`a-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`,action:'Companies imported from CSV',detail:`${created} created, ${updated} updated, ${skipped} skipped.`,actor:req.user.name || req.user.email || 'Admin',createdAt:new Date().toISOString()};
+    const action = {id:`a-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`,action:'Companies imported from CSV',detail:`${created} companies created, ${updated} companies updated, ${skipped} skipped; ${foundersCreated} draft founders created, ${foundersLinked} founders linked.`,actor:req.user.name || req.user.email || 'Admin',createdAt:new Date().toISOString()};
     const activityRow = {record_key:action.id,action:action.action,actor:action.actor,detail:action.detail,data:JSON.stringify(action),created_at:new Date(action.createdAt)};
     await connection.query(`INSERT INTO activity_logs (${Object.keys(activityRow).map((key)=>`\`${key}\``).join(',')}) VALUES (?,?,?,?,?,?)`,Object.values(activityRow));
     await connection.commit();
-    res.json({ok:true,created,updated,skipped,total:normalized.length});
+    res.json({ok:true,created,updated,skipped,foundersCreated,foundersLinked,total:normalized.length});
   } catch (error) {
     if (connection) try { await connection.rollback(); } catch (_) {}
     next(error);

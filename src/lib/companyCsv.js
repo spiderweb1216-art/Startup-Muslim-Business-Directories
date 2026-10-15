@@ -15,7 +15,7 @@ const SIMPLE_FIELDS = [
   'description', 'revenue', 'users', 'growth', 'addedAt', 'ownerId',
   'foundedYear', 'teamSize', 'totalRaised', 'views', 'featured', 'verified',
   'hiring', 'pitching', 'openToFunding', 'claimed', 'claimVerified',
-  'founderSlugs', 'similarSlugs', 'productImages', 'products', 'overviewBlocks',
+  'founderSlugs', 'founderProfiles', 'similarSlugs', 'productImages', 'products', 'overviewBlocks',
   'logo', 'contact', 'updatedAt',
 ];
 const DOT_FIELDS = [
@@ -36,7 +36,7 @@ const ALIASES = {
 };
 const BOOLEAN_FIELDS = new Set(['featured', 'verified', 'hiring', 'pitching', 'openToFunding', 'claimed', 'claimVerified', 'contact.public']);
 const NUMBER_FIELDS = new Set(['totalRaised', 'foundedYear', 'teamSize', 'views']);
-const ARRAY_FIELDS = new Set(['founderSlugs', 'similarSlugs', 'productImages', 'products', 'overviewBlocks']);
+const ARRAY_FIELDS = new Set(['founderSlugs', 'founderProfiles', 'similarSlugs', 'productImages', 'products', 'overviewBlocks']);
 const OBJECT_FIELDS = new Set(['contact', 'logo']);
 const STATUS = ['Published', 'Pending', 'Draft', 'Rejected', 'Archived'];
 const slugify = (value = '') => String(value).toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -88,6 +88,7 @@ function parseValue(key, raw, line) {
       let parsed;
       try { parsed = JSON.parse(raw); } catch { throw new Error(`Line ${line}: ${key} has invalid JSON.`); }
       if (ARRAY_FIELDS.has(key) ? !Array.isArray(parsed) : !parsed || Array.isArray(parsed) || typeof parsed !== 'object') throw new Error(`Line ${line}: ${key} must be ${ARRAY_FIELDS.has(key) ? 'a JSON array' : 'a JSON object'}.`);
+      if (key === 'founderProfiles' && (parsed.length > 15 || !parsed.every((founder) => founder && typeof founder === 'object' && !Array.isArray(founder) && typeof founder.name === 'string' && founder.name.trim() && typeof founder.slug === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(founder.slug)))) throw new Error(`Line ${line}: founderProfiles must contain 1–15 founder objects with name and slug.`);
       return parsed;
     }
     if (key === 'founderSlugs' || key === 'similarSlugs' || key === 'productImages') return raw.split(/[;|]/).map((v) => v.trim()).filter(Boolean);

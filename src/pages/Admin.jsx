@@ -540,7 +540,9 @@ function CompanyCsvImportModal({ existing, refreshData, onClose, toast }) {
   const fileInput = useRef(null);
   const existingSlugs = useMemo(() => new Set(existing.map((company) => company.slug)), [existing]);
   const duplicates = preview ? preview.items.filter((company) => existingSlugs.has(company.slug)).length : 0;
-  const canImport = preview?.items?.length > 0 && preview.errors.length === 0 && !importing;
+  const founderCount = preview ? preview.items.reduce((count, company) => count + (company.founderProfiles?.length || 0), 0) : 0;
+  const unmatchedFounders = preview ? preview.items.filter((company) => company.founderProfiles?.length && !existingSlugs.has(company.slug)) : [];
+  const canImport = preview?.items?.length > 0 && preview.errors.length === 0 && !importing && (founderCount === 0 || (mode === 'update' && unmatchedFounders.length === 0));
 
   const loadCsv = async (file) => {
     setPreview(null); setError(''); setFilename(file?.name || '');
@@ -561,7 +563,7 @@ function CompanyCsvImportModal({ existing, refreshData, onClose, toast }) {
       });
       try { await refreshData(); }
       catch (_) { toast('CSV saved to MySQL, but the page could not refresh. Reload to see the imported companies.', {type:'warning'}); }
-      toast(`CSV imported: ${result.created} added, ${result.updated} updated, ${result.skipped} skipped.`, {type:'success'});
+      toast(`CSV imported: ${result.created} added, ${result.updated} updated, ${result.skipped} skipped; ${result.foundersCreated || 0} Draft founders created, ${result.foundersLinked || 0} existing founders linked.`, {type:'success'});
       onClose();
     } catch (importError) {
       setError(importError.message || 'Import failed. No changes were saved.');
@@ -578,7 +580,7 @@ function CompanyCsvImportModal({ existing, refreshData, onClose, toast }) {
       <div className="p-5 overflow-y-auto space-y-5 text-[13px]">
         <div className="bg-white border border-line rounded-xl p-4 space-y-2">
           <div className="font-medium">1. Prepare a CSV file</div>
-          <p className="text-slate2 text-[12px] leading-relaxed">One company per row. A <strong>name</strong> column is required; <strong>slug</strong> is optional. Other fields may include category, country, tagline, website, description, stage, status, funding, and contact details. Quoted commas and multiline text are supported.</p>
+          <p className="text-slate2 text-[12px] leading-relaxed">One company per row. A <strong>name</strong> column is required; <strong>slug</strong> is optional. Other fields may include category, country, tagline, website, description, stage, status, funding, and contact details. To create founder profiles for existing companies, include a founderProfiles JSON array; new profiles are Draft for review. Quoted commas and multiline text are supported.</p>
           <button type="button" onClick={()=>downloadBlob(companyCsvTemplate(), 'companies-import-template.csv', 'text/csv;charset=utf-8')} className="inline-flex items-center gap-2 text-coral font-medium hover:underline"><Download className="w-4 h-4"/> Download example CSV template</button>
         </div>
         <div className="space-y-2">
@@ -597,6 +599,9 @@ function CompanyCsvImportModal({ existing, refreshData, onClose, toast }) {
           <label className="block font-medium" htmlFor="csv-duplicate-mode">When a company slug already exists</label>
           <select id="csv-duplicate-mode" value={mode} onChange={(event)=>setMode(event.target.value)} className="w-full border border-line rounded-lg px-3 py-2.5 bg-white text-[12px]"><option value="skip">Skip existing companies (recommended)</option><option value="update">Update existing companies with supplied nonblank fields</option></select>
           <p className="text-slate2 text-[11px]">Blank CSV cells never erase existing values. Existing ownership, linked records, and fields omitted from the CSV are preserved when updating. New companies default to Published unless the CSV specifies another status.</p>
+          {founderCount>0 && <p className="text-[11px] rounded-lg bg-amberSoft p-3 text-slate2"><strong>{founderCount} founder profiles</strong> will be created as <strong>Draft</strong> or linked to existing profiles. Select <strong>Update existing companies</strong>. Draft founders will not be publicly visible until reviewed and published in Admin → Founders.</p>}
+          {unmatchedFounders.length>0 && <p role="alert" className="text-coral text-[11px]">{unmatchedFounders.length} company slugs with founder profiles are not found in the loaded company list; cannot import until these match.</p>}
+          {founderCount>0 && mode!=='update' && <p role="alert" className="text-coral text-[11px]">Select Update existing companies to import founder profiles.</p>}
           {preview.ignored.length>0 && <p className="text-amber text-[11px]">Unrecognized columns ignored: {preview.ignored.join(', ')}</p>}
           {preview.errors.length>0 && <div role="alert" className="text-coral text-[12px] bg-coralSoft p-3 rounded-lg"><strong>Correct these issues before importing:</strong><ul className="mt-1 space-y-1 list-disc ml-4">{preview.errors.slice(0,8).map((item,index)=><li key={index}>{item}</li>)}</ul>{preview.errors.length>8 && <span>…and {preview.errors.length-8} more.</span>}</div>}
         </div>}
