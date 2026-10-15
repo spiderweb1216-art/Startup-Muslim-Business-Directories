@@ -240,5 +240,120 @@ function nameInitials(name) {
   return String(name || 'Company').trim().split(/\s+/).slice(0,2).map((part)=>part.slice(0,1)).join('').toUpperCase();
 }
 
+// Investor CSV import: admin-only, validated server-side and committed atomically.
+// Existing investor ownership, record identity and all omitted fields are kept.
+const INVESTOR_CSV_FIELDS = new Set([
+  'name','slug','type','country','flag','status','verified','featured','halalFocus',
+  'ticketRange','foundedYear','headquarters','aum','teamSize','website',
+  'linkedin','email','phone','description','thesis','focus','stageFocus',
+  'portfolio','portfolioCount','logo',
+]);
+const INVESTOR_CSV_BOOLEAN = new Set(['verified','featured','halalFocus']);
+const INVESTOR_CSV_INTEGER = new Set(['foundedYear','teamSize','portfolioCount']);
+const INVESTOR_CSV_ARRAY = new Set(['focus','stageFocus','portfolio']);
+const INVESTOR_CSV_STATUS = new Set(['Published','Pending','Draft','Rejected','Archived']);
+const investorSlug = (name) => String(name).toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+function cleanInvestorImport(raw, row) {
+  if (!plainObject(raw)) throw csvError(`Row ${row}: invalid investor record.`);
+  const incoming = {};
+  for (const [key, value] of Object.entries(raw)) {
+    // Do not allow forged ownership, record IDs, claims or arbitrary JSON keys.
+    if (!INVESTOR_CSV_FIELDS.has(key)) throw csvError(`Row ${row}: unsupported investor field ${key}.`);
+    if (value == null || value === '') continue;
+    if (key === 'logo') {
+      if (!plainObject(value) || Object.keys(value).some((k) => !['mark','color'].includes(k))) throw csvError(`Row ${row}: logo supports mark and color only.`);
+      const cleanLogo = {};
+      if (value.mark !== undefined) {
+        if (typeof value.mark !== 'string' || value.mark.length > 20) throw csvError(`Row ${row}: invalid logo initials.`);
+        if (value.mark.trim()) cleanLogo.mark = value.mark.trim();
+      }
+      if (value.color !== undefined) {
+        if (typeof value.color !== 'string' || !/^#[a-f0-9]{6}$/i.test(value.color.trim())) throw csvError(`Row ${row}: logo color must be a 6-digit hex color.`);
+        cleanLogo.color = value.color.trim();
+      }
+      if (Object.keys(cleanLogo).length) incoming.logo = cleanLogo;
+      continue;
+    }
+    if (INVESTOR_CSV_BOOLEAN.has(key)) {
+      if (typeof value !== 'boolean') throw csvError(`Row ${row}: ${key} must be true or false.`);
+    } else if (INVESTOR_CSV_INTEGER.has(key)) {
+      if (!Number.isSafeInteger(value) || value < 0) throw csvError(`Row ${row}: ${key} must be a nonnegative whole number.`);
+    } else if (INVESTOR_CSV_ARRAY.has(key)) {
+      if (!Array.isArray(value) || value.length > 100 || value.some((v)=>typeof v !== 'string' || !v.trim() || v.length > 190)) throw csvError(`Row ${row}: ${key} must contain up to 100 text values.`);
+    } else if (typeof value !== 'string') {
+      throw csvError(`Row ${row}: ${key} must be text.`);
+    }
+    if (typeof value === 'string') {
+      const limits = {name:190,slug:191,type:120,country:120,flag:20,status:40,email:190,phone:120,website:2048,linkedin:2048,description:20000,thesis:20000};
+      if (value.length > (limits[key] || 2000)) throw csvError(`Row ${row}: ${key} is too long.`);
+      if (['website','linkedin'].includes(key) && value.trim() && !/^https?:\/\/[^\s]+$/i.test(value.trim())) throw csvError(`Row ${row}: ${key} needs an HTTP(S) URL.`);
+      if (key === 'email' && value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) throw csvError(`Row ${row}: invalid contact email.`);
+    }
+    incoming[key] = typeof value === 'string' ? value.trim() : value;
+  }
+  if (!incoming.name) throw csvError(`Row ${row}: investor name is required.`);
+  const slug = incoming.slug || investorSlug(incoming.name);
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 191) throw csvError(`Row ${row}: invalid investor slug.`);
+  if (incoming.status && !INVESTOR_CSV_STATUS.has(incoming.status)) throw csvError(`Row ${row}: invalid investor status.`);
+  if (JSON.stringify(incoming).length > 100000) throw csvError(`Row ${row}: investor data is too large.`);
+  return {...incoming,slug};
+}
+
+router.post('/investors/import-csv', async (req, res, next) => {
+  const {items, onDuplicate='skip'} = req.body || {};
+  if (!Array.isArray(items) || items.length < 1 || items.length > 500) return next(csvError('Provide 1–500 investors per import.'));
+  if (!['skip','update'].includes(onDuplicate)) return next(csvError('Invalid duplicate-handling choice.'));
+  let normalized;
+  try {
+    const seen = new Set();
+    normalized = items.map((item,i) => {
+      const clean = cleanInvestorImport(item,i+2);
+      if (seen.has(clean.slug)) throw csvError(`Duplicate investor slug in CSV: ${clean.slug}.`);
+      seen.add(clean.slug);
+      return clean;
+    });
+  } catch (error) { return next(error); }
+
+  let connection;
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+    let created = 0, updated = 0, skipped = 0;
+    const cfg = COLLECTIONS.investors;
+    for (const item of normalized) {
+      const [rows] = await connection.query('SELECT data FROM investors WHERE record_key=? FOR UPDATE', [item.slug]);
+      const existing = rows.length ? (typeof rows[0].data === 'string' ? JSON.parse(rows[0].data) : rows[0].data) : null;
+      if (existing && onDuplicate === 'skip') { skipped++; continue; }
+      // Never alter record identity, ownership, claim state or unrelated data.
+      const merged = {
+        ...(existing || {}), ...item,
+        ...(existing ? {id:existing.id,ownerId:existing.ownerId,claimed:existing.claimed,claimVerified:existing.claimVerified} : {id:`i-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`}),
+        slug:item.slug,
+        status:item.status || existing?.status || 'Published',
+        updatedAt:new Date().toISOString().slice(0,10),
+        logo:{mark:nameInitials(item.name),color:'#2F8F5B',...(existing?.logo || {}),...(item.logo || {})},
+      };
+      const row = {record_key:merged.slug,name:merged.name,data:JSON.stringify(merged),...cfg.indexed(merged)};
+      const columns = Object.keys(row);
+      if (existing) {
+        const changedColumns = columns.filter((key)=>key !== 'record_key');
+        await connection.query(`UPDATE investors SET ${changedColumns.map((key)=>`\`${key}\`=?`).join(', ')} WHERE record_key=?`, [...changedColumns.map((key)=>row[key]),merged.slug]);
+        updated++;
+      } else {
+        await connection.query(`INSERT INTO investors (${columns.map((key)=>`\`${key}\``).join(',')}) VALUES (${columns.map(()=>'?').join(',')})`,Object.values(row));
+        created++;
+      }
+    }
+    const action = {id:`a-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`,action:'Investors imported from CSV',detail:`${created} investors created, ${updated} updated, ${skipped} skipped.`,actor:req.user.name || req.user.email || 'Admin',createdAt:new Date().toISOString()};
+    const log = {record_key:action.id,action:action.action,actor:action.actor,detail:action.detail,data:JSON.stringify(action),created_at:new Date(action.createdAt)};
+    await connection.query(`INSERT INTO activity_logs (${Object.keys(log).map((key)=>`\`${key}\``).join(',')}) VALUES (?,?,?,?,?,?)`,Object.values(log));
+    await connection.commit();
+    res.json({ok:true,created,updated,skipped,total:normalized.length});
+  } catch(error) {
+    if (connection) try { await connection.rollback(); } catch (_) {}
+    next(error);
+  } finally { if(connection) connection.release(); }
+});
+
 router.post('/reset',async(req,res,next)=>{try{await seedDatabase({clear:true});res.json({ok:true});}catch(e){next(e);}});
 module.exports=router;
