@@ -1,10 +1,14 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { STARTUPS, CATEGORIES, COUNTRIES } from '@/data/mockData';
+import { useData } from '@/context/DataContext';
 import StartupCard from '@/components/common/StartupCard';
 import { EmptyState, SkeletonRow, SectionHeading } from '@/components/common/Section';
 import { Search, Filter } from 'lucide-react';
 
 export default function Startups() {
+  const { data, databaseStatus } = useData();
+  const companies = useMemo(() => databaseStatus === 'connected' ? (data.startups || []).filter((s) => s.status === 'Published') : [], [data.startups, databaseStatus]);
+  const categories = useMemo(() => databaseStatus === 'connected' ? (data.categories || []).filter((c) => c.status !== 'Inactive') : [], [data.categories, databaseStatus]);
+  const countries = useMemo(() => Array.from(new Set(companies.map((s) => s.country).filter(Boolean))).sort(), [companies]);
   const [q, setQ] = useState('');
   const [cat, setCat] = useState('');
   const [country, setCountry] = useState('');
@@ -12,12 +16,12 @@ export default function Startups() {
   useEffect(() => { setLoading(true); const t=setTimeout(()=>setLoading(false),300); return ()=>clearTimeout(t); }, [q, cat, country]);
 
   const results = useMemo(() => {
-    let l = [...STARTUPS];
-    if (q) l = l.filter(s => s.name.toLowerCase().includes(q.toLowerCase()) || s.tagline.toLowerCase().includes(q.toLowerCase()));
+    let l = [...companies];
+    if (q) l = l.filter(s => String(s.name || '').toLowerCase().includes(q.toLowerCase()) || String(s.tagline || '').toLowerCase().includes(q.toLowerCase()));
     if (cat) l = l.filter(s => s.category === cat);
     if (country) l = l.filter(s => s.country === country);
     return l;
-  }, [q, cat, country]);
+  }, [q, cat, country, companies]);
 
   return (
     <div className="wrap pt-10 pb-24" data-testid="startups-page">
@@ -29,11 +33,11 @@ export default function Startups() {
         </div>
         <select value={cat} onChange={e=>setCat(e.target.value)} className="bg-white border border-line rounded-full px-4 py-2.5 text-[13px]">
           <option value="">All categories</option>
-          {CATEGORIES.map(c => <option key={c.slug} value={c.name}>{c.name}</option>)}
+          {categories.map(c => <option key={c.slug} value={c.name}>{c.name}</option>)}
         </select>
         <select value={country} onChange={e=>setCountry(e.target.value)} className="bg-white border border-line rounded-full px-4 py-2.5 text-[13px]">
           <option value="">All countries</option>
-          {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+          {countries.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
       </div>
       <div className="mt-8">

@@ -36,6 +36,17 @@ function buildFallback() {
   };
 }
 
+// Empty bootstrap state: the shipped demo fixtures must never masquerade as
+// records from the live database while a request is loading or has failed.
+// Keep buildFallback exclusively for the explicit admin Reset Data action.
+function buildEmptyData() {
+  return {
+    startups:[], founders:[], investors:[], rounds:[], opportunities:[], jobs:[],
+    pitches:[], claims:[], categories:[], users:[], messages:[], subscribers:[],
+    pages:[], media:[], activity:[], settings:{...SETTINGS},
+  };
+}
+
 function replaceArray(target,source){target.splice(0,target.length,...clone(source||[]));}
 function isPublic(record){const status=record.status||record.reviewStatus||'Published';return !['Draft','Pending','Rejected','Archived','Blocked','Inactive'].includes(status);}
 function syncPublicData(data){
@@ -61,13 +72,13 @@ function syncPublicData(data){
 
 export function DataProvider({children}) {
   const { currentUser } = useAuth();
-  const [data,setData] = useState(()=>{const seed=buildFallback();syncPublicData(seed);return seed;});
+  const [data,setData] = useState(()=>{const empty=buildEmptyData();syncPublicData(empty);return empty;});
   const [loading,setLoading]=useState(true);
   const [databaseStatus,setDatabaseStatus]=useState('checking');
   const [databaseError,setDatabaseError]=useState('');
 
   const applyData=useCallback((incoming)=>{
-    const fallback=buildFallback();
+    const fallback=buildEmptyData();
     const next={...fallback,...incoming,settings:{...fallback.settings,...(incoming?.settings||{})}};
     syncPublicData(next);setData(next);return next;
   },[]);

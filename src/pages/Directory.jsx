@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, X, LayoutGrid, List, SlidersHorizontal } from 'lucide-react';
-import { CATEGORIES, COUNTRIES, STARTUPS } from '@/data/mockData';
+import { useData } from '@/context/DataContext';
 import { StartupListRow, CompanyPreview } from '@/components/common/StartupCard';
 import { EmptyState, SkeletonRow } from '@/components/common/Section';
 import { countryLabel } from '@/lib/countryAtlas';
@@ -12,6 +12,10 @@ const MODELS = ['B2C','B2B SaaS','B2B Marketplace','D2C','Marketplace','B2B2C','
 const STATUS = [ ['verified','Verified'],['openToFunding','Open to funding'],['hiring','Hiring'],['pitching','Currently pitching'] ];
 
 export default function Directory() {
+  const { data, databaseStatus } = useData();
+  const companies = useMemo(() => databaseStatus === 'connected' ? (data.startups || []).filter((s) => s.status === 'Published') : [], [data.startups, databaseStatus]);
+  const categories = useMemo(() => databaseStatus === 'connected' ? (data.categories || []).filter((c) => c.status !== 'Inactive') : [], [data.categories, databaseStatus]);
+  const countries = useMemo(() => Array.from(new Set(companies.map((s) => s.country).filter(Boolean))).sort(), [companies]);
   const [sp, setSp] = useSearchParams();
   const [q, setQ] = useState(sp.get('q') || '');
   const [view, setView] = useState('list');
@@ -32,10 +36,10 @@ export default function Directory() {
   const toggleArr = (k, v) => setFilters(f => ({ ...f, [k]: f[k].includes(v) ? f[k].filter(x => x !== v) : [...f[k], v] }));
 
   const results = useMemo(() => {
-    let l = [...STARTUPS];
+    let l = [...companies];
     if (q.trim()) {
       const t = q.toLowerCase();
-      l = l.filter(s => s.name.toLowerCase().includes(t) || s.tagline.toLowerCase().includes(t) || s.category.toLowerCase().includes(t) || s.country.toLowerCase().includes(t));
+      l = l.filter(s => String(s.name || '').toLowerCase().includes(t) || String(s.tagline || '').toLowerCase().includes(t) || String(s.category || '').toLowerCase().includes(t) || String(s.country || '').toLowerCase().includes(t));
     }
     if (filters.category) l = l.filter(s => s.category === filters.category);
     if (filters.country) l = l.filter(s => s.country === filters.country);
@@ -46,9 +50,9 @@ export default function Directory() {
     if (sort === 'raised') l.sort((a,b) => b.totalRaised - a.totalRaised);
     if (sort === 'alpha') l.sort((a,b) => a.name.localeCompare(b.name));
     return l;
-  }, [q, filters, sort]);
+  }, [q, filters, sort, companies]);
 
-  useEffect(() => { if (results.length && !selected) setSelected(results[0]); }, [results, selected]);
+  const liveSelected = results.find((item) => item.slug === selected?.slug) || results[0] || null;
 
   const clearAll = () => { setFilters({ category:'', country:'', stage:[], model:[], verified:false, openToFunding:false, hiring:false, pitching:false }); setQ(''); setSp({}); };
 
@@ -82,7 +86,7 @@ export default function Directory() {
         {/* Left filter rail */}
         <aside className="hidden lg:block col-span-3">
           <div className="sticky top-24">
-            <FilterRail filters={filters} setFilters={setFilters} toggleArr={toggleArr} clearAll={clearAll} />
+            <FilterRail filters={filters} setFilters={setFilters} toggleArr={toggleArr} clearAll={clearAll} categories={categories} countries={countries} />
           </div>
         </aside>
 
@@ -130,7 +134,7 @@ export default function Directory() {
               </div>
               {results.map((s, i) => (
                 <div key={s.slug} onMouseEnter={() => setSelected(s)} onClick={() => setSelected(s)}>
-                  <StartupListRow startup={s} index={i} active={selected?.slug === s.slug} onSelect={setSelected} />
+                  <StartupListRow startup={s} index={i} active={liveSelected?.slug === s.slug} onSelect={setSelected} />
                 </div>
               ))}
             </div>
@@ -141,7 +145,7 @@ export default function Directory() {
         <aside className="hidden lg:block col-span-3">
           <div className="sticky top-24">
             <div className="eyebrow mb-2">Preview</div>
-            {selected ? <CompanyPreview startup={selected} /> : <div className="text-[12.5px] text-slate2">Select a company to preview.</div>}
+            {liveSelected ? <CompanyPreview startup={liveSelected} /> : <div className="text-[12.5px] text-slate2">Select a company to preview.</div>}
           </div>
         </aside>
       </div>
@@ -155,7 +159,7 @@ export default function Directory() {
                 <div className="font-display text-[18px]">Filters</div>
                 <button onClick={() => setDrawer(false)} className="w-8 h-8 rounded border border-line inline-flex items-center justify-center"><X className="w-4 h-4" /></button>
               </div>
-              <FilterRail filters={filters} setFilters={setFilters} toggleArr={toggleArr} clearAll={clearAll} />
+              <FilterRail filters={filters} setFilters={setFilters} toggleArr={toggleArr} clearAll={clearAll} categories={categories} countries={countries} />
               <button onClick={() => setDrawer(false)} className="btn btn-coral w-full justify-center mt-5">Show {results.length} results</button>
             </motion.aside>
           </motion.div>
@@ -165,7 +169,7 @@ export default function Directory() {
   );
 }
 
-function FilterRail({ filters, setFilters, toggleArr, clearAll }) {
+function FilterRail({ filters, setFilters, toggleArr, clearAll, categories, countries }) {
   return (
     <div className="space-y-5 border border-line rounded-md p-5 bg-white">
       <div className="flex items-center justify-between">
@@ -175,13 +179,13 @@ function FilterRail({ filters, setFilters, toggleArr, clearAll }) {
       <div><div className="eyebrow mb-2">Category</div>
         <select value={filters.category} onChange={e => setFilters(f => ({ ...f, category:e.target.value }))} className="w-full bg-white border border-line rounded-md p-2 text-[13px]" data-testid="filter-category">
           <option value="">All categories</option>
-          {CATEGORIES.map(c => <option key={c.slug} value={c.name}>{c.name}</option>)}
+          {categories.map(c => <option key={c.slug} value={c.name}>{c.name}</option>)}
         </select>
       </div>
       <div><div className="eyebrow mb-2">Country</div>
         <select value={filters.country} onChange={e => setFilters(f => ({ ...f, country:e.target.value }))} className="w-full bg-white border border-line rounded-md p-2 text-[13px]" data-testid="filter-country">
           <option value="">All countries</option>
-          {COUNTRIES.map(c => <option key={c} value={c}>{countryLabel(c)}</option>)}
+          {countries.map(c => <option key={c} value={c}>{countryLabel(c)}</option>)}
         </select>
       </div>
       <div><div className="eyebrow mb-2">Stage</div>

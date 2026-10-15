@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Search as SearchIcon, ArrowUpRight, Building2, Users2, Coins, FileText, HandHeart, Briefcase } from 'lucide-react';
-import { STARTUPS, FOUNDERS, INVESTORS, PITCHES, OPPORTUNITIES, JOBS } from '@/data/mockData';
+import { useData } from '@/context/DataContext';
 import { StartupLogo, InvestorLogo } from '@/components/common/Logo';
 import { EmptyState } from '@/components/common/Section';
 import CountryLabel from '@/components/common/CountryLabel';
@@ -19,6 +19,7 @@ const TABS = [
 const RECENT_KEY = 'sm_recent_searches_v1';
 
 function highlight(text, q) {
+  text = String(text || '');
   if (!q) return text;
   const idx = text.toLowerCase().indexOf(q.toLowerCase());
   if (idx === -1) return text;
@@ -26,6 +27,8 @@ function highlight(text, q) {
 }
 
 export default function Search() {
+  const { data, databaseStatus } = useData();
+  const live = databaseStatus === 'connected';
   const [sp, setSp] = useSearchParams();
   const [q, setQ] = useState(sp.get('q') || '');
   const [tab, setTab] = useState('all');
@@ -44,13 +47,13 @@ export default function Search() {
 
   const t = q.toLowerCase();
   const R = useMemo(() => ({
-    startups: STARTUPS.filter(s => !t || s.name.toLowerCase().includes(t) || s.tagline.toLowerCase().includes(t) || s.category.toLowerCase().includes(t) || s.country.toLowerCase().includes(t)),
-    founders: FOUNDERS.filter(f => !t || f.name.toLowerCase().includes(t) || f.bio.toLowerCase().includes(t) || f.industry.toLowerCase().includes(t) || f.country.toLowerCase().includes(t)),
-    investors: INVESTORS.filter(i => !t || i.name.toLowerCase().includes(t) || i.type.toLowerCase().includes(t) || i.focus.join(' ').toLowerCase().includes(t)),
-    pitches: PITCHES.filter(p => !t || p.pitchTitle.toLowerCase().includes(t) || p.summary.toLowerCase().includes(t)),
-    opportunities: OPPORTUNITIES.filter(o => !t || o.title.toLowerCase().includes(t) || o.description.toLowerCase().includes(t)),
-    jobs: JOBS.filter(j => !t || j.title.toLowerCase().includes(t)),
-  }), [t]);
+    startups: (live ? data.startups || [] : []).filter(s => s.status === 'Published' && (!t || [s.name, s.tagline, s.category, s.country].some(v => String(v || '').toLowerCase().includes(t)))),
+    founders: (live ? data.founders || [] : []).filter(f => f.status === 'Published' && (!t || [f.name, f.bio, f.industry, f.country].some(v => String(v || '').toLowerCase().includes(t)))),
+    investors: (live ? data.investors || [] : []).filter(i => i.status === 'Published' && (!t || [i.name, i.type, ...(Array.isArray(i.focus) ? i.focus : [])].some(v => String(v || '').toLowerCase().includes(t)))),
+    pitches: (live ? data.pitches || [] : []).filter(p => p.status === 'Active' && p.reviewStatus === 'Approved' && p.visibility === 'Public' && (!t || [p.pitchTitle, p.summary].some(v => String(v || '').toLowerCase().includes(t)))),
+    opportunities: (live ? data.opportunities || [] : []).filter(o => o.status === 'Published' && (!t || [o.title, o.description].some(v => String(v || '').toLowerCase().includes(t)))),
+    jobs: (live ? data.jobs || [] : []).filter(j => j.status === 'Published' && (!t || String(j.title || '').toLowerCase().includes(t))),
+  }), [t, data, live]);
 
   const counts = { all: Object.values(R).reduce((s, l) => s + l.length, 0), ...Object.fromEntries(Object.entries(R).map(([k,v]) => [k, v.length])) };
   const active = tab === 'all' ? R : { [tab]: R[tab] };

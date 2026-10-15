@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import * as Icons from 'lucide-react';
-import { CATEGORIES } from '@/data/mockData';
 import { useData } from '@/context/DataContext';
 
 const isPublished = (record = {}) => ![
@@ -9,11 +8,12 @@ const isPublished = (record = {}) => ![
 ].includes(record.status || 'Published');
 
 export default function CategoryIndex() {
-  const { data } = useData();
+  const { data, databaseStatus } = useData();
+  const categories = databaseStatus === 'connected' ? (data.categories || []).filter((c) => c.status !== 'Inactive') : [];
 
   const companies = useMemo(
-    () => (data.startups || []).filter(isPublished),
-    [data.startups]
+    () => databaseStatus === 'connected' ? (data.startups || []).filter(isPublished) : [],
+    [data.startups, databaseStatus]
   );
 
   const counts = useMemo(() => {
@@ -26,7 +26,7 @@ export default function CategoryIndex() {
     return map;
   }, [companies]);
 
-  const activeCategoryCount = CATEGORIES.filter((category) => (counts.get(category.name) || 0) > 0).length;
+  const activeCategoryCount = categories.filter((category) => (counts.get(category.name) || 0) > 0).length;
 
   return (
     <section className="wrap py-10 md:py-12" data-testid="category-index-section">
@@ -37,7 +37,7 @@ export default function CategoryIndex() {
             Explore the halal economy.
           </h2>
           <p className="text-[13.5px] text-slate2 mt-2 max-w-xl">
-            Twelve sectors in one compact view. Counts update from published companies in the database.
+            Sectors from the live directory, with counts updated from published company listings.
           </p>
         </div>
 
@@ -49,7 +49,7 @@ export default function CategoryIndex() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 mt-6">
-        {CATEGORIES.map((category, index) => {
+        {categories.map((category, index) => {
           const Icon = Icons[category.icon] || Icons.Sparkles;
           const count = counts.get(category.name) || 0;
 

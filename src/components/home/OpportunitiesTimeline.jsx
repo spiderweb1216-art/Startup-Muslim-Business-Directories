@@ -2,7 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, CalendarDays, Globe2, MapPin } from 'lucide-react';
-import { OPPORTUNITIES, formatDate } from '@/data/mockData';
+import { formatDate } from '@/data/mockData';
+import { useData } from '@/context/DataContext';
 import { SectionHeading } from '@/components/common/Section';
 import SaveButton from '@/components/common/SaveButton';
 import { useToast } from '@/context/ToastContext';
@@ -13,15 +14,16 @@ const FILTERS = ['Upcoming','Closing soon','Global','Grants','Accelerators'];
 export default function OpportunitiesTimeline() {
   const [filter, setFilter] = useState('Upcoming');
   const { toast } = useToast();
+  const { data, databaseStatus } = useData();
 
   const list = useMemo(() => {
-    let l = [...OPPORTUNITIES];
+    let l = databaseStatus === 'connected' ? (data.opportunities || []).filter((o) => o.status === 'Published') : [];
     if (filter === 'Global') l = l.filter(o => o.remote);
     if (filter === 'Grants') l = l.filter(o => o.type === 'Grant');
     if (filter === 'Accelerators') l = l.filter(o => o.type === 'Accelerator');
     if (filter === 'Closing soon') l = [...l].sort((a,b) => new Date(a.deadline) - new Date(b.deadline)).slice(0, 5);
     return [...l].sort((a,b) => new Date(a.deadline) - new Date(b.deadline));
-  }, [filter]);
+  }, [filter, data.opportunities, databaseStatus]);
 
   const grouped = list.reduce((acc, o) => {
     const key = new Date(o.deadline).toLocaleString(undefined, { month:'long', year:'numeric' });
@@ -43,6 +45,7 @@ export default function OpportunitiesTimeline() {
         </div>
 
         <div className="mt-10">
+          {list.length === 0 && <div className="border border-line bg-white rounded-md p-8 text-center text-[13px] text-slate2">No published opportunities available right now.</div>}
           {Object.entries(grouped).map(([month, items]) => (
             <div key={month} className="grid grid-cols-12 gap-6 md:gap-8 border-t border-line py-8">
               <div className="col-span-12 md:col-span-3">
