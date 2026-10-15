@@ -27,6 +27,7 @@ import { api } from '@/lib/api';
 import { refreshSiteForCacheRevision } from '@/lib/siteCache';
 import { parseCompanyCsv, companyCsvTemplate, COMPANY_CSV_MAX_BYTES } from '@/lib/companyCsv';
 import { parseInvestorCsv, investorCsvTemplate, INVESTOR_CSV_MAX_BYTES } from '@/lib/investorCsv';
+import { parseFundingRoundsCsv, fundingRoundsCsvTemplate, FUNDING_CSV_MAX_BYTES } from '@/lib/fundingRoundsCsv';
 
 const NAV_GROUPS = [
   {
@@ -385,6 +386,7 @@ function EntityManager({ collection, config }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [workspaceSaving, setWorkspaceSaving] = useState(false);
   const [csvOpen, setCsvOpen] = useState(false);
+  const [fundingCsvOpen, setFundingCsvOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const rows = data[collection] || [];
   const idField = idFields[collection] || config.idField || 'id';
@@ -504,7 +506,7 @@ function EntityManager({ collection, config }) {
     <div className="space-y-5">
       <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-4">
         <div><div className="eyebrow">Manage records</div><h2 className="font-display text-[30px] mt-1">{config.title}</h2><p className="text-[13px] text-slate2 max-w-3xl mt-1">{config.description}</p></div>
-        <div className="flex flex-wrap gap-2">{['startups','investors'].includes(collection)&&<button onClick={()=>setCsvOpen(true)} className="btn btn-outline bg-white"><Upload className="w-4 h-4"/> Import CSV</button>}<button onClick={exportCsv} className="btn btn-outline bg-white"><Download className="w-4 h-4"/> Export CSV</button><button onClick={openCreate} className="btn btn-coral"><Plus className="w-4 h-4"/> Add {config.singular}</button></div>
+        <div className="flex flex-wrap gap-2">{['startups','investors'].includes(collection)&&<button onClick={()=>setCsvOpen(true)} className="btn btn-outline bg-white"><Upload className="w-4 h-4"/> Import CSV</button>}{collection==='startups'&&<button onClick={()=>setFundingCsvOpen(true)} className="btn btn-outline bg-white"><CircleDollarSign className="w-4 h-4"/> Import funding CSV</button>}<button onClick={exportCsv} className="btn btn-outline bg-white"><Download className="w-4 h-4"/> Export CSV</button><button onClick={openCreate} className="btn btn-coral"><Plus className="w-4 h-4"/> Add {config.singular}</button></div>
       </div>
 
       <div className="bg-white border border-line rounded-2xl overflow-hidden">
@@ -528,6 +530,7 @@ function EntityManager({ collection, config }) {
       </div>
 
       {collection==='startups' && csvOpen && <CompanyCsvImportModal existing={rows} refreshData={refreshData} onClose={()=>setCsvOpen(false)} toast={toast} />}
+      {collection==='startups' && fundingCsvOpen && <FundingRoundsCsvImportModal companies={rows} rounds={data.rounds||[]} refreshData={refreshData} onClose={()=>setFundingCsvOpen(false)} toast={toast} />}
       {collection==='investors' && csvOpen && <InvestorCsvImportModal existing={rows} refreshData={refreshData} onClose={()=>setCsvOpen(false)} toast={toast} />}
       <AnimatePresence>{modalOpen && (collection==='startups' ? <StartupWorkspaceEditor initial={editing} data={data} saving={workspaceSaving} onClose={()=>{setModalOpen(false);setEditing(null);}} onSave={saveStartupWorkspace}/> : <RecordModal config={config} collection={collection} initial={editing} onClose={()=>{setModalOpen(false);setEditing(null);}} onSave={save}/>)}</AnimatePresence>
       <AnimatePresence>{deleteTarget&&<ConfirmDelete label={deleteTarget[config.nameField]||deleteTarget[idField]} onCancel={()=>setDeleteTarget(null)} onConfirm={()=>{removeItem(collection,deleteTarget[idField],currentUser?.name);setDeleteTarget(null);toast('Record deleted.',{type:'success'});}}/>}</AnimatePresence>
@@ -614,6 +617,91 @@ function CompanyCsvImportModal({ existing, refreshData, onClose, toast }) {
       <div className="bg-white border-t border-line p-4 flex items-center justify-between gap-3">
         <div className="text-slate2 text-[11px]">The import is saved directly to MySQL.</div>
         <div className="flex items-center gap-2"><button type="button" disabled={importing} onClick={onClose} className="btn btn-outline disabled:opacity-50">Cancel</button><button type="submit" disabled={!canImport} className="btn btn-coral disabled:opacity-50">{importing?'Importing…':`Import ${preview?.items?.length || 0} companies`}</button></div>
+      </div>
+    </form>
+  </div>;
+}
+
+// This independent modal affects funding_rounds only. The existing Companies
+// CSV import above remains unchanged.
+function FundingRoundsCsvImportModal({ companies, rounds, refreshData, onClose, toast }) {
+  const [filename, setFilename] = useState('');
+  const [preview, setPreview] = useState(null);
+  const [error, setError] = useState('');
+  const [mode, setMode] = useState('skip');
+  const [importing, setImporting] = useState(false);
+  const fileInput = useRef(null);
+  const knownSlugs = useMemo(() => new Set(companies.map((company) => company.slug)), [companies]);
+  const matches = useMemo(() => (preview?.items || []).map((item) => {
+    if (!knownSlugs.has(item.slug)) return {kind:'Missing company', item};
+    const sameName = rounds.filter((round) => round.startupSlug===item.slug && String(round.roundName||'').trim().toLowerCase()===item.roundName.trim().toLowerCase());
+    const existing = item.date ? sameName.filter((round)=>round.date===item.date) : sameName;
+    if (existing.length>1) return {kind:'Ambiguous', item};
+    return {kind:existing.length ? 'Existing' : 'New',item};
+  }), [preview, knownSlugs, rounds]);
+  const missing = matches.filter((result)=>result.kind==='Missing company');
+  const ambiguous = matches.filter((result)=>result.kind==='Ambiguous');
+  const existingCount = matches.filter((result)=>result.kind==='Existing').length;
+  const canImport = preview?.items?.length>0 && preview.errors.length===0 && !missing.length && !ambiguous.length && !importing;
+
+  const loadCsv = async (file) => {
+    setPreview(null); setError(''); setFilename(file?.name || '');
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith('.csv')) { setError('Choose a .csv file.'); return; }
+    if (file.size > FUNDING_CSV_MAX_BYTES) { setError('Funding CSV must be smaller than 2 MB.'); return; }
+    try { setPreview(parseFundingRoundsCsv(await file.text())); }
+    catch (err) { setError(err.message || 'Unable to read the funding CSV.'); }
+  };
+  const importRows = async (event) => {
+    event.preventDefault();
+    if (!canImport) return;
+    setImporting(true); setError('');
+    try {
+      const result = await api('/admin/startups/funding-rounds/import-csv', {method:'POST',body:{items:preview.items,onDuplicate:mode}});
+      try { await refreshData(); } catch (_) { toast('Funding rounds saved, but the page did not refresh. Reload to see them.',{type:'warning'}); }
+      toast(`Funding rounds: ${result.created} created, ${result.updated} updated, ${result.skipped} skipped. Existing investor links: ${result.linked}; round-only names: ${result.unlisted}.`, {type:'success'});
+      onClose();
+    } catch (err) { setError(err.message || 'Funding import failed. No changes were saved.'); }
+    finally { setImporting(false); }
+  };
+
+  return <div className="fixed inset-0 z-[105] bg-navy/70 backdrop-blur-sm flex items-end md:items-center justify-center md:p-5" onMouseDown={()=>{if(!importing)onClose();}}>
+    <form onSubmit={importRows} onMouseDown={(e)=>e.stopPropagation()} className="bg-[#F7F4EE] w-full max-w-[700px] max-h-[94vh] md:rounded-2xl border border-line overflow-hidden shadow-2xl flex flex-col">
+      <div className="bg-white border-b border-line p-5 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-coralSoft text-coral flex items-center justify-center"><CircleDollarSign className="w-5 h-5"/></div>
+        <div className="flex-1 min-w-0"><div className="eyebrow">Admin · Companies · Funding rounds only</div><h3 className="font-display text-[22px] mt-0.5">Import funding rounds from CSV</h3></div>
+        <button type="button" onClick={onClose} disabled={importing} aria-label="Close funding CSV import" className="w-9 h-9 border border-line rounded-lg flex items-center justify-center disabled:opacity-50"><X className="w-4 h-4"/></button>
+      </div>
+      <div className="p-5 overflow-y-auto space-y-5 text-[13px]">
+        <div className="bg-white border border-line rounded-xl p-4 space-y-2">
+          <div className="font-medium">1. Prepare a funding-only CSV</div>
+          <p className="text-slate2 text-[12px] leading-relaxed">Required: <strong>slug</strong> (an existing company) and <strong>roundName</strong>. Optional: <strong>date</strong> (YYYY-MM-DD), <strong>amount</strong>, <strong>valuation</strong> (USD numbers), <strong>leadInvestor</strong>, <strong>investors</strong>, <strong>stage</strong>, <strong>notes</strong>, <strong>status</strong>. Each row represents one funding round, and the same company may have multiple rows. Separate multiple investor names with semicolons. Use the exact name or slug of an existing investor to link its profile; unknown names stay on the round only.</p>
+          <button type="button" onClick={()=>downloadBlob(fundingRoundsCsvTemplate(), 'funding-rounds-only-template.csv', 'text/csv;charset=utf-8')} className="inline-flex items-center gap-2 text-coral font-medium hover:underline"><Download className="w-4 h-4"/> Download funding-only CSV template</button>
+          <p className="text-[11px] text-slate2">A date is recommended for reliable duplicate matching. Without one, imports match the round name only when that company has exactly one matching round. Blank fields preserve existing data. New rounds default to Draft unless status is supplied.</p>
+        </div>
+        <div className="space-y-2">
+          <div className="font-medium">2. Choose your CSV</div>
+          <input ref={fileInput} type="file" className="hidden" accept=".csv,text/csv" onChange={(event)=>loadCsv(event.target.files?.[0])}/>
+          <button type="button" className="w-full rounded-xl border-2 border-dashed border-line bg-white p-6 text-center hover:border-coral transition-colors" onClick={()=>{if(fileInput.current){fileInput.current.value=''; fileInput.current.click();}}}>
+            <Upload className="w-6 h-6 mx-auto text-slate2"/><span className="block font-medium mt-2">{filename || 'Choose funding-rounds .csv file'}</span><span className="block text-slate2 text-[11px] mt-1">Up to 500 funding rounds · 2 MB maximum</span>
+          </button>
+        </div>
+        {preview && <div className="bg-white border border-line rounded-xl p-4 space-y-3">
+          <div className="font-medium">3. Review matches before importing</div>
+          <div className="grid grid-cols-3 gap-2 text-center"><div className="bg-canvas rounded-lg p-3"><div className="font-display text-[22px]">{preview.items.length}</div><div className="text-slate2 text-[11px]">Valid rounds</div></div><div className="bg-canvas rounded-lg p-3"><div className="font-display text-[22px]">{existingCount}</div><div className="text-slate2 text-[11px]">Existing rounds</div></div><div className="bg-canvas rounded-lg p-3"><div className="font-display text-[22px]">{preview.errors.length + missing.length + ambiguous.length}</div><div className="text-slate2 text-[11px]">Issues</div></div></div>
+          {matches.length>0 && <div className="overflow-x-auto"><table className="w-full text-[12px]"><thead><tr className="text-left text-slate2 border-b border-line"><th className="py-2 pr-2">Company slug</th><th className="py-2 pr-2">Round / date</th><th className="py-2">Result</th></tr></thead><tbody>{matches.slice(0,6).map(({kind,item},index)=><tr key={`${index}-${item.slug}`} className="border-b border-line last:border-0"><td className="py-2 pr-2">{item.slug}</td><td className="py-2 pr-2">{item.roundName} {item.date || ''}</td><td className="py-2">{kind==='Existing'?(mode==='skip'?'Skip':'Update'):kind==='New'?'Create':kind}</td></tr>)}</tbody></table>{matches.length>6 && <p className="text-[11px] text-slate2 mt-2">Showing 6 of {matches.length} rounds</p>}</div>}
+          <label className="block font-medium" htmlFor="funding-rounds-csv-mode">If a funding round already exists</label>
+          <select id="funding-rounds-csv-mode" value={mode} onChange={(e)=>setMode(e.target.value)} className="w-full border border-line rounded-lg px-3 py-2.5 bg-white text-[12px]"><option value="skip">Skip existing rounds (recommended)</option><option value="update">Update matching rounds using supplied nonblank funding fields</option></select>
+          {missing.length>0 && <p role="alert" className="text-coral text-[12px]">{missing.length} rows refer to company slugs not found on this website. Check exact slugs; no import will be allowed.</p>}
+          {ambiguous.length>0 && <p role="alert" className="text-coral text-[12px]">{ambiguous.length} rounds have ambiguous matches. Supply the precise date to identify a single round.</p>}
+          {preview.errors.length>0 && <div role="alert" className="bg-coralSoft text-coral rounded-lg p-3 text-[12px]"><strong>Correct the CSV first:</strong><ul className="ml-4 mt-2 list-disc space-y-1">{preview.errors.slice(0,8).map((message,index)=><li key={index}>{message}</li>)}</ul></div>}
+          <p className="text-slate2 text-[11px]">Only funding_rounds records are written. Existing companies, founder profiles, investor records, socials, categories, descriptions and ownership remain unchanged. No new company or investor is created.</p>
+        </div>}
+        {error && <div role="alert" className="bg-coralSoft text-coral p-3 rounded-lg text-[12px]">{error}</div>}
+      </div>
+      <div className="bg-white border-t border-line p-4 flex items-center justify-between gap-3">
+        <div className="text-slate2 text-[11px]">All rows saved together or rolled back if an error occurs.</div>
+        <div className="flex gap-2"><button type="button" disabled={importing} onClick={onClose} className="btn btn-outline disabled:opacity-50">Cancel</button><button type="submit" disabled={!canImport} className="btn btn-coral disabled:opacity-50">{importing?'Importing…':`Import ${preview?.items?.length||0} rounds`}</button></div>
       </div>
     </form>
   </div>;

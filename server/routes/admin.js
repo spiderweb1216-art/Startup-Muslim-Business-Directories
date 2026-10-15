@@ -355,5 +355,170 @@ router.post('/investors/import-csv', async (req, res, next) => {
   } finally { if(connection) connection.release(); }
 });
 
+// Funding-round CSV is deliberately a separate admin endpoint. It never writes
+// to startups or investors, and never changes the existing company CSV importer.
+const FUNDING_IMPORT_KEYS = new Set(['slug','roundName','date','amount','valuation','leadInvestor','investors','stage','notes','status']);
+const FUNDING_IMPORT_STATUSES = new Set(['Published','Pending','Draft','Rejected','Archived']);
+const fundingSlugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const fundingNameKey = (text) => String(text || '').trim().replace(/\s+/g,' ').toLowerCase();
+const cleanDate = (input) => {
+  if (typeof input !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(input)) return false;
+  const [y,m,d] = input.split('-').map(Number);
+  const value = new Date(Date.UTC(y,m-1,d));
+  return y>=1000 && y<=9999 && value.getUTCFullYear()===y && value.getUTCMonth()===m-1 && value.getUTCDate()===d;
+};
+const jsonRecord = (raw) => typeof raw === 'string' ? JSON.parse(raw) : raw;
+function cleanFundingImport(raw, row) {
+  if (!plainObject(raw)) throw csvError(`Row ${row}: an object is required.`);
+  for (const key of Object.keys(raw)) if (!FUNDING_IMPORT_KEYS.has(key)) throw csvError(`Row ${row}: unsupported funding field ${key}.`);
+  const data = {};
+  for (const [key,value] of Object.entries(raw)) {
+    if (value === '' || value == null) continue;
+    if (['amount','valuation'].includes(key)) {
+      if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 9000000000000 || Math.abs(value*100-Math.round(value*100))>1e-7) throw csvError(`Row ${row}: ${key} must be a USD number with at most two decimals.`);
+      data[key] = value;
+    } else if (key === 'investors') {
+      if (!Array.isArray(value) || value.length > 40) throw csvError(`Row ${row}: investors must be an array with up to 40 names.`);
+      const known = new Set();
+      data.investors = value.map((name) => {
+        if (typeof name !== 'string' || !name.trim() || name.trim().length > 160) throw csvError(`Row ${row}: each investor must be a name up to 160 characters.`);
+        return name.trim().replace(/\s+/g,' ');
+      }).filter((name) => {
+        const keyName = fundingNameKey(name);
+        if (known.has(keyName)) return false;
+        known.add(keyName);
+        return true;
+      });
+    } else {
+      if (typeof value !== 'string') throw csvError(`Row ${row}: ${key} must be text.`);
+      const trimmed = value.trim();
+      const limits = {slug:191,roundName:190,date:10,leadInvestor:160,stage:120,notes:10000,status:40};
+      if (trimmed.length > (limits[key] || 10000)) throw csvError(`Row ${row}: ${key} is too long.`);
+      data[key] = trimmed;
+    }
+  }
+  if (!data.slug || !fundingSlugPattern.test(data.slug)) throw csvError(`Row ${row}: a valid existing company slug is required.`);
+  if (!data.roundName) throw csvError(`Row ${row}: roundName is required.`);
+  if (data.date && !cleanDate(data.date)) throw csvError(`Row ${row}: invalid date (use YYYY-MM-DD).`);
+  if (data.status && !FUNDING_IMPORT_STATUSES.has(data.status)) throw csvError(`Row ${row}: unknown funding round status.`);
+  if (JSON.stringify(data).length > 30000) throw csvError(`Row ${row}: funding record is too large.`);
+  return data;
+}
+
+router.post('/startups/funding-rounds/import-csv', async (req, res, next) => {
+  const {items, onDuplicate='skip'} = req.body || {};
+  if (!Array.isArray(items) || !items.length || items.length > 500) return next(csvError('Provide 1–500 funding rounds per file.'));
+  if (!['skip','update'].includes(onDuplicate)) return next(csvError('Choose Skip existing or Update existing funding rounds.'));
+  let incoming;
+  try {
+    const identities = new Set(), grouped = new Map();
+    incoming = items.map((raw,index) => {
+      const item = cleanFundingImport(raw,index+2);
+      const group = `${item.slug}|${fundingNameKey(item.roundName)}`;
+      const identity = `${group}|${item.date || ''}`;
+      if (identities.has(identity)) throw csvError(`Row ${index+2}: repeated company, round name and date in this CSV.`);
+      identities.add(identity);
+      if (!grouped.has(group)) grouped.set(group, []);
+      grouped.get(group).push({date:item.date, row:index+2});
+      return item;
+    });
+    for (const group of grouped.values()) if (group.length>1 && group.some((item)=>!item.date)) throw csvError('Multiple rounds with the same company and name require a date on every CSV row.');
+    // Lock companies in a fixed order for concurrent imports.
+    incoming.sort((a,b) => a.slug.localeCompare(b.slug) || a.roundName.localeCompare(b.roundName) || String(a.date||'').localeCompare(String(b.date||'')));
+  } catch(error) { return next(error); }
+
+  let connection;
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+    // Match names/slugs to existing Investors without inserting or updating them.
+    const [investorRows] = await connection.query('SELECT record_key, name FROM investors');
+    const bySlug = new Map(), byName = new Map();
+    for (const item of investorRows) {
+      const slug = String(item.record_key || '');
+      const name = String(item.name || '');
+      bySlug.set(slug.toLowerCase(), {slug,name});
+      const key = fundingNameKey(name);
+      if (!byName.has(key)) byName.set(key, []);
+      byName.get(key).push({slug,name});
+    }
+    const resolve = (name) => {
+      const token = fundingNameKey(name);
+      const direct = bySlug.get(token);
+      if (direct) return direct;
+      const matches = byName.get(token) || [];
+      if (matches.length > 1) throw csvError(`Investor name "${name}" matches multiple profiles. Use its exact investor slug instead.`);
+      return matches[0] || null;
+    };
+    let created=0, updated=0, skipped=0, linked=0, unlisted=0;
+    const dateNow = new Date().toISOString().slice(0,10);
+    const cfg = COLLECTIONS.rounds;
+    for (const item of incoming) {
+      const [companies] = await connection.query('SELECT record_key FROM startups WHERE record_key=? FOR UPDATE',[item.slug]);
+      if (!companies.length) throw csvError(`Company slug "${item.slug}" does not exist. Nothing has been imported.`);
+      const [roundRows] = await connection.query('SELECT record_key, data FROM funding_rounds WHERE startup_slug=? FOR UPDATE',[item.slug]);
+      const sameName = roundRows.map((r) => ({id:r.record_key, round:jsonRecord(r.data)}))
+        .filter((record) => fundingNameKey(record.round.roundName) === fundingNameKey(item.roundName));
+      const found = item.date
+        ? sameName.filter(({round}) => round.date === item.date)
+        : sameName;
+      if (found.length > 1) throw csvError(`Multiple existing "${item.roundName}" rounds found for ${item.slug}. Add an exact date to distinguish them; no changes saved.`);
+      const existing = found[0]?.round || null;
+      const recordKey = found[0]?.id;
+      if (existing && onDuplicate === 'skip') { skipped++; continue; }
+      const changed = {};
+      for (const key of ['amount','valuation','stage','notes','status']) if (Object.prototype.hasOwnProperty.call(item,key)) changed[key] = item[key];
+      if (Object.prototype.hasOwnProperty.call(item,'leadInvestor')) {
+        const profile = resolve(item.leadInvestor);
+        changed.leadInvestorSlug = profile?.slug || '';
+        changed.leadInvestorName = profile ? '' : item.leadInvestor;
+        if (profile) linked++; else unlisted++;
+      }
+      if (Object.prototype.hasOwnProperty.call(item,'investors')) {
+        const slugs = new Set(), names = new Map();
+        for (const name of item.investors) {
+          const profile = resolve(name);
+          if (profile) { slugs.add(profile.slug); linked++; }
+          else { names.set(fundingNameKey(name),name); unlisted++; }
+        }
+        changed.investorSlugs = [...slugs];
+        changed.investorNames = [...names.values()];
+      }
+      const result = {
+        ...(existing || {}), ...changed,
+        id:existing?.id || `r-${Date.now()}-${crypto.randomBytes(6).toString('hex')}`,
+        startupSlug:item.slug,
+        roundName:existing?.roundName || item.roundName,
+        ...(item.date ? {date:item.date} : {}),
+        status:changed.status || existing?.status || 'Draft',
+        amount:changed.amount ?? existing?.amount ?? 0,
+        valuation:changed.valuation ?? existing?.valuation ?? 0,
+        updatedAt:dateNow,
+      };
+      // Do not duplicate the lead in participating investors.
+      if (result.leadInvestorSlug) result.investorSlugs = (result.investorSlugs || []).filter((slug)=>slug!==result.leadInvestorSlug);
+      if (result.leadInvestorName) result.investorNames = (result.investorNames || []).filter((name)=>fundingNameKey(name)!==fundingNameKey(result.leadInvestorName));
+      const saved = {record_key:recordKey || result.id,name:result.roundName,data:JSON.stringify(result),...cfg.indexed(result)};
+      if (existing) {
+        const fields = Object.keys(saved).filter((key)=>key!=='record_key');
+        await connection.query(`UPDATE funding_rounds SET ${fields.map((key)=>'`'+key+'`=?').join(', ')} WHERE record_key=?`,[...fields.map((key)=>saved[key]),recordKey]);
+        updated++;
+      } else {
+        const fields = Object.keys(saved);
+        await connection.query(`INSERT INTO funding_rounds (${fields.map((key)=>'`'+key+'`').join(',')}) VALUES (${fields.map(()=>'?').join(',')})`,Object.values(saved));
+        created++;
+      }
+    }
+    const action = {id:`a-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`,action:'Funding rounds imported from Companies CSV',detail:`${created} rounds created, ${updated} updated, ${skipped} skipped; ${linked} existing investor references and ${unlisted} round-only names.`,actor:req.user.name||req.user.email||'Admin',createdAt:new Date().toISOString()};
+    const log = {record_key:action.id,action:action.action,actor:action.actor,detail:action.detail,data:JSON.stringify(action),created_at:new Date(action.createdAt)};
+    await connection.query(`INSERT INTO activity_logs (${Object.keys(log).map((key)=>'`'+key+'`').join(',')}) VALUES (?,?,?,?,?,?)`,Object.values(log));
+    await connection.commit();
+    res.json({ok:true,created,updated,skipped,linked,unlisted,total:incoming.length});
+  } catch (error) {
+    if (connection) try { await connection.rollback(); } catch (_) {}
+    next(error);
+  } finally { if (connection) connection.release(); }
+});
+
 router.post('/reset',async(req,res,next)=>{try{await seedDatabase({clear:true});res.json({ok:true});}catch(e){next(e);}});
 module.exports=router;
