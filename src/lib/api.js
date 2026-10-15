@@ -36,6 +36,7 @@ export async function api(path, options = {}) {
   const token = getToken();
   const response = await fetch(`${API_URL}${path.startsWith('/') ? path : `/${path}`}`, {
     method,
+    cache: 'no-store',
     headers: {
       ...(body !== undefined ? { 'Content-Type':'application/json' } : {}),
       ...(auth && token ? { Authorization:`Bearer ${token}` } : {}),

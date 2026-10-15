@@ -3,6 +3,7 @@ import {
   STARTUPS, FOUNDERS, INVESTORS, ROUNDS, OPPORTUNITIES, JOBS, PITCHES, CLAIMS, CATEGORIES, COUNTRIES, STATS,
 } from '@/data/mockData';
 import { api } from '@/lib/api';
+import { SITE_CACHE_REVISION_KEY, savedCacheRevision, saveCacheRevision, refreshSiteForCacheRevision } from '@/lib/siteCache';
 import { useAuth } from '@/context/AuthContext';
 import { normalizeOverviewBlocks, overviewSummary } from '@/lib/overviewBlocks';
 
@@ -82,6 +83,50 @@ export function DataProvider({children}) {
   },[applyData]);
 
   useEffect(()=>{refreshData().catch(()=>{});},[refreshData,currentUser?.id,currentUser?.role]);
+
+  // Synchronize a manual admin cache clear across tabs and devices. Version
+  // polling makes this work even without a WebSocket or a single server process.
+  useEffect(() => {
+    let active = true;
+    let handlingRevision = false;
+    let knownRevision = savedCacheRevision();
+    const applyRevision = async (revision) => {
+      if (!active || !revision || typeof revision !== 'string' || handlingRevision) return;
+      if (!knownRevision) {
+        knownRevision = revision;
+        saveCacheRevision(revision);
+      } else if (knownRevision !== revision) {
+        knownRevision = revision;
+        handlingRevision = true;
+        await refreshSiteForCacheRevision(revision);
+      }
+    };
+    const checkRevision = async () => {
+      if (!active || handlingRevision || document.visibilityState === 'hidden') return;
+      try {
+        const result = await api(`/cache/version?timestamp=${Date.now()}`, { auth: false });
+        await applyRevision(result.revision);
+      } catch (error) { /* Temporary network errors must not log users out. */ }
+    };
+    const onStorage = (event) => {
+      if (event.key === SITE_CACHE_REVISION_KEY && event.newValue) {
+        applyRevision(event.newValue).catch(console.warn);
+      }
+    };
+    const onVisibility = () => { if (document.visibilityState === 'visible') checkRevision(); };
+    checkRevision();
+    const timer = window.setInterval(checkRevision, 60000);
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('focus', checkRevision);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('focus', checkRevision);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
 
   const commit=(updater,activity)=>{
     setData((previous)=>{

@@ -23,6 +23,7 @@ import { countryLabel } from '@/lib/countryAtlas';
 import { getOverviewBlocks, normalizeOverviewBlocks, overviewSummary } from '@/lib/overviewBlocks';
 import { FOUNDER_OPEN_TO_OPTIONS } from '@/constants/founderOptions';
 import { api } from '@/lib/api';
+import { refreshSiteForCacheRevision } from '@/lib/siteCache';
 import { parseCompanyCsv, companyCsvTemplate, COMPANY_CSV_MAX_BYTES } from '@/lib/companyCsv';
 
 const NAV_GROUPS = [
@@ -742,6 +743,23 @@ function SiteSettings() {
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const [form,setForm]=useState(data.settings);
+  const [clearingCache,setClearingCache]=useState(false);
+  const [cacheError,setCacheError]=useState('');
+  const clearWebsiteCache = async () => {
+    if (clearingCache) return;
+    if (!window.confirm('Refresh website caches for everyone? This will reload open site tabs when they detect the update. MySQL records, logins, and saved items will NOT be deleted.')) return;
+    setClearingCache(true);
+    setCacheError('');
+    try {
+      const result = await api('/admin/cache/clear', {method:'POST',body:{}});
+      if (!result?.ok || !result.revision) throw new Error('The server did not confirm the cache refresh.');
+      toast('Cache refresh requested. Reloading website…',{type:'success'});
+      await refreshSiteForCacheRevision(result.revision);
+    } catch (error) {
+      setCacheError(error.message || 'Cache refresh failed.');
+      setClearingCache(false);
+    }
+  };
   const set=(k,v)=>setForm((f)=>({...f,[k]:v}));
   const save=(e)=>{e.preventDefault();updateSettings(form,currentUser?.name);toast('Site settings saved.',{type:'success'});};
   const sections=[
@@ -749,7 +767,7 @@ function SiteSettings() {
     ['Contact & URLs',[['siteUrl','Site URL'],['adminEmail','Admin email'],['supportEmail','Support email'],['defaultCountry','Default country'],['currency','Currency'],['timezone','Timezone']]],
     ['Social links',[['socialTwitter','Twitter / X'],['socialLinkedin','LinkedIn'],['socialInstagram','Instagram'],['socialYoutube','YouTube']]],
   ];
-  return <form onSubmit={save} className="space-y-5"><div className="flex items-end justify-between gap-4"><div><div className="eyebrow">Global configuration</div><h2 className="font-display text-[30px] mt-1">Site settings</h2><p className="text-[13px] text-slate2 mt-1">Control identity, submissions, registration, contact details, social links, and maintenance behavior.</p></div><button className="btn btn-coral"><Save className="w-4 h-4"/> Save settings</button></div>{sections.map(([title,fields])=><div key={title} className="bg-white border border-line rounded-2xl p-5 md:p-6"><h3 className="font-display text-[18px]">{title}</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">{fields.map(([key,label])=><label key={key} className={key==='footerText'||key==='tagline'?'md:col-span-2':''}><span className="block text-[11.5px] text-slate2 mb-1.5">{label}</span>{key==='footerText'||key==='tagline'?<textarea value={form[key]||''} onChange={(e)=>set(key,e.target.value)} className="w-full min-h-24 bg-white border border-line rounded-lg p-3 text-[13px] outline-none focus:border-ink"/>:<input value={form[key]||''} onChange={(e)=>set(key,e.target.value)} className="w-full bg-white border border-line rounded-lg px-3 py-2.5 text-[13px] outline-none focus:border-ink"/>}</label>)}</div></div>)}<div className="bg-white border border-line rounded-2xl p-5 md:p-6"><h3 className="font-display text-[18px]">Access & workflow</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-5">{[['submissionsEnabled','Accept startup and pitch submissions'],['registrationsEnabled','Allow new account registration'],['requireListingApproval','Require startup approval'],['requirePitchApproval','Require pitch approval'],['maintenanceMode','Maintenance mode']].map(([key,label])=><label key={key} className="flex items-center justify-between gap-4 border border-line rounded-xl p-4"><div><div className="text-[13px] font-medium">{label}</div><div className="text-[10.5px] text-slate2 mt-1">{form[key]?'Enabled':'Disabled'}</div></div><input type="checkbox" checked={Boolean(form[key])} onChange={(e)=>set(key,e.target.checked)} className="w-5 h-5 accent-[#D94B3D]"/></label>)}</div></div></form>;
+  return <form onSubmit={save} className="space-y-5"><div className="flex items-end justify-between gap-4"><div><div className="eyebrow">Global configuration</div><h2 className="font-display text-[30px] mt-1">Site settings</h2><p className="text-[13px] text-slate2 mt-1">Control identity, submissions, registration, contact details, social links, and maintenance behavior.</p></div><button className="btn btn-coral"><Save className="w-4 h-4"/> Save settings</button></div>{sections.map(([title,fields])=><div key={title} className="bg-white border border-line rounded-2xl p-5 md:p-6"><h3 className="font-display text-[18px]">{title}</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">{fields.map(([key,label])=><label key={key} className={key==='footerText'||key==='tagline'?'md:col-span-2':''}><span className="block text-[11.5px] text-slate2 mb-1.5">{label}</span>{key==='footerText'||key==='tagline'?<textarea value={form[key]||''} onChange={(e)=>set(key,e.target.value)} className="w-full min-h-24 bg-white border border-line rounded-lg p-3 text-[13px] outline-none focus:border-ink"/>:<input value={form[key]||''} onChange={(e)=>set(key,e.target.value)} className="w-full bg-white border border-line rounded-lg px-3 py-2.5 text-[13px] outline-none focus:border-ink"/>}</label>)}</div></div>)}<div className="bg-white border border-line rounded-2xl p-5 md:p-6"><h3 className="font-display text-[18px]">Access & workflow</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-5">{[['submissionsEnabled','Accept startup and pitch submissions'],['registrationsEnabled','Allow new account registration'],['requireListingApproval','Require startup approval'],['requirePitchApproval','Require pitch approval'],['maintenanceMode','Maintenance mode']].map(([key,label])=><label key={key} className="flex items-center justify-between gap-4 border border-line rounded-xl p-4"><div><div className="text-[13px] font-medium">{label}</div><div className="text-[10.5px] text-slate2 mt-1">{form[key]?'Enabled':'Disabled'}</div></div><input type="checkbox" checked={Boolean(form[key])} onChange={(e)=>set(key,e.target.checked)} className="w-5 h-5 accent-[#D94B3D]"/></label>)}</div></div><div className="bg-white border border-line rounded-2xl p-5 md:p-6"><div className="flex flex-col md:flex-row md:items-center gap-4 md:justify-between"><div><h3 className="font-display text-[18px]">Clear website cache</h3><p className="text-[12px] text-slate2 mt-1 max-w-2xl">Forces fresh website data on open browsers (usually within 60 seconds), removes application Cache Storage entries and old service workers, and reloads this page. Your MySQL data, accounts and saved items stay untouched. Hosting/CDN caches must be purged separately if enabled.</p>{data.settings?.siteCacheClearedAt && <p className="text-[11px] text-slate2 mt-2">Last cleared: {new Date(data.settings.siteCacheClearedAt).toLocaleString()}</p>}</div><button type="button" disabled={clearingCache} onClick={clearWebsiteCache} className="btn btn-outline shrink-0 disabled:opacity-60"><RefreshCcw className={`w-4 h-4 ${clearingCache?'animate-spin':''}`}/>{clearingCache?'Clearing cache…':'Clear website cache'}</button></div>{cacheError && <div role="alert" className="mt-3 p-3 rounded-lg bg-coralSoft text-coral text-[12px]">{cacheError}</div>}</div></form>;
 }
 
 function DataTools() {

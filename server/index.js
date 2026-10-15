@@ -6,7 +6,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const { testConnection, database } = require('./config/db');
-const { reconcileApprovedClaims, ensureStartupContacts } = require('./services/recordService');
+const { reconcileApprovedClaims, ensureStartupContacts, getSettings } = require('./services/recordService');
 const authRoutes = require('./routes/auth');
 const dataRoutes = require('./routes/data');
 const publicRoutes = require('./routes/public');
@@ -49,6 +49,23 @@ app.use(express.json({ limit: process.env.JSON_LIMIT || '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: process.env.JSON_LIMIT || '20mb' }));
 app.use(morgan('dev'));
 
+// Stop browsers and intermediate proxies from caching personal or changing API data.
+app.use('/api', (_req, res, next) => {
+  res.set('Cache-Control', 'private, no-store, no-cache, must-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+});
+
+// Public lightweight revision for clients on other devices/tabs. No settings,
+// tokens, or private data are exposed. Polling is intentionally infrequent.
+app.get('/api/cache/version', async (_req, res, next) => {
+  try {
+    const settings = await getSettings();
+    res.json({ revision: settings.siteCacheRevision || 'initial', clearedAt: settings.siteCacheClearedAt || null });
+  } catch (error) { next(error); }
+});
+
 // ---------- API ----------
 app.get('/api/health', async (_req, res) => {
   try {
@@ -72,11 +89,22 @@ app.use('/api', (req, res) => {
 
 // ---------- React production frontend ----------
 const buildPath = path.resolve(__dirname, '../build');
-app.use(express.static(buildPath));
+app.use(express.static(buildPath, {
+  setHeaders(res, filePath) {
+    // React's fingerprinted build assets may be cached; new deployments get
+    // new file names. Never keep a stale HTML shell or non-fingerprinted file.
+    if (/[/\\]static[/\\].*\.[a-f0-9]{8,}\./i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    }
+  },
+}));
 
 // React Router fallback: every non-API GET route serves index.html.
 app.get('*', (req, res, next) => {
   if (req.method !== 'GET') return next();
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   return res.sendFile(path.join(buildPath, 'index.html'));
 });
 

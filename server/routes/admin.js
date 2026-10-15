@@ -9,6 +9,34 @@ const router=express.Router();
 router.use(requireAuth,requireAdmin);
 const collections=['startups','founders','investors','rounds','opportunities','jobs','pitches','claims','categories','users','messages','subscribers','pages','media','activity'];
 
+// Admin-only, cross-device cache revision. Changes only the site_settings JSON
+// and activity log; company/user records and sessions are never deleted.
+router.post('/cache/clear', async (req, res, next) => {
+  let connection;
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+    const [rows] = await connection.query('SELECT settings FROM site_settings WHERE id=1 FOR UPDATE');
+    const current = rows[0] ? JSON.parse(rows[0].settings || '{}') : {};
+    const revision = `${Date.now().toString(36)}-${crypto.randomBytes(8).toString('hex')}`;
+    const clearedAt = new Date().toISOString();
+    const settings = { ...current, siteCacheRevision: revision, siteCacheClearedAt: clearedAt };
+    await connection.query(
+      'INSERT INTO site_settings (id,settings) VALUES (1,?) ON DUPLICATE KEY UPDATE settings=VALUES(settings)',
+      [JSON.stringify(settings)]
+    );
+    await connection.commit();
+    // Log the action, but do not mark the clear as failed if logging is unavailable.
+    try { await addActivity('Site cache refreshed', 'Administrator requested a site-wide cache refresh.', req.user.name); }
+    catch (logError) { console.warn('Cache refresh activity logging failed:', logError.message); }
+    res.set('Cache-Control', 'no-store');
+    res.json({ ok: true, revision, clearedAt, scope: 'application-managed caches and browser refresh signals' });
+  } catch (error) {
+    if (connection) { try { await connection.rollback(); } catch {} }
+    next(error);
+  } finally { if (connection) connection.release(); }
+});
+
 router.get('/export',async(req,res,next)=>{try{const values=await Promise.all(collections.map(c=>listCollection(c,req.user)));const data=Object.fromEntries(collections.map((c,i)=>[c,values[i]]));data.settings=await getSettings();const [savedRows]=await pool.query('SELECT user_id AS userId,item_type AS itemType,item_key AS itemKey,created_at AS createdAt FROM saved_items ORDER BY id');data.savedItems=savedRows;res.json({data,exportedAt:new Date().toISOString()});}catch(e){next(e);}});
 
 router.post('/import',async(req,res,next)=>{
