@@ -10,6 +10,7 @@ import { useData } from '@/context/DataContext';
 import { useAuth } from '@/context/AuthContext';
 import CountryLabel from '@/components/common/CountryLabel';
 import OverviewBlocks from '@/components/common/OverviewBlocks';
+import { getFundingSummary, fundingRaisedLabel, isPublicFundingRound } from '@/lib/fundingDisplay';
 
 const formatMoney = (value) => {
   const amount = Number(value || 0);
@@ -41,7 +42,9 @@ export default function StartupDetail() {
 
   const s = (data.startups || []).find((item) => item.slug === slug && !['Draft','Pending','Rejected','Archived','Inactive'].includes(item.status || 'Published'));
   const pitch = s ? (data.pitches || []).find((item) => item.startupSlug === s.slug && item.status === 'Active' && item.reviewStatus === 'Approved' && item.visibility === 'Public') : null;
-  const rounds = s ? (data.rounds || []).filter((item) => item.startupSlug === s.slug && !['Draft','Pending','Rejected','Archived'].includes(item.status || 'Published')).sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)) : [];
+  const rounds = s ? (data.rounds || []).filter((item) => item.startupSlug === s.slug && isPublicFundingRound(item)).sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)) : [];
+  const raisedLabel = fundingRaisedLabel(getFundingSummary(rounds, s?.slug), formatMoney);
+  const visibleTabs = rounds.length ? TABS : TABS.filter((item) => item.id !== 'rounds');
   const founders = s ? (data.founders || []).filter((item) => (item.startupSlug === s.slug || (s.founderSlugs || []).includes(item.slug)) && !['Draft','Pending','Rejected','Archived'].includes(item.status || 'Published')) : [];
   const jobs = s ? (data.jobs || []).filter((item) => item.startupSlug === s.slug && !['Draft','Pending','Rejected','Archived','Inactive','Closed'].includes(item.status || 'Published')) : [];
   const explicitSimilar = s ? (s.similarSlugs || []).map((similarSlug)=>(data.startups || []).find((item)=>item.slug===similarSlug)).filter(Boolean) : [];
@@ -51,6 +54,12 @@ export default function StartupDetail() {
     if (window.location.hash === '#pitch') setTab('pitch');
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [slug]);
+
+  // If a published round is removed or unpublished while its tab is open,
+  // return to Overview rather than rendering a hidden, empty tab.
+  useEffect(() => {
+    if (tab === 'rounds' && rounds.length === 0) setTab('overview');
+  }, [tab, rounds.length, slug]);
 
   useEffect(() => {
     if (!contactOpen) return undefined;
@@ -140,7 +149,7 @@ export default function StartupDetail() {
 
         {/* Tabs */}
         <div className="mt-6 border-b border-line flex items-center gap-1 overflow-x-auto thin-scroll">
-          {TABS.map(t => (
+          {visibleTabs.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} className={`px-4 py-3 text-[13px] border-b-2 -mb-px whitespace-nowrap ${tab === t.id ? 'border-coral text-ink' : 'border-transparent text-slate2 hover:text-ink'}`} data-testid={`tab-${t.id}`}>{t.label}</button>
           ))}
         </div>
@@ -150,7 +159,7 @@ export default function StartupDetail() {
           <main className="col-span-12 lg:col-span-8 space-y-10">
             {tab === 'overview' && <Overview startup={s} />}
             {tab === 'pitch' && <PitchPanel startup={s} pitch={pitch} onContact={() => setContactOpen(true)} />}
-            {tab === 'rounds' && <RoundsTimeline rounds={rounds} investors={data.investors || []} />}
+            {tab === 'rounds' && rounds.length > 0 && <RoundsTimeline rounds={rounds} investors={data.investors || []} />}
             {tab === 'founders' && <FoundersPanel founders={founders} />}
             {tab === 'products' && <ProductsPanel startup={s} />}
             {tab === 'jobs' && <JobsPanel jobs={jobs} startup={s} />}
@@ -175,7 +184,7 @@ export default function StartupDetail() {
                 <ul className="space-y-2 text-[13px]">
                   <DataRow k="Founded" v={<span className="mono">{s.foundedYear}</span>} />
                   <DataRow k="Stage" v={<span className="mono">{s.stage}</span>} />
-                  <DataRow k="Total raised" v={<span className="mono">{formatMoney(s.totalRaised)}</span>} />
+                  <DataRow k="Total raised" v={<span className="mono">{raisedLabel}</span>} />
                   <DataRow k="Team" v={<span className="mono">{s.teamSize}</span>} />
                   <DataRow k="Model" v={s.businessModel} />
                   <DataRow k="HQ" v={s.hq} />

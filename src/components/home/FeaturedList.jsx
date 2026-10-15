@@ -8,6 +8,7 @@ import { StartupLogo } from '@/components/common/Logo';
 import { SectionHeading } from '@/components/common/Section';
 import { formatMoney } from '@/data/mockData';
 import CountryLabel from '@/components/common/CountryLabel';
+import { getFundingSummary, fundingRaisedLabel } from '@/lib/fundingDisplay';
 
 export default function FeaturedList() {
   const { data, databaseStatus } = useData();
@@ -60,7 +61,9 @@ export default function FeaturedList() {
 }
 
 function FeaturedPanel({ startup, founders }) {
+  const { data } = useData();
   if (!startup) return null;
+  const raisedLabel = fundingRaisedLabel(getFundingSummary(data.rounds, startup.slug), formatMoney);
   return (
     <motion.div key={startup.slug} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="border border-line rounded-md overflow-hidden bg-white">
       <div className="relative aspect-[16/10] overflow-hidden bg-sandLight">
@@ -81,7 +84,7 @@ function FeaturedPanel({ startup, founders }) {
       <div className="p-5">
         <p className="text-[13.5px] text-slate2 leading-relaxed line-clamp-3">{startup.description || startup.tagline || 'No company description is available.'}</p>
         <div className="mt-4 grid grid-cols-3 gap-3">
-          <Cell label="Total raised" value={Number(startup.totalRaised) > 0 ? formatMoney(startup.totalRaised) : '—'} />
+          <Cell label="Total raised" value={raisedLabel} />
           <Cell label="Team" value={startup.teamSize || '—'} />
           <Cell label="Founded" value={startup.foundedYear || '—'} />
         </div>

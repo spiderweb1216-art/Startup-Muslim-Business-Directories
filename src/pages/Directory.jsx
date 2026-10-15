@@ -6,6 +6,7 @@ import { useData } from '@/context/DataContext';
 import { StartupListRow, CompanyPreview } from '@/components/common/StartupCard';
 import { EmptyState, SkeletonRow } from '@/components/common/Section';
 import { countryLabel } from '@/lib/countryAtlas';
+import { getFundingSummary } from '@/lib/fundingDisplay';
 
 const STAGES = ['Pre-Seed','Seed','Series A','Series B'];
 const MODELS = ['B2C','B2B SaaS','B2B Marketplace','D2C','Marketplace','B2B2C','B2C SaaS','B2C Subscription'];
@@ -16,6 +17,7 @@ export default function Directory() {
   const companies = useMemo(() => databaseStatus === 'connected' ? (data.startups || []).filter((s) => s.status === 'Published') : [], [data.startups, databaseStatus]);
   const categories = useMemo(() => databaseStatus === 'connected' ? (data.categories || []).filter((c) => c.status !== 'Inactive') : [], [data.categories, databaseStatus]);
   const countries = useMemo(() => Array.from(new Set(companies.map((s) => s.country).filter(Boolean))).sort(), [companies]);
+  const raisedTotals = useMemo(() => new Map(companies.map((company) => [company.slug, getFundingSummary(data.rounds, company.slug).totalRaised])), [companies, data.rounds]);
   const [sp, setSp] = useSearchParams();
   const [q, setQ] = useState(sp.get('q') || '');
   const [view, setView] = useState('list');
@@ -47,10 +49,10 @@ export default function Directory() {
     if (filters.model.length) l = l.filter(s => filters.model.includes(s.businessModel));
     STATUS.forEach(([k]) => { if (filters[k]) l = l.filter(s => s[k]); });
     if (sort === 'recent') l.sort((a,b) => new Date(b.addedAt) - new Date(a.addedAt));
-    if (sort === 'raised') l.sort((a,b) => b.totalRaised - a.totalRaised);
+    if (sort === 'raised') l.sort((a,b) => (raisedTotals.get(b.slug) || 0) - (raisedTotals.get(a.slug) || 0));
     if (sort === 'alpha') l.sort((a,b) => a.name.localeCompare(b.name));
     return l;
-  }, [q, filters, sort, companies]);
+  }, [q, filters, sort, companies, raisedTotals]);
 
   const liveSelected = results.find((item) => item.slug === selected?.slug) || results[0] || null;
 
