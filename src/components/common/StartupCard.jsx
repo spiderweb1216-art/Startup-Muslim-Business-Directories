@@ -10,16 +10,20 @@ import { useData } from '@/context/DataContext';
 import { getFundingSummary, fundingRaisedLabel } from '@/lib/fundingDisplay';
 
 // Derive display amounts from published rounds; never from stale profile totals.
-function useRaisedLabel(startupSlug) {
+function useFundingDisplay(startupSlug) {
   const { data } = useData();
-  return fundingRaisedLabel(getFundingSummary(data.rounds, startupSlug), formatMoney);
+  const summary = getFundingSummary(data.rounds, startupSlug);
+  return {
+    hasPublishedRounds: summary.roundCount > 0,
+    raisedLabel: fundingRaisedLabel(summary, formatMoney),
+  };
 }
 
 // Editorial ranked list row — used in Featured Companies list
 export function StartupListRow({ startup, index, active, onSelect }) {
   const rank = String((index ?? 0) + 1).padStart(2, '0');
   const founders = getFoundersByStartup(startup.slug);
-  const raisedLabel = useRaisedLabel(startup.slug);
+  const { hasPublishedRounds, raisedLabel } = useFundingDisplay(startup.slug);
   const alt = ((index ?? 0) % 2 === 0);
   return (
     <motion.div
@@ -42,8 +46,12 @@ export function StartupListRow({ startup, index, active, onSelect }) {
       </div>
       <div className="hidden md:block col-span-1 mono text-[11.5px] text-slate2">{startup.stage}</div>
       <div className="col-span-3 md:col-span-2 text-right md:text-left">
-        <div className="mono text-[13px] text-ink">{raisedLabel}</div>
-        <div className="mono text-[10.5px] text-slate3 uppercase tracking-widest">raised</div>
+        {hasPublishedRounds && (
+          <>
+            <div className="mono text-[13px] text-ink">{raisedLabel}</div>
+            <div className="mono text-[10.5px] text-slate3 uppercase tracking-widest">raised</div>
+          </>
+        )}
       </div>
       <div className="hidden md:flex col-span-1 items-center -space-x-2">
         {founders.slice(0,3).map(f => <img key={f.id} src={f.photo} alt="" className="w-6 h-6 rounded-full border border-white object-cover" loading="lazy" />)}
@@ -60,7 +68,7 @@ export function StartupListRow({ startup, index, active, onSelect }) {
 
 // Compact company preview panel — used on the right in Explore / Directory
 export function CompanyPreview({ startup }) {
-  const raisedLabel = useRaisedLabel(startup?.slug);
+  const { hasPublishedRounds, raisedLabel } = useFundingDisplay(startup?.slug);
   if (!startup) return null;
   const founders = getFoundersByStartup(startup.slug);
   return (
@@ -84,7 +92,7 @@ export function CompanyPreview({ startup }) {
         <Row k="Category" v={startup.category} />
         <Row k="Country" v={<CountryLabel country={startup.country} explicitFlag={startup.flag} />} />
         <Row k="Stage" v={<span className="mono">{startup.stage}</span>} />
-        <Row k="Total raised" v={<span className="mono">{raisedLabel}</span>} />
+        {hasPublishedRounds && <Row k="Total raised" v={<span className="mono">{raisedLabel}</span>} />}
         <Row k="Team" v={<span className="mono">{startup.teamSize}</span>} />
         <Row k="Founded" v={<span className="mono">{startup.foundedYear}</span>} />
       </div>
@@ -115,7 +123,7 @@ function Row({ k, v }) {
 
 // Grid card fallback for /startups page
 export default function StartupCard({ startup, index = 0 }) {
-  const raisedLabel = useRaisedLabel(startup.slug);
+  const { hasPublishedRounds, raisedLabel } = useFundingDisplay(startup.slug);
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.35, delay: (index%6)*0.03 }}
       className="panel p-4 flex flex-col group" data-testid={`startup-card-${startup.slug}`}
@@ -132,8 +140,13 @@ export default function StartupCard({ startup, index = 0 }) {
       </div>
       <p className="text-[13px] text-slate2 leading-relaxed mt-3 line-clamp-2">{startup.tagline}</p>
       <div className="mt-4 pt-3 border-t border-line flex items-center justify-between">
-        <div><div className="mono text-[11px] text-slate3 uppercase">Raised</div><div className="mono text-[14px]">{raisedLabel}</div></div>
-        <Link to={`/startups/${startup.slug}`} className="text-[12.5px] inline-flex items-center gap-1 hover:text-coral">View <ArrowUpRight className="w-3.5 h-3.5" /></Link>
+        {hasPublishedRounds && (
+          <div>
+            <div className="mono text-[11px] text-slate3 uppercase">Raised</div>
+            <div className="mono text-[14px]">{raisedLabel}</div>
+          </div>
+        )}
+        <Link to={`/startups/${startup.slug}`} className="ml-auto text-[12.5px] inline-flex items-center gap-1 hover:text-coral">View <ArrowUpRight className="w-3.5 h-3.5" /></Link>
       </div>
     </motion.div>
   );

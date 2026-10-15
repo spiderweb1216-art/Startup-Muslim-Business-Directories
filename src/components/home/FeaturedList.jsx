@@ -63,7 +63,9 @@ export default function FeaturedList() {
 function FeaturedPanel({ startup, founders }) {
   const { data } = useData();
   if (!startup) return null;
-  const raisedLabel = fundingRaisedLabel(getFundingSummary(data.rounds, startup.slug), formatMoney);
+  const fundingSummary = getFundingSummary(data.rounds, startup.slug);
+  const raisedLabel = fundingRaisedLabel(fundingSummary, formatMoney);
+  const hasPublishedRounds = fundingSummary.roundCount > 0;
   return (
     <motion.div key={startup.slug} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="border border-line rounded-md overflow-hidden bg-white">
       <div className="relative aspect-[16/10] overflow-hidden bg-sandLight">
@@ -83,8 +85,8 @@ function FeaturedPanel({ startup, founders }) {
       </div>
       <div className="p-5">
         <p className="text-[13.5px] text-slate2 leading-relaxed line-clamp-3">{startup.description || startup.tagline || 'No company description is available.'}</p>
-        <div className="mt-4 grid grid-cols-3 gap-3">
-          <Cell label="Total raised" value={raisedLabel} />
+        <div className={`mt-4 grid gap-3 ${hasPublishedRounds ? 'grid-cols-3' : 'grid-cols-2'}`}>
+          {hasPublishedRounds && <Cell label="Total raised" value={raisedLabel} />}
           <Cell label="Team" value={startup.teamSize || '—'} />
           <Cell label="Founded" value={startup.foundedYear || '—'} />
         </div>

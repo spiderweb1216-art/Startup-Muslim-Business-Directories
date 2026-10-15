@@ -184,7 +184,7 @@ export default function StartupDetail() {
                 <ul className="space-y-2 text-[13px]">
                   <DataRow k="Founded" v={<span className="mono">{s.foundedYear}</span>} />
                   <DataRow k="Stage" v={<span className="mono">{s.stage}</span>} />
-                  <DataRow k="Total raised" v={<span className="mono">{raisedLabel}</span>} />
+                  {rounds.length > 0 && <DataRow k="Total raised" v={<span className="mono">{raisedLabel}</span>} />}
                   <DataRow k="Team" v={<span className="mono">{s.teamSize}</span>} />
                   <DataRow k="Model" v={s.businessModel} />
                   <DataRow k="HQ" v={s.hq} />
