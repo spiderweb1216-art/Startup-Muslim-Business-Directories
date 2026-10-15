@@ -4,6 +4,7 @@ import {
   Layers3, Package, Plus, Save, Search, Trash2, UserRound, X,
 } from 'lucide-react';
 import OverviewBlockEditor from '@/components/common/OverviewBlockEditor';
+import FundingInvestorFields from '@/components/common/FundingInvestorFields';
 import { getOverviewBlocks, normalizeOverviewBlocks, overviewSummary } from '@/lib/overviewBlocks';
 import { slugify } from '@/context/DataContext';
 
@@ -232,20 +233,19 @@ function PitchTab({ enabled, setEnabled, pitch, setPitch, memberMode }) {
 }
 
 function RoundsTab({ rounds, setRounds, investors, memberMode }) {
-  const add=()=>setRounds([...rounds,{id:tempId('round'),roundName:'Seed',stage:'Seed',date:TODAY(),amount:0,valuation:0,leadInvestorSlug:'',investorSlugs:[],notes:'',status:'Published'}]);
+  const add=()=>setRounds([...rounds,{id:tempId('round'),roundName:'Seed',stage:'Seed',date:TODAY(),amount:0,valuation:0,leadInvestorSlug:'',leadInvestorName:'',investorSlugs:[],investorNames:[],notes:'',status:'Published'}]);
   const patch=(index,key,value)=>setRounds(rounds.map((r,i)=>i===index?{...r,[key]:value}:r));
   const remove=(index)=>setRounds(rounds.filter((_,i)=>i!==index));
   const move=(index,dir)=>{const t=index+dir;if(t<0||t>=rounds.length)return;const n=[...rounds];[n[index],n[t]]=[n[t],n[index]];setRounds(n);};
   return <RepeaterShell title="Funding Rounds" text="Every row is stored in the funding-rounds backend collection and appears on the public Funding Rounds tab." action="Add round" onAdd={add} empty={rounds.length===0}>
     {rounds.map((r,index)=><RepeaterCard key={r.id||index} title={r.roundName||`Round ${index+1}`} index={index} count={rounds.length} onMove={move} onRemove={remove}><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <FundingInvestorFields investors={investors} round={r} onChange={(fields)=>setRounds((previous)=>previous.map((item,i)=>i===index?{...item,...fields}:item))}/>
       <Field label="Round name"><input value={r.roundName||''} onChange={(e)=>patch(index,'roundName',e.target.value)} className={INPUT}/></Field>
       <Field label="Stage"><select value={r.stage||'Seed'} onChange={(e)=>patch(index,'stage',e.target.value)} className={INPUT}>{['Pre-Seed','Seed','Series A','Series B','Series C+','Grant','Debt'].map(x=><option key={x}>{x}</option>)}</select></Field>
       <Field label="Date"><input type="date" value={String(r.date||'').slice(0,10)} onChange={(e)=>patch(index,'date',e.target.value)} className={INPUT}/></Field>
       <Field label="Amount (USD)"><input type="number" value={r.amount||0} onChange={(e)=>patch(index,'amount',Number(e.target.value||0))} className={INPUT}/></Field>
       <Field label="Valuation (USD)"><input type="number" value={r.valuation||0} onChange={(e)=>patch(index,'valuation',Number(e.target.value||0))} className={INPUT}/></Field>
       {!memberMode && <Field label="Status"><select value={r.status||'Published'} onChange={(e)=>patch(index,'status',e.target.value)} className={INPUT}>{['Published','Draft','Archived'].map(x=><option key={x}>{x}</option>)}</select></Field>}
-      <Field label="Lead investor"><select value={r.leadInvestorSlug||''} onChange={(e)=>patch(index,'leadInvestorSlug',e.target.value)} className={INPUT}><option value="">None</option>{list(investors).map((inv)=><option key={inv.slug} value={inv.slug}>{inv.name}</option>)}</select></Field>
-      <Field label="Investor slugs" wide><input value={list(r.investorSlugs).join(', ')} onChange={(e)=>patch(index,'investorSlugs',e.target.value.split(',').map(x=>x.trim()).filter(Boolean))} className={INPUT} placeholder="investor-one, investor-two"/></Field>
       <Field label="Notes" wide><textarea value={r.notes||''} onChange={(e)=>patch(index,'notes',e.target.value)} className={`${INPUT} min-h-20`}/></Field>
     </div></RepeaterCard>)}
   </RepeaterShell>;

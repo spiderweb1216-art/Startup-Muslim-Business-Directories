@@ -19,6 +19,7 @@ import { useToast } from '@/context/ToastContext';
 import { Wordmark } from '@/components/common/Logo';
 import OverviewBlockEditor from '@/components/common/OverviewBlockEditor';
 import StartupWorkspaceEditor from '@/components/admin/StartupWorkspaceEditor';
+import FundingInvestorFields from '@/components/common/FundingInvestorFields';
 import { countryLabel } from '@/lib/countryAtlas';
 import { getOverviewBlocks, normalizeOverviewBlocks, overviewSummary } from '@/lib/overviewBlocks';
 import { FOUNDER_OPEN_TO_OPTIONS } from '@/constants/founderOptions';
@@ -140,9 +141,9 @@ const CONFIGS = {
     title:'Funding rounds', singular:'funding round', idField:'id', nameField:'roundName', description:'Track disclosed rounds, lead investors, syndicates, valuation, dates, notes, and public visibility.',
     columns:[['startupSlug','Startup'],['roundName','Round'],['amount','Amount'],['valuation','Valuation'],['date','Date'],['status','Status']],
     fields:[
-      F('startupSlug','Startup','dynamic-startup',{required:true}),F('roundName','Round name','text',{required:true}),F('stage','Stage'),F('date','Date','date'),
-      F('amount','Amount (USD)','number'),F('valuation','Valuation (USD)','number'),F('leadInvestorSlug','Lead investor','dynamic-investor'),F('status','Publication status','select',{options:statusOptions}),
-      F('investorSlugs','Participating investors','dynamic-investors-multi',{span:2}),F('notes','Notes','textarea',{span:2}),
+      F('startupSlug','Startup','dynamic-startup',{required:true}),F('fundingInvestors','Lead & participating investors','funding-investors',{span:2}),
+      F('roundName','Round name','text',{required:true}),F('stage','Stage'),F('date','Date','date'),
+      F('amount','Amount (USD)','number'),F('valuation','Valuation (USD)','number'),F('status','Publication status','select',{options:statusOptions}),F('notes','Notes','textarea',{span:2}),
     ],
   },
   jobs: {
@@ -716,6 +717,7 @@ function RecordModal({ config, collection, initial, onClose, onSave }) {
     }
     const blank = {};
     config.fields.forEach((field) => {
+      if (field.type === 'funding-investors') return; // UI-only composite editor
       let value = field.type==='overview-blocks' ? [] : field.type==='multi-checkbox' ? [] : field.type==='checkbox' ? false : field.type==='number' ? 0 : '';
       if (field.name==='status') value = collection==='categories' ? 'Active' : 'Published';
       if (field.name==='reviewStatus') value = 'Pending';
@@ -752,7 +754,7 @@ function RecordModal({ config, collection, initial, onClose, onSave }) {
     }catch(error){setError(error.message||'The record could not be saved.');}finally{setSaving(false);}
   };
 
-  return <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-[100] bg-navy/65 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-5" onMouseDown={onClose}><motion.form initial={{y:30,opacity:0}} animate={{y:0,opacity:1}} exit={{y:20,opacity:0}} transition={{duration:.2}} onSubmit={submit} onMouseDown={(e)=>e.stopPropagation()} className="bg-[#F9F7F2] w-full max-w-5xl max-h-[94vh] rounded-t-2xl md:rounded-2xl border border-line overflow-hidden flex flex-col"><div className="p-5 md:px-7 border-b border-line bg-white flex items-start gap-4"><div className="w-10 h-10 rounded-xl bg-coralSoft text-coral flex items-center justify-center">{initial?<Edit3 className="w-4 h-4"/>:<Plus className="w-4 h-4"/>}</div><div className="flex-1"><div className="eyebrow">{initial?'Edit record':'New record'}</div><h3 className="font-display text-[22px] mt-0.5">{initial?`Edit ${config.singular}`:`Add ${config.singular}`}</h3></div><button type="button" onClick={onClose} className="w-9 h-9 border border-line rounded-lg flex items-center justify-center"><X className="w-4 h-4"/></button></div><div className="p-5 md:p-7 overflow-y-auto thin-scroll"><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{config.fields.map((field)=><FormField key={field.name} field={field} value={getPath(form,field.name)} data={data} collection={collection} onChange={(v)=>change(field,v)}/>)}</div>{error&&<div className="mt-5 p-3 rounded-lg bg-coralSoft text-coral text-[12px] flex items-center gap-2"><AlertTriangle className="w-4 h-4"/>{error}</div>}</div><div className="p-4 md:px-7 border-t border-line bg-white flex items-center justify-end gap-2"><button type="button" onClick={onClose} className="btn btn-outline">Cancel</button><button disabled={saving} className="btn btn-coral disabled:opacity-60"><Save className="w-4 h-4"/>{saving?'Saving…':initial?'Save changes':'Create record'}</button></div></motion.form></motion.div>;
+  return <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-[100] bg-navy/65 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-5" onMouseDown={onClose}><motion.form initial={{y:30,opacity:0}} animate={{y:0,opacity:1}} exit={{y:20,opacity:0}} transition={{duration:.2}} onSubmit={submit} onMouseDown={(e)=>e.stopPropagation()} className="bg-[#F9F7F2] w-full max-w-5xl max-h-[94vh] rounded-t-2xl md:rounded-2xl border border-line overflow-hidden flex flex-col"><div className="p-5 md:px-7 border-b border-line bg-white flex items-start gap-4"><div className="w-10 h-10 rounded-xl bg-coralSoft text-coral flex items-center justify-center">{initial?<Edit3 className="w-4 h-4"/>:<Plus className="w-4 h-4"/>}</div><div className="flex-1"><div className="eyebrow">{initial?'Edit record':'New record'}</div><h3 className="font-display text-[22px] mt-0.5">{initial?`Edit ${config.singular}`:`Add ${config.singular}`}</h3></div><button type="button" onClick={onClose} className="w-9 h-9 border border-line rounded-lg flex items-center justify-center"><X className="w-4 h-4"/></button></div><div className="p-5 md:p-7 overflow-y-auto thin-scroll"><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{config.fields.map((field)=>field.type==='funding-investors' ? <FundingInvestorFields key={field.name} investors={data.investors||[]} round={form} onChange={(patch)=>setForm((previous)=>({...previous,...patch}))}/> : <FormField key={field.name} field={field} value={getPath(form,field.name)} data={data} collection={collection} onChange={(v)=>change(field,v)}/>)}</div>{error&&<div className="mt-5 p-3 rounded-lg bg-coralSoft text-coral text-[12px] flex items-center gap-2"><AlertTriangle className="w-4 h-4"/>{error}</div>}</div><div className="p-4 md:px-7 border-t border-line bg-white flex items-center justify-end gap-2"><button type="button" onClick={onClose} className="btn btn-outline">Cancel</button><button disabled={saving} className="btn btn-coral disabled:opacity-60"><Save className="w-4 h-4"/>{saving?'Saving…':initial?'Save changes':'Create record'}</button></div></motion.form></motion.div>;
 }
 
 function FormField({ field, value, data, collection, onChange }) {

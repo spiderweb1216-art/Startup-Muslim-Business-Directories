@@ -9,6 +9,7 @@ import { useData } from '@/context/DataContext';
 import { useToast } from '@/context/ToastContext';
 import { StartupLogo } from '@/components/common/Logo';
 import OverviewBlockEditor from '@/components/common/OverviewBlockEditor';
+import FundingInvestorFields from '@/components/common/FundingInvestorFields';
 import MemberCompanyWorkspace from '@/components/member/MemberCompanyWorkspace';
 import { getOverviewBlocks, normalizeOverviewBlocks, overviewSummary } from '@/lib/overviewBlocks';
 
@@ -51,10 +52,11 @@ const MANAGERS = {
   rounds: {
     title:'Funding rounds', singular:'funding round', idField:'id', nameField:'roundName', statusField:'status',
     description:'Record disclosed funding rounds, investors, valuations, and notes.',
-    defaults:{ roundName:'', stage:'Seed', date:TODAY(), amount:'', valuation:'', leadInvestorSlug:'', investorSlugs:'', notes:'' },
+    defaults:{ roundName:'', stage:'Seed', date:TODAY(), amount:'', valuation:'', leadInvestorSlug:'', leadInvestorName:'', investorSlugs:[], investorNames:[], notes:'' },
     fields:[
+      ['fundingInvestors','Lead & participating investors','funding-investors'],
       ['roundName','Round name','text',true],['stage','Stage','select',false,['Pre-Seed','Seed','Series A','Series B','Series C+','Grant','Debt']],['date','Round date','date'],
-      ['amount','Amount raised (USD)','number'],['valuation','Valuation (USD)','number'],['leadInvestorSlug','Lead investor slug'],['investorSlugs','Investor slugs (comma separated)'],['notes','Notes','textarea'],
+      ['amount','Amount raised (USD)','number'],['valuation','Valuation (USD)','number'],['notes','Notes','textarea'],
     ],
     build:(form,startup)=>({ ...form, startupSlug:startup.slug, status:startup.status==='Published'?'Published':'Pending', amount:Number(form.amount||0), valuation:Number(form.valuation||0), investorSlugs:splitCsv(form.investorSlugs) }),
   },
@@ -173,6 +175,7 @@ function ProfileEditor({ startup, categories, updateItem, toast }) {
 }
 
 function OwnerRecordManager({ collection, config, startup, records, addItem, updateItem, removeItem, toast }) {
+  const {data} = useData();
   const [editing,setEditing] = useState(null);
   const [form,setForm] = useState(config.defaults);
   const [open,setOpen] = useState(false);
@@ -200,7 +203,7 @@ function OwnerRecordManager({ collection, config, startup, records, addItem, upd
     try{await removeItem(collection,record[config.idField]);toast(`${config.singular} deleted.`,{type:'success'});}catch(error){toast(error.message||'The record could not be deleted.',{type:'warning'});}
   };
   return <div className="space-y-5"><div className="border border-line bg-white rounded-2xl p-5 md:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"><div><div className="font-display text-[22px]">{config.title}</div><p className="text-[12.5px] text-slate2 mt-1 max-w-2xl">{config.description}</p></div><button onClick={startCreate} className="btn btn-coral"><Plus className="w-4 h-4"/> Add {config.singular}</button></div>
-    {open&&<form onSubmit={save} className="border border-line bg-white rounded-2xl overflow-hidden"><div className="p-5 border-b border-line flex items-center justify-between"><div><div className="eyebrow">{editing?'Edit record':'New record'}</div><div className="font-display text-[20px] mt-1">{editing?`Edit ${config.singular}`:`Add ${config.singular}`}</div></div><button type="button" onClick={close} className="w-9 h-9 rounded-lg border border-line flex items-center justify-center"><X className="w-4 h-4"/></button></div><div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">{config.fields.map(([name,label,type='text',required=false,options=[]])=><ManagerField key={name} name={name} label={label} type={type} required={required} options={options} value={form[name]} onChange={(value)=>setForm((prev)=>({...prev,[name]:value}))}/>)}</div><div className="p-4 border-t border-line flex justify-end gap-2"><button type="button" onClick={close} className="btn btn-outline">Cancel</button><button className="btn btn-coral"><Save className="w-4 h-4"/> {editing?'Save changes':startup.status==='Published'?'Publish record':'Submit for review'}</button></div></form>}
+    {open&&<form onSubmit={save} className="border border-line bg-white rounded-2xl overflow-hidden"><div className="p-5 border-b border-line flex items-center justify-between"><div><div className="eyebrow">{editing?'Edit record':'New record'}</div><div className="font-display text-[20px] mt-1">{editing?`Edit ${config.singular}`:`Add ${config.singular}`}</div></div><button type="button" onClick={close} className="w-9 h-9 rounded-lg border border-line flex items-center justify-center"><X className="w-4 h-4"/></button></div><div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">{config.fields.map(([name,label,type='text',required=false,options=[]])=>type==='funding-investors' ? <FundingInvestorFields key={name} investors={data.investors||[]} round={form} onChange={(fields)=>setForm((previous)=>({...previous,...fields}))}/> : <ManagerField key={name} name={name} label={label} type={type} required={required} options={options} value={form[name]} onChange={(value)=>setForm((prev)=>({...prev,[name]:value}))}/>)}</div><div className="p-4 border-t border-line flex justify-end gap-2"><button type="button" onClick={close} className="btn btn-outline">Cancel</button><button className="btn btn-coral"><Save className="w-4 h-4"/> {editing?'Save changes':startup.status==='Published'?'Publish record':'Submit for review'}</button></div></form>}
     <div className="border border-line bg-white rounded-2xl overflow-hidden">{records.length===0?<div className="p-12 text-center"><ImagePlus className="w-8 h-8 text-slate2/50 mx-auto"/><div className="font-medium text-[14px] mt-3">No {config.title.toLowerCase()} yet</div><div className="text-[12px] text-slate2 mt-1">Use the button above to add the first record.</div></div>:<div className="divide-y divide-line">{records.map((record)=><div key={record[config.idField]} className="p-4 md:p-5 flex items-center gap-4"><div className="w-10 h-10 rounded-xl bg-canvas flex items-center justify-center"><RecordIcon collection={collection}/></div><div className="flex-1 min-w-0"><div className="font-medium text-[14px] truncate">{record[config.nameField]}</div><div className="text-[11.5px] text-slate2 mt-1 truncate">{record.summary||record.description||record.role||record.stage||record.location||record.type||'Linked to this startup'}</div></div><Status value={record[config.statusField]||record.status}/><button onClick={()=>startEdit(record)} className="btn btn-outline btn-sm">Edit</button><button onClick={()=>remove(record)} className="w-9 h-9 rounded-lg border border-line text-coral flex items-center justify-center"><Trash2 className="w-4 h-4"/></button></div>)}</div>}</div>
   </div>;
 }

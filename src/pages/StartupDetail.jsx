@@ -338,6 +338,9 @@ function RoundsTimeline({ rounds, investors }) {
     <div className="relative pl-6 border-l border-line">
       {rounds.map((r, i) => {
         const lead = (investors || []).find((item)=>item.slug===r.leadInvestorSlug);
+        const unlistedLead = !lead ? String(r.leadInvestorName || '').trim() : '';
+        const otherNames = Array.isArray(r.investorNames) ? r.investorNames : [];
+        const leadDisplayName = (lead?.name || unlistedLead).toLowerCase();
         return (
           <div key={r.id} className="relative mb-8 last:mb-0">
             <span className="absolute -left-[29px] top-1 w-3 h-3 rounded-full bg-coral border-2 border-canvas" />
@@ -347,10 +350,12 @@ function RoundsTimeline({ rounds, investors }) {
             <p className="text-[13px] text-ink/85 mt-2 max-w-xl">{r.notes}</p>
             <div className="mt-3 flex flex-wrap gap-2 items-center">
               {lead && <Link to={`/investors/${lead.slug}`} className="inline-flex items-center gap-2 border border-line rounded-md pr-3 hover:border-ink"><InvestorLogo investor={lead} size={22} rounded={4} /><span className="text-[12px]">{lead.name}</span><span className="tag tag-navy ml-1">Lead</span></Link>}
+              {unlistedLead && <span className="inline-flex items-center gap-2 border border-line rounded-md bg-white px-3 py-1.5 text-[12px]">{unlistedLead}<span className="tag tag-navy">Lead</span></span>}
               {(r.investorSlugs || []).filter(x => x !== r.leadInvestorSlug).map(is => {
                 const inv = (investors || []).find((item)=>item.slug===is);
                 return inv && <Link key={is} to={`/investors/${inv.slug}`} className="inline-flex items-center gap-2 border border-line rounded-md pr-3 hover:border-ink"><InvestorLogo investor={inv} size={22} rounded={4} /><span className="text-[12px]">{inv.name}</span></Link>;
               })}
+              {otherNames.filter((name, i)=>typeof name==='string' && name.trim() && name.trim().toLowerCase()!==leadDisplayName && otherNames.findIndex((n)=>typeof n==='string' && n.trim().toLowerCase()===name.trim().toLowerCase())===i).map((name)=><span key={name} className="inline-flex items-center rounded-md border border-line bg-white px-3 py-1.5 text-[12px]">{name}</span>)}
             </div>
           </div>
         );
