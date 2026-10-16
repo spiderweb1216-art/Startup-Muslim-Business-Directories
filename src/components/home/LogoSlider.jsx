@@ -22,7 +22,7 @@ export default function LogoSlider() {
       <div className="wrapper container-p">
         <div className="text-center max-w-2xl mx-auto">
           <div className="eyebrow">Ecosystem</div>
-          <h3 className="mt-2 font-display text-[26px] md:text-[32px] leading-[1.1] text-ink">Companies in the Startup Muslim Ecosystem</h3>
+          <h3 className="mt-2 font-display text-[26px] md:text-[32px] leading-[1.1] text-ink">Companies in the Startup Muslim Ecosystem Atlas</h3>
           <p className="mt-2 text-[14.5px] text-subtle">Discover emerging companies building across technology, finance, education, commerce, community, and the halal economy.</p>
         </div>
         <div className="mt-8 border border-line bg-white rounded-2xl overflow-hidden shadow-soft">

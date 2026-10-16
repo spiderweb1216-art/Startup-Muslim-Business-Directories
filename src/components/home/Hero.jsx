@@ -60,10 +60,10 @@ export default function Hero() {
           <div className="hidden md:flex items-center gap-2 mono text-[11px] text-slate2">
             <span className="inline-flex items-center gap-1">
               {live ? <Sparkles className="w-3 h-3 text-coral" /> : <RefreshCw className="w-3 h-3 text-slate2" />}
-              {live ? 'Live database' : databaseStatus === 'checking' ? 'Connecting to database' : 'Database offline'}
+              {live ? 'Live directory' : databaseStatus === 'checking' ? 'Loading directory' : 'Directory temporarily unavailable'}
             </span>
             <span className="mono">·</span>
-            <span>Startup Muslim Atlas</span>
+            <span>Startup Muslim Ecosystem Atlas</span>
           </div>
         </div>
 
@@ -203,8 +203,8 @@ function AtlasMap({ companies, databaseStatus, onRefresh }) {
           </div>
           <p className="text-[13px] text-slate2 mt-2 leading-relaxed">
             {databaseStatus === 'checking'
-              ? 'The atlas is waiting for the backend company data.'
-              : 'The atlas will not show dummy countries. Start MySQL/backend and reconnect to load company countries.'}
+              ? 'Preparing company locations.'
+              : 'Company locations are temporarily unavailable. Please try again shortly.'}
           </p>
           {databaseStatus === 'error' && (
             <button type="button" onClick={onRefresh} className="btn btn-outline btn-sm mt-4">
@@ -308,7 +308,7 @@ function AtlasMap({ companies, databaseStatus, onRefresh }) {
         <MapPin className="w-3 h-3 text-coral" /> Live company atlas
       </div>
       <div className="absolute top-2 right-2 mono text-[10.5px] text-emerald flex items-center gap-1">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald inline-block" /> Backend connected
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald inline-block" /> Directory updated
       </div>
 
       {countries.length > 0 ? (
@@ -321,12 +321,12 @@ function AtlasMap({ companies, databaseStatus, onRefresh }) {
           ))}
           {countries.length > 10 && <span className="mono text-[11px] text-slate2">+{countries.length - 10} more</span>}
           <span className="ml-auto mono text-[10.5px] text-slate2">
-            {companies.length} companies · {countries.length} countries · refreshes every 15s
+            {companies.length} companies · {countries.length} countries · updated regularly
           </span>
         </div>
       ) : (
         <div className="border-t border-line px-5 py-5 text-[13px] text-slate2">
-          No published companies with a country are currently available in the backend.
+          No company locations are currently available.
         </div>
       )}
     </div>

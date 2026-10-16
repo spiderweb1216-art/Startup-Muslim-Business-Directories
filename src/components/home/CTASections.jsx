@@ -51,7 +51,7 @@ export function InvestorCTA() {
           <div className="col-span-12 md:col-span-7">
             <div className="eyebrow">— For investors & partners</div>
             <h3 className="font-display text-[36px] md:text-[54px] leading-[1.03] mt-3">Are you an investor, accelerator, or ecosystem partner?</h3>
-            <p className="text-[15px] text-slate2 mt-5 max-w-2xl">Join Startup Muslim to discover promising Muslim founders, halal economy startups, and investment-ready pitches — before they’re publicly listed.</p>
+            <p className="text-[15px] text-slate2 mt-5 max-w-2xl">Join Startup Muslim Ecosystem Atlas to discover promising Muslim founders, halal economy startups, and investment-ready pitches — before they’re publicly listed.</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link to="/register" className="btn btn-navy">Join the ecosystem <ArrowRight className="w-4 h-4" /></Link>
               <Link to="/pitches" className="btn btn-outline">Explore active pitches</Link>

@@ -65,7 +65,7 @@ const formatMoney = (value) => {
 
 const published = (item = {}) => !['Draft','Pending','Rejected','Archived','Blocked','Inactive','Revoked','Cancelled'].includes(item.status || 'Published');
 
-function EmptyLiveState({ dark = false, message = 'No backend data yet.' }) {
+function EmptyLiveState({ dark = false, message = 'No directory data is available yet.' }) {
   return (
     <div className={`mt-5 rounded-md border border-dashed p-5 text-[12px] ${dark ? 'border-white/15 text-white/55' : 'border-line text-slate2'}`}>
       <span className="inline-flex items-center gap-2"><Database className="w-3.5 h-3.5" />{message}</span>
@@ -74,7 +74,7 @@ function EmptyLiveState({ dark = false, message = 'No backend data yet.' }) {
 }
 
 export default function EcosystemSnapshot() {
-  const { data, databaseStatus, databaseError, refreshData } = useData();
+  const { data, databaseStatus, refreshData } = useData();
   const connected = databaseStatus === 'connected';
   const now = new Date();
 
@@ -193,8 +193,8 @@ export default function EcosystemSnapshot() {
   const liveStamp = now.toLocaleString('en-US', { month: 'short', year: 'numeric' });
 
   const offlineMessage = databaseStatus === 'checking'
-    ? 'Connecting to live backend…'
-    : `Backend unavailable${databaseError ? `: ${databaseError}` : ''}`;
+    ? 'Loading latest figures…'
+    : 'Figures temporarily unavailable';
 
   return (
     <section className="bg-canvas" data-testid="ecosystem-snapshot-section">
@@ -203,7 +203,7 @@ export default function EcosystemSnapshot() {
           number="03"
           eyebrow="Snapshot"
           title="A live snapshot of the ecosystem."
-          subtitle="Every figure below is calculated from published records in the Startup Muslim backend."
+          subtitle="Explore figures calculated from published directory records."
         />
 
         <div className="mt-10 grid grid-cols-12 gap-4 md:gap-5">
@@ -215,7 +215,7 @@ export default function EcosystemSnapshot() {
                 <h3 className="mt-2 font-display text-[24px] md:text-[28px] text-white leading-tight">Ecosystem by region</h3>
               </div>
               <div className="mono text-[10.5px] text-white/50 whitespace-nowrap">
-                {connected ? `${snapshot.countryCount || 0} countries` : 'Live backend'}
+                {connected ? `${snapshot.countryCount || 0} countries` : 'Current data'}
               </div>
             </div>
 
@@ -241,10 +241,10 @@ export default function EcosystemSnapshot() {
             )}
 
             <div className="mt-6 flex items-center justify-between gap-4 text-white/50 text-[11px] mono">
-              <span>{connected ? `Live · ${liveStamp} · MySQL` : 'Waiting for MySQL/API'}</span>
+              <span>{connected ? `Updated · ${liveStamp}` : 'Updating figures'}</span>
               <span className="inline-flex items-center gap-1">
                 <TrendingUp className="w-3 h-3 text-emerald" />
-                {connected ? `${snapshot.companies.length} published companies` : 'No mock fallback'}
+                {connected ? `${snapshot.companies.length} published companies` : 'Updates pending'}
               </span>
             </div>
           </motion.div>
@@ -275,7 +275,7 @@ export default function EcosystemSnapshot() {
                 <div className="hr mt-2 pt-3 mono text-[11px] text-slate2 flex justify-between">
                   {snapshot.fundingSeries.map((x) => <span key={x.key}>{x.m}</span>)}
                 </div>
-                <div className="mt-2 text-[11px] text-slate2">{snapshot.rounds.length} published funding round{snapshot.rounds.length === 1 ? '' : 's'} in backend</div>
+                <div className="mt-2 text-[11px] text-slate2">{snapshot.rounds.length} published funding round{snapshot.rounds.length === 1 ? '' : 's'}</div>
               </>
             ) : (
               <EmptyLiveState message={offlineMessage} />
@@ -325,7 +325,7 @@ export default function EcosystemSnapshot() {
           <motion.div initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: 0.16 }} className="col-span-12 lg:col-span-7 panel p-6">
             <div className="flex items-center justify-between gap-4">
               <div><div className="eyebrow">Countries to watch</div><h3 className="mt-2 font-display text-[24px] leading-tight">Where the ecosystem is compounding</h3></div>
-              <span className="mono text-[11px] text-slate2 whitespace-nowrap">{connected ? `Live · ${liveStamp}` : 'Backend offline'}</span>
+              <span className="mono text-[11px] text-slate2 whitespace-nowrap">{connected ? `Live · ${liveStamp}` : 'Temporarily unavailable'}</span>
             </div>
 
             {!connected ? (

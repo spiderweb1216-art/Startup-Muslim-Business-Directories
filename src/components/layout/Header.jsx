@@ -373,7 +373,7 @@ function MegaMenu({ type, companies, founders, investors, opportunities, jobs, p
     return (
       <MegaShell>
         <div className="col-span-3">
-          <PanelIntro eyebrow="Founders" title="Meet the builders" text="Latest founder profiles published in the Startup Muslim ecosystem." to="/founders" button="View all founders" />
+          <PanelIntro eyebrow="Founders" title="Meet the builders" text="Latest founder profiles published in the Startup Muslim Ecosystem Atlas." to="/founders" button="View all founders" />
         </div>
         <div className="col-span-9 border-l border-white/10 pl-8">
           <PanelLabel>Latest founders</PanelLabel>
@@ -429,7 +429,7 @@ function MegaMenu({ type, companies, founders, investors, opportunities, jobs, p
   return (
     <MegaShell>
       <div className="col-span-3">
-        <PanelIntro eyebrow="Jobs" title="Latest openings" text="Fresh roles from companies listed across the Startup Muslim ecosystem." to="/jobs" button="View all jobs" />
+        <PanelIntro eyebrow="Jobs" title="Latest openings" text="Fresh roles from companies listed across the Startup Muslim Ecosystem Atlas." to="/jobs" button="View all jobs" />
       </div>
       <div className="col-span-9 border-l border-white/10 pl-8">
         <PanelLabel>Recently posted</PanelLabel>
@@ -575,7 +575,7 @@ function JobTile({ job, company }) {
         <StartupLogo startup={company || { name: job.title }} size={36} rounded={7} />
         <div className="min-w-0 flex-1">
           <div className="text-[13px] text-white truncate">{job.title}</div>
-          <div className="text-[11px] text-white/45 truncate mt-0.5">{company?.name || 'Startup Muslim company'}</div>
+          <div className="text-[11px] text-white/45 truncate mt-0.5">{company?.name || 'directory company'}</div>
           <div className="text-[10.5px] text-white/35 truncate mt-1">{job.location}{job.type ? ` · ${job.type}` : ''}</div>
         </div>
         <ArrowUpRight className="w-3.5 h-3.5 text-white/30 group-hover:text-white shrink-0" />

@@ -14,7 +14,7 @@ export default function About() {
             <div>
               <div className="eyebrow">About</div>
               <h1 className="font-display text-[46px] md:text-[60px] leading-[1.05] mt-3">A directory for the Muslim startup ecosystem.</h1>
-              <p className="text-slate2 text-[16px] mt-5 max-w-xl leading-relaxed">Startup Muslim helps founders, investors, and ecosystem builders discover Muslim-led startups, halal economy companies, and Islamic-finance innovators shaping the future.</p>
+              <p className="text-slate2 text-[16px] mt-5 max-w-xl leading-relaxed">Startup Muslim Ecosystem Atlas helps founders, investors, and ecosystem builders discover Muslim-led startups, halal economy companies, and Islamic-finance innovators shaping the future.</p>
               <div className="mt-8 flex gap-3">
                 <Link to="/directory" className="btn btn-coral">Explore directory</Link>
                 <Link to="/contact" className="btn btn-outline">Contact us</Link>
@@ -59,7 +59,7 @@ export default function About() {
         <div className="border border-line bg-white rounded-2xl p-6 flex items-start gap-4">
           <ShieldCheck className="w-6 h-6 text-coral" />
           <div className="text-[13.5px] text-slate2 leading-relaxed">
-            Startup Muslim provides ecosystem information only. Listings, pitches, funding information, valuations, and investor details are not investment advice, endorsements, financial recommendations, or Shariah certification. Users should verify all information independently.
+            Startup Muslim Ecosystem Atlas provides ecosystem information only. Listings, pitches, funding information, valuations, and investor details are not investment advice, endorsements, financial recommendations, or Shariah certification. Users should verify all information independently.
           </div>
         </div>
       </section>

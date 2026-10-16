@@ -22,7 +22,7 @@ import {
 } from '@/lib/investorData';
 
 export default function Investors() {
-  const { data, loading, databaseStatus, databaseError } = useData();
+  const { data, loading, databaseStatus } = useData();
   const [q, setQ] = useState('');
   const [type, setType] = useState('All');
   const [stage, setStage] = useState('All');
@@ -62,11 +62,11 @@ export default function Investors() {
   const goToPage = (nextPage) => { setPage(nextPage); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
   if (databaseStatus === 'error') {
-    return <div className="wrap py-20"><div className="border border-line bg-white rounded-2xl p-8 max-w-2xl"><DatabaseZap className="w-7 h-7 text-coral"/><h1 className="font-display text-[28px] mt-4">Investor database unavailable</h1><p className="text-[13px] text-slate2 mt-2">The Investors directory is configured to use backend data only. Start the API/MySQL connection and refresh the page.</p>{databaseError && <div className="mono text-[11px] mt-4 p-3 rounded-lg bg-canvas break-all">{databaseError}</div>}</div></div>;
+    return <div className="wrap py-20"><div className="border border-line bg-white rounded-2xl p-8 max-w-2xl"><DatabaseZap className="w-7 h-7 text-coral"/><h1 className="font-display text-[28px] mt-4">Investors temporarily unavailable</h1><p className="text-[13px] text-slate2 mt-2">We could not load investor profiles right now. Please try again shortly.</p></div></div>;
   }
 
   if (loading && databaseStatus === 'checking') {
-    return <div className="wrap py-20 text-[13px] text-slate2">Loading investors from the backend…</div>;
+    return <div className="wrap py-20 text-[13px] text-slate2">Loading investors…</div>;
   }
 
   return (

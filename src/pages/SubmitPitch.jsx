@@ -94,7 +94,7 @@ export default function SubmitPitch() {
           </div>
           <label className="flex items-start gap-2 text-[13.5px]">
             <input type="checkbox" checked={d.consent} onChange={e=>upd('consent', e.target.checked)} className="w-4 h-4 mt-0.5 accent-brand" data-testid="pitch-consent" />
-            <span>I confirm the information is accurate and consent to sharing this with Startup Muslim for review.</span>
+            <span>I confirm the information is accurate and consent to sharing this with Startup Muslim Ecosystem Atlas for review.</span>
           </label>
           <button className="btn btn-coral w-full justify-center" data-testid="pitch-submit"><Send className="w-4 h-4" /> Submit privately</button>
         </form>
@@ -105,7 +105,7 @@ export default function SubmitPitch() {
           </div>
           <div className="border border-line bg-white rounded-2xl p-5">
             <div className="eyebrow flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5" /> Review process</div>
-            <p className="text-[13.5px] text-ink/85 mt-2 leading-relaxed">A member of the Startup Muslim team reviews each pitch within 5 business days.</p>
+            <p className="text-[13.5px] text-ink/85 mt-2 leading-relaxed">A member of the Startup Muslim Ecosystem Atlas team reviews each pitch within 5 business days.</p>
           </div>
           <div className="border border-line bg-white rounded-2xl p-5 text-[12.5px] text-slate2 leading-relaxed">
             Not investment advice, endorsement, or Shariah certification. Users should verify all information independently.

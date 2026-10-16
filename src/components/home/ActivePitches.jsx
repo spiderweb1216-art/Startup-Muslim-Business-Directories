@@ -33,7 +33,7 @@ export default function ActivePitches() {
             {list.map(({ pitch, startup }, i) => <PitchCard key={pitch.id} pitch={pitch} startup={startup} index={i} />)}
           </div>
         ) : (
-          <div className="mt-8 border border-line rounded-2xl bg-white p-6 text-[13px] text-slate2">No approved public pitches are available from the backend yet.</div>
+          <div className="mt-8 border border-line rounded-2xl bg-white p-6 text-[13px] text-slate2">No public investment pitches are currently available.</div>
         )}
         <div className="mt-8 rounded-2xl border border-line bg-white p-4 flex flex-col md:flex-row md:items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-brand-soft text-brand flex items-center justify-center"><ShieldAlert className="w-5 h-5" /></div>

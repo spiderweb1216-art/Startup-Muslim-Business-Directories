@@ -1,24 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-// Main Startup Muslim header logo supplied by the site owner.
-export const Wordmark = ({ variant = 'light', className = '' }) => {
-  return (
-    <Link
-      to="/"
-      className={`inline-flex items-center shrink-0 ${variant === 'light' ? 'rounded-lg bg-navy px-2 py-1' : ''} ${className}`}
-      aria-label="Startup Muslim home"
-    >
-      <img
-        src="/assets/startup-muslim-logo.png"
-        alt="Startup Muslim"
-        className="block h-10 sm:h-11 w-auto max-w-[256px] object-contain"
-        loading="eager"
-        decoding="async"
-      />
-    </Link>
-  );
-};
+// Public header and footer identity; other company/investor logos are untouched.
+export const Wordmark = ({ variant = 'light', className = '' }) => (
+  <Link to="/" aria-label="Startup Muslim Ecosystem Atlas — home"
+    className={`inline-flex items-center shrink-0 text-white ${className}`}>
+    <span className="flex flex-col text-left font-display font-bold text-white leading-tight text-[13px] sm:text-[15px]">
+      <span>Startup Muslim</span>
+      <span>Ecosystem Atlas</span>
+    </span>
+  </Link>
+);
 
 // Startup logo — deterministic vector-style mark (initials on colored square, with corner accent)
 export const StartupLogo = ({ startup, size = 44, rounded = 8 }) => {

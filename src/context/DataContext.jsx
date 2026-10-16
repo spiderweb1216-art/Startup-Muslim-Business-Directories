@@ -18,7 +18,7 @@ export const ID_FIELDS = {
 };
 
 const SETTINGS = {
-  siteName:'Startup Muslim', directoryName:'Startup Muslim Atlas', siteUrl:'http://localhost:3000', adminEmail:'admin@startupmuslim.com', supportEmail:'hello@startupmuslim.com', logoText:'Startup Muslim', tagline:'The global Muslim startup ecosystem directory.', footerText:'A research atlas of Muslim founders, startups, investors, and halal economy companies shaping the future.', submissionsEnabled:true, registrationsEnabled:true, maintenanceMode:false, requireListingApproval:true, requirePitchApproval:true, defaultCountry:'United Kingdom', currency:'USD', timezone:'Asia/Karachi', socialTwitter:'#', socialLinkedin:'#', socialInstagram:'#', socialYoutube:'#', updatedAt:now(),
+  siteName:'Startup Muslim Ecosystem Atlas', directoryName:'Startup Muslim Ecosystem Atlas', siteUrl:'http://localhost:3000', adminEmail:'admin@startupmuslim.com', supportEmail:'hello@startupmuslim.com', logoText:'Startup Muslim Ecosystem Atlas', tagline:'The global Muslim startup ecosystem directory.', footerText:'A research atlas of Muslim founders, startups, investors, and halal economy companies shaping the future.', submissionsEnabled:true, registrationsEnabled:true, maintenanceMode:false, requireListingApproval:true, requirePitchApproval:true, defaultCountry:'United Kingdom', currency:'USD', timezone:'Asia/Karachi', socialTwitter:'#', socialLinkedin:'#', socialInstagram:'#', socialYoutube:'#', updatedAt:now(),
 };
 
 function buildFallback() {

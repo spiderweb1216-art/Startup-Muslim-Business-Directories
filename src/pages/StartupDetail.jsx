@@ -73,8 +73,8 @@ export default function StartupDetail() {
     };
   }, [contactOpen]);
 
-  if (loading || databaseStatus === 'checking') return <div className="wrap py-24 text-center text-slate2">Loading company from backend…</div>;
-  if (databaseStatus === 'error') return <div className="wrap py-24 text-center"><div className="font-display text-[24px]">Company data is temporarily unavailable.</div><p className="text-[13px] text-slate2 mt-2">The public profile is waiting for the backend database connection.</p></div>;
+  if (loading || databaseStatus === 'checking') return <div className="wrap py-24 text-center text-slate2">Loading company…</div>;
+  if (databaseStatus === 'error') return <div className="wrap py-24 text-center"><div className="font-display text-[24px]">Company data is temporarily unavailable.</div><p className="text-[13px] text-slate2 mt-2">Please try again shortly.</p></div>;
   if (!s) return <Navigate to="/startups" replace />;
   const followed = isSaved('follows', s.slug);
   const myClaim = currentUser ? data.claims.find((claim) => claim.startupSlug === s.slug && (claim.ownerId === currentUser.id || String(claim.requesterEmail || '').toLowerCase() === String(currentUser.email || '').toLowerCase()) && !['Rejected','Revoked','Cancelled'].includes(claim.status)) : null;
@@ -253,7 +253,7 @@ function ContactModal({ startup, onClose }) {
           <div className="min-w-0 flex-1">
             <div className="mono text-[9.5px] uppercase tracking-[0.18em] text-white/55">Company contact</div>
             <div className="font-display text-[22px] mt-1 truncate">{startup.name}</div>
-            <div className="text-[11.5px] text-white/65 mt-1">Public contact information supplied from the company backend.</div>
+            <div className="text-[11.5px] text-white/65 mt-1">Contact information provided by this company.</div>
           </div>
           <button type="button" onClick={onClose} className="w-8 h-8 rounded-lg border border-white/15 hover:bg-white/10 inline-flex items-center justify-center shrink-0" aria-label="Close contact popup"><X className="w-4 h-4"/></button>
         </div>
@@ -262,7 +262,7 @@ function ContactModal({ startup, onClose }) {
           {!visible ? (
             <div className="rounded-xl border border-line bg-white p-5 text-center"><div className="font-medium text-[13px]">Contact details are private</div><p className="text-[11.5px] text-slate2 mt-1">This company has not enabled public contact information.</p></div>
           ) : !hasContact ? (
-            <div className="rounded-xl border border-line bg-white p-5 text-center"><div className="font-medium text-[13px]">No contact details added yet</div><p className="text-[11.5px] text-slate2 mt-1">The company can add email, phone, WhatsApp and contact-person details from the backend editor.</p></div>
+            <div className="rounded-xl border border-line bg-white p-5 text-center"><div className="font-medium text-[13px]">No contact details added yet</div><p className="text-[11.5px] text-slate2 mt-1">Contact details have not been provided yet.</p></div>
           ) : (
             <div className="grid sm:grid-cols-2 gap-2">
               {rows.map(({icon:Icon,label,value,sub,href}) => {

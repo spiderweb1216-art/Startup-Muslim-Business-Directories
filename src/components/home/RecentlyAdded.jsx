@@ -15,7 +15,7 @@ export default function RecentlyAdded() {
         <SectionHeading
           eyebrow="Fresh listings"
           title="Recently added."
-          subtitle="The latest startups joining the Startup Muslim ecosystem."
+          subtitle="The latest startups joining the Startup Muslim Ecosystem Atlas."
           right={<Link to="/startups" className="inline-flex items-center gap-1 text-[13.5px] font-medium text-ink hover:text-brand">View all <ArrowRight className="w-4 h-4" /></Link>}
         />
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-3">

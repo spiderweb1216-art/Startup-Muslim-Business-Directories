@@ -6,7 +6,7 @@ import { useToast } from '@/context/ToastContext';
 import { useData } from '@/context/DataContext';
 
 const INQUIRIES = [
-  { icon: HandCoins, title: 'Partnership', desc: 'Partner with Startup Muslim to reach founders and investors.' },
+  { icon: HandCoins, title: 'Partnership', desc: 'Partner with Startup Muslim Ecosystem Atlas to reach founders and investors.' },
   { icon: Building2, title: 'Investor inquiry', desc: 'Get access to featured pitches and portfolio updates.' },
   { icon: Rocket, title: 'Startup submission', desc: 'List your startup on the directory.' },
   { icon: Newspaper, title: 'Media inquiry', desc: 'Press, interviews, and ecosystem reports.' },

@@ -52,9 +52,9 @@ export default function Footer() {
         </div>
         <div className="hr-dark mt-14 pt-8 flex flex-col md:flex-row gap-6 items-start justify-between">
           <p className="text-[12px] text-white/45 max-w-3xl leading-relaxed">
-            Startup Muslim provides ecosystem information only. Listings, pitches, funding information, valuations, and investor details are not investment advice, endorsements, financial recommendations, or Shariah certification. Users should verify all information independently.
+            Startup Muslim Ecosystem Atlas provides ecosystem information only. Listings, pitches, funding information, valuations, and investor details are not investment advice, endorsements, financial recommendations, or Shariah certification. Users should verify all information independently.
           </p>
-          <p className="text-[12px] text-white/45 whitespace-nowrap mono">© {new Date().getFullYear()} — Startup Muslim Atlas</p>
+          <p className="text-[12px] text-white/45 whitespace-nowrap mono">© {new Date().getFullYear()} — Startup Muslim Ecosystem Atlas</p>
         </div>
       </div>
     </footer>

@@ -31,7 +31,7 @@ export default function Pitches() {
       <SectionHeading
         eyebrow="Active pitches"
         title="Startups currently raising."
-        subtitle="Explore live investment pitches from Muslim founders across the ecosystem. Every listing below comes from the backend database."
+        subtitle="Explore live investment pitches from Muslim founders across the ecosystem. Browse approved public pitches."
       />
 
       {rows.length > 0 ? (
@@ -46,12 +46,12 @@ export default function Pitches() {
             {databaseStatus === 'error' ? <Database className="w-5 h-5 text-coral" /> : <FileText className="w-5 h-5 text-slate2" />}
           </div>
           <h3 className="font-display text-[20px] mt-4">
-            {loading ? 'Loading pitches…' : databaseStatus === 'error' ? 'Backend database unavailable' : 'No public pitches yet'}
+            {loading ? 'Loading pitches…' : databaseStatus === 'error' ? 'Pitches temporarily unavailable' : 'No public pitches yet'}
           </h3>
           <p className="text-[13px] text-slate2 mt-2 max-w-lg mx-auto">
             {databaseStatus === 'error'
-              ? 'Start MySQL/API and refresh this page. Dummy pitch cards are intentionally not shown.'
-              : 'A pitch appears here when it is Active, Approved and Public and its company profile is Published.'}
+              ? 'Please try again shortly.'
+              : 'No approved public pitches are currently available.'}
           </p>
         </div>
       )}

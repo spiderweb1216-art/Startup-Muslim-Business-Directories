@@ -48,7 +48,7 @@ export default function PitchesBoard() {
           number="05"
           eyebrow="Investment board"
           title="Startup pitches, live."
-          subtitle="A research board of Muslim founders currently raising. All rows are loaded from the backend database."
+          subtitle="A research board of Muslim founders currently raising. Explore the latest published investment opportunities."
           right={<Link to="/pitches" className="btn btn-outline btn-sm">View all pitches <ArrowUpRight className="w-3.5 h-3.5" /></Link>}
         />
         <div className="mt-8 border border-line rounded-md bg-white overflow-hidden">
