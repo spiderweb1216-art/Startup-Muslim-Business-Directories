@@ -119,14 +119,14 @@ export default function StartupDetail() {
                 <span className="mr-2 h-1.5 w-1.5 rounded-full bg-coral" aria-hidden />
                 {s.category}
               </span>
-              <span className="inline-flex min-h-8 items-center rounded-full border border-line bg-white/85 px-3 text-[11.5px] font-medium text-ink shadow-[0_1px_2px_rgba(15,23,42,0.04)] backdrop-blur-sm">
+              <Link to={`/startups?country=${encodeURIComponent(s.country || '')}`} title={`Browse startups in ${s.country}`} className="inline-flex min-h-8 items-center rounded-full border border-line bg-white/85 px-3 text-[11.5px] font-medium text-ink shadow-[0_1px_2px_rgba(15,23,42,0.04)] backdrop-blur-sm hover:border-coral focus-visible:outline-coral">
                 <CountryLabel
                   country={s.country}
                   explicitFlag={s.flag}
                   className="text-ink gap-2"
                   flagClassName="w-4 h-3 rounded-[2px] object-cover shadow-[0_0_0_1px_rgba(15,23,42,0.10)]"
                 />
-              </span>
+              </Link>
             </div>
           </div>
           <div className="flex items-center gap-2">

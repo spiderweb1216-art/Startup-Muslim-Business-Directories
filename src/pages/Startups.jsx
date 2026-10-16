@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useData } from '@/context/DataContext';
 import StartupCard from '@/components/common/StartupCard';
 import { EmptyState, SkeletonRow, SectionHeading } from '@/components/common/Section';
@@ -6,27 +7,31 @@ import { Search, Filter } from 'lucide-react';
 import { isPublicFundingRound } from '@/lib/fundingDisplay';
 import { paginateRecords } from '@/lib/pagination';
 import ResultsPagination from '@/components/common/ResultsPagination';
+import { canonicalCountry } from '@/lib/countryAtlas';
 
 export default function Startups() {
   const { data, databaseStatus } = useData();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlCountry = searchParams.get('country') || '';
   const companies = useMemo(() => databaseStatus === 'connected' ? (data.startups || []).filter((s) => s.status === 'Published') : [], [data.startups, databaseStatus]);
   const categories = useMemo(() => databaseStatus === 'connected' ? (data.categories || []).filter((c) => c.status !== 'Inactive') : [], [data.categories, databaseStatus]);
-  const countries = useMemo(() => Array.from(new Set(companies.map((s) => s.country).filter(Boolean))).sort(), [companies]);
+  const countries = useMemo(() => Array.from(new Set(companies.map((s) => canonicalCountry(s.country)).filter(Boolean))).sort(), [companies]);
   // Only published funding rounds count as publicly disclosed funding activity.
   const fundedCompanySlugs = useMemo(() => new Set((data.rounds || []).filter(isPublicFundingRound).map((r) => r.startupSlug).filter(Boolean)), [data.rounds]);
   const [q, setQ] = useState('');
   const [cat, setCat] = useState('');
-  const [country, setCountry] = useState('');
+  const [country, setCountry] = useState(urlCountry);
   const [funding, setFunding] = useState('all');
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  useEffect(() => { setCountry(urlCountry); setPage(1); }, [urlCountry]);
   useEffect(() => { setLoading(true); const t=setTimeout(()=>setLoading(false),300); return ()=>clearTimeout(t); }, [q, cat, country, funding]);
 
   const results = useMemo(() => {
     let l = [...companies];
     if (q) l = l.filter(s => String(s.name || '').toLowerCase().includes(q.toLowerCase()) || String(s.tagline || '').toLowerCase().includes(q.toLowerCase()));
     if (cat) l = l.filter(s => s.category === cat);
-    if (country) l = l.filter(s => s.country === country);
+    if (country) l = l.filter(s => canonicalCountry(s.country) === canonicalCountry(country));
     if (funding === 'with') l = l.filter(s => fundedCompanySlugs.has(s.slug));
     if (funding === 'without') l = l.filter(s => !fundedCompanySlugs.has(s.slug));
     return l;
@@ -47,7 +52,7 @@ export default function Startups() {
           <option value="">All categories</option>
           {categories.map(c => <option key={c.slug} value={c.name}>{c.name}</option>)}
         </select>
-        <select value={country} onChange={e=>{setCountry(e.target.value);setPage(1);}} className="bg-white border border-line rounded-full px-4 py-2.5 text-[13px]">
+        <select value={country} onChange={e=>{const next=e.target.value;setCountry(next);setPage(1);const params=new URLSearchParams(searchParams);if(next)params.set('country',next);else params.delete('country');setSearchParams(params);}} className="bg-white border border-line rounded-full px-4 py-2.5 text-[13px]">
           <option value="">All countries</option>
           {countries.map(c => <option key={c} value={c}>{c}</option>)}
         </select>

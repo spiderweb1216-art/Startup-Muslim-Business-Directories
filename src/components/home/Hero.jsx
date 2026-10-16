@@ -402,6 +402,10 @@ function EcosystemGlobe({ companies, investors, databaseStatus, onRefresh }) {
   const filteredCompanyCount = filteredCountries.reduce((sum, item) => sum + item.companies, 0);
   const selectedEntities = useMemo(() => visibleEntities.filter(item => filteredCountries.some(c => c.name === canonicalCountry(item?.country))).sort((a,b) => String(a.name || '').localeCompare(String(b.name || ''))), [visibleEntities, filteredCountries]);
   const topCountries = filteredCountries.slice(0, 6);
+  const openCountryArchive = (country, type = entityType) => {
+    if (!country) return;
+    nav(`${type === 'Investors' ? '/investors' : '/startups'}?country=${encodeURIComponent(country)}`);
+  };
   const regionSummary = selectedRegion === 'All regions'
     ? regions.slice(0, 6)
     : regions.filter((region) => region.name === selectedRegion);
@@ -455,6 +459,12 @@ function EcosystemGlobe({ companies, investors, databaseStatus, onRefresh }) {
               </select>
             </div>
 
+            {selectedCountry !== 'All countries' && (
+              <div className="space-y-2">
+                <button type="button" onClick={() => openCountryArchive(selectedCountry, 'Startups')} className="w-full btn btn-coral justify-center">View {selectedCountry} startups <ArrowRight className="w-4 h-4" /></button>
+                <button type="button" onClick={() => openCountryArchive(selectedCountry, 'Investors')} className="w-full btn btn-outline justify-center">View {selectedCountry} investors <ArrowRight className="w-4 h-4" /></button>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-3 pt-1">
               <StatBox label="Visible countries" value={filteredCountries.length} />
               <StatBox label={entityType} value={filteredCompanyCount} />
@@ -474,15 +484,15 @@ function EcosystemGlobe({ companies, investors, databaseStatus, onRefresh }) {
           </div>
 
           <div className="min-h-[340px] md:min-h-[430px] flex items-center justify-center">
-            <RotatingGlobe countries={filteredCountries} selectedCountry={selectedCountry} onCountrySelect={(country) => { setSelectedCountry(country); setSearch(''); const region = getRegionForCountry(country); setSelectedRegion(region === 'Other' ? 'All regions' : region); }} onReset={() => { setSelectedCountry('All countries'); setSelectedRegion('All regions'); setSearch(''); }} />
+            <RotatingGlobe countries={filteredCountries} selectedCountry={selectedCountry} onCountrySelect={(country) => { setSelectedCountry(country); setSearch(''); const region = getRegionForCountry(country); setSelectedRegion(region === 'Other' ? 'All regions' : region); }} onReset={() => { setSelectedCountry('All countries'); setSelectedRegion('All regions'); setSearch(''); }} onCountryOpen={(country) => openCountryArchive(country)} />
           </div>
 
           <div className="mt-4 border-t border-line pt-4 flex flex-wrap gap-2 items-center">
             <span className="eyebrow mr-1">Current view</span>
             {topCountries.length > 0 ? topCountries.map((country) => (
-              <span key={country.name} className="tag bg-white border border-line">
+              <button key={country.name} type="button" onClick={() => openCountryArchive(country.name)} className="tag bg-white border border-line hover:border-coral" title={`Browse ${entityType.toLowerCase()} in ${country.name}`}>
                 {countryLabel(country.name)} <span className="mono text-slate2 ml-1">{country.companies}</span>
-              </span>
+              </button>
             )) : <span className="text-[13px] text-slate2">No countries match the current filter.</span>}
           </div>
         </div>
@@ -492,13 +502,13 @@ function EcosystemGlobe({ companies, investors, databaseStatus, onRefresh }) {
             <div className="eyebrow flex items-center gap-2"><BarChart3 className="w-3.5 h-3.5 text-coral" /> Top countries</div>
             <div className="mt-4 space-y-3">
               {topCountries.length > 0 ? topCountries.map((country, index) => (
-                <div key={country.name} className="flex items-center justify-between gap-3">
+                <button key={country.name} type="button" onClick={() => openCountryArchive(country.name)} className="w-full text-left flex items-center justify-between gap-3 hover:text-coral rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-coral" title={`Browse ${entityType.toLowerCase()} in ${country.name}`}>
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="mono text-[11px] text-slate2">{String(index + 1).padStart(2, '0')}</span>
                     <span className="text-[14px] text-ink truncate">{countryLabel(country.name)}</span>
                   </div>
                   <span className="mono text-[12px] text-coral">{country.companies}</span>
-                </div>
+                </button>
               )) : <div className="text-[13px] text-slate2">No data for this filter.</div>}
             </div>
           </div>
@@ -617,7 +627,7 @@ function countryShapePath(shape, rotation) {
   return polygons.map(polygon=>visiblePolygonPath(polygon[0],rotation)).filter(Boolean).join(' ');
 }
 
-function RotatingGlobe({ countries, selectedCountry, onCountrySelect, onReset }) {
+function RotatingGlobe({ countries, selectedCountry, onCountrySelect, onReset, onCountryOpen }) {
   const [rotation,setRotation]=useState(-22);
   const [paused,setPaused]=useState(false);
   const [hovered,setHovered]=useState('');
@@ -664,7 +674,7 @@ function RotatingGlobe({ countries, selectedCountry, onCountrySelect, onReset })
   return (
     <div className="w-full flex flex-col items-center">
       <div className="flex items-center justify-between w-full gap-3 mb-1">
-        <span className="mono text-[11px] text-slate2">Drag or swipe to turn · select a highlighted country</span>
+        <span className="mono text-[11px] text-slate2">Drag or swipe to turn · click a highlighted country to open its archive</span>
         <button type="button" onClick={()=>setPaused(p=>!p)} className="text-[12px] mono rounded-full px-3 py-1.5 bg-white border border-line hover:text-coral">
           {paused?'Resume rotation':'Pause rotation'}
         </button>
@@ -692,7 +702,7 @@ function RotatingGlobe({ countries, selectedCountry, onCountrySelect, onReset })
               fill={shape.name===selectedCountry?'#B63C31':shape.count?'#CE8069':'#E4D8C9'}
               stroke="#F9F1E6" strokeWidth=".65" strokeLinejoin="round"
               className={shape.count?'cursor-pointer':''}
-              onClick={()=>choose(shape.name)}
+              onClick={()=>shape.count && onCountryOpen(shape.name)}
               onPointerEnter={()=>setHovered(shape.name)}
             >
               <title>{`${shape.name}: ${shape.count} ${shape.count===1?'company':'companies'}`}</title>
@@ -703,8 +713,8 @@ function RotatingGlobe({ countries, selectedCountry, onCountrySelect, onReset })
         <circle cx="250" cy="250" r="178" fill="none" stroke="#A96B48" strokeWidth="1" opacity=".35" pointerEvents="none" />
       </svg>
       <div className="flex items-center justify-between gap-3 w-full mt-1">
-        <span className="text-[12px] text-slate2 min-h-[20px]">{hovered?`${hovered} · ${selectedCount.get(hovered)||0} companies`:'Highlighted countries have directory listings'}</span>
-        {selectedCountry!=='All countries' && <button type="button" className="text-[12px] text-coral underline" onClick={onReset}>Clear selection</button>}
+        <span className="text-[12px] text-slate2 min-h-[20px]">{hovered?`${hovered} · ${selectedCount.get(hovered)||0} companies`:'Click a highlighted country to browse matching profiles'}</span>
+        {selectedCountry!=='All countries' && <div className="flex gap-3 items-center"><button type="button" className="text-[12px] font-medium text-coral underline" onClick={()=>onCountryOpen(selectedCountry)}>Open filtered archive →</button><button type="button" className="text-[12px] text-slate2 underline" onClick={onReset}>Clear</button></div>}
       </div>
     </div>
   );

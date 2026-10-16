@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useMemo, useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { InvestorLogo } from '@/components/common/Logo';
 import { SectionHeading, EmptyState } from '@/components/common/Section';
 import { Search, LayoutGrid, List, ArrowUpRight, DatabaseZap } from 'lucide-react';
@@ -10,6 +10,7 @@ import { useData } from '@/context/DataContext';
 import { isPublicFundingRound } from '@/lib/fundingDisplay';
 import { paginateRecords } from '@/lib/pagination';
 import ResultsPagination from '@/components/common/ResultsPagination';
+import { canonicalCountry } from '@/lib/countryAtlas';
 import {
   asArray,
   formatInvestorDate,
@@ -23,6 +24,10 @@ import {
 
 export default function Investors() {
   const { data, loading, databaseStatus } = useData();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlCountry = searchParams.get('country') || '';
+  const [country, setCountry] = useState(urlCountry);
+  useEffect(() => { setCountry(urlCountry); setPage(1); }, [urlCountry]);
   const [q, setQ] = useState('');
   const [type, setType] = useState('All');
   const [stage, setStage] = useState('All');
@@ -34,6 +39,7 @@ export default function Investors() {
   const investors = useMemo(() => (data.investors || [])
     .filter(isPublicInvestorRecord)
     .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || String(a.name || '').localeCompare(String(b.name || ''))), [data.investors]);
+  const countryOptions = useMemo(() => Array.from(new Set(investors.map(item => canonicalCountry(item.country)).filter(Boolean))).sort(), [investors]);
   const types = useMemo(() => getInvestorTypes(investors), [investors]);
   const stages = useMemo(() => getInvestorStages(investors), [investors]);
 
@@ -51,12 +57,13 @@ export default function Investors() {
         ...asArray(item.stageFocus),
       ].filter(Boolean).join(' ').toLowerCase().includes(needle));
     }
+    if (country) list = list.filter(item => canonicalCountry(item.country) === canonicalCountry(country));
     if (type !== 'All') list = list.filter((item) => item.type === type);
     if (stage !== 'All') list = list.filter((item) => asArray(item.stageFocus).includes(stage));
     if (funding === 'with') list = list.filter((item) => investorsWithRounds.has(item.slug));
     if (funding === 'without') list = list.filter((item) => !investorsWithRounds.has(item.slug));
     return list;
-  }, [investors, q, type, stage, funding, investorsWithRounds]);
+  }, [investors, q, type, stage, funding, country, investorsWithRounds]);
 
   const current = useMemo(() => paginateRecords(results, page), [results, page]);
   const goToPage = (nextPage) => { setPage(nextPage); window.scrollTo({ top: 0, behavior: 'smooth' }); };
@@ -77,6 +84,10 @@ export default function Investors() {
           <Search className="w-4 h-4 text-slate2 absolute left-4 top-1/2 -translate-y-1/2" />
           <input value={q} onChange={(event) => { setQ(event.target.value); setPage(1); }} placeholder="Search investors" className="w-full bg-white border border-line rounded-md pl-11 pr-3 py-2.5 text-[13.5px] outline-none focus:border-ink" />
         </div>
+        <select value={country} aria-label="Filter investors by country" onChange={(event) => { const next=event.target.value;setCountry(next);setPage(1);const params=new URLSearchParams(searchParams);if(next)params.set('country',next);else params.delete('country');setSearchParams(params); }} className="bg-white border border-line rounded-md px-3 py-2 text-[13px]">
+          <option value="">All countries</option>
+          {countryOptions.map(value => <option key={value} value={value}>{value}</option>)}
+        </select>
         <select value={type} onChange={(event) => { setType(event.target.value); setPage(1); }} className="bg-white border border-line rounded-md px-3 py-2 text-[13px]">
           {types.map((item) => <option key={item}>{item}</option>)}
         </select>
