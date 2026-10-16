@@ -185,12 +185,14 @@ export const getJobsByStartup = (slug) => JOBS.filter(j => j.startupSlug === slu
 export const getFoundersByStartup = (slug) => {
   const s = getStartupBySlug(slug);
   if (!s) return [];
-  return s.founderSlugs.map(fs => FOUNDERS.find(f => f.slug === fs)).filter(Boolean);
+  const founderSlugs = Array.isArray(s.founderSlugs) ? s.founderSlugs : [];
+  return founderSlugs.map(fs => FOUNDERS.find(f => f.slug === fs)).filter(Boolean);
 };
 export const getStartupsByInvestor = (slug) => {
   const inv = getInvestorBySlug(slug);
   if (!inv) return [];
-  return inv.portfolio.map(ps => getStartupBySlug(ps)).filter(Boolean);
+  const portfolio = Array.isArray(inv.portfolio) ? inv.portfolio : [];
+  return portfolio.map(ps => getStartupBySlug(ps)).filter(Boolean);
 };
 export const getSimilarStartups = (startup, count=4) => {
   return STARTUPS.filter(s => s.slug !== startup.slug && s.category === startup.category).slice(0, count);
