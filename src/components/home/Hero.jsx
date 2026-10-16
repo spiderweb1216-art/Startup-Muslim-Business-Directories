@@ -21,6 +21,7 @@ function formatCompactMoney(value) {
 export default function Hero() {
   const [q, setQ] = useState('');
   const [kind, setKind] = useState('All');
+  const [atlasView, setAtlasView] = useState('featured');
   const nav = useNavigate();
   const { data, stats, databaseStatus, refreshData } = useData();
 
@@ -84,12 +85,19 @@ export default function Hero() {
 
         {/* Atlas visualization — driven only by backend company records */}
         <div className="mt-12 md:mt-14 relative">
-          <div className="panel-flat pt-6">
-            <AtlasMap
-              companies={publishedCompanies}
-              databaseStatus={databaseStatus}
-              onRefresh={() => refreshData().catch(() => {})}
-            />
+          <div className="panel-flat pt-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 px-4 md:px-6 pb-3 border-b border-line">
+              <div className="flex flex-wrap gap-2" role="tablist" aria-label="Ecosystem atlas views">
+                <button type="button" role="tab" aria-selected={atlasView === 'featured'} onClick={() => setAtlasView('featured')} className={`px-4 py-2 rounded-md text-[13px] font-semibold transition-colors ${atlasView === 'featured' ? 'bg-ink text-white' : 'bg-white border border-line text-ink hover:bg-sand'}`} data-testid="atlas-featured-tab">Featured / Premium Map</button>
+                <button type="button" role="tab" aria-selected={atlasView === 'globe'} onClick={() => setAtlasView('globe')} className={`px-4 py-2 rounded-md text-[13px] font-semibold transition-colors ${atlasView === 'globe' ? 'bg-ink text-white' : 'bg-white border border-line text-ink hover:bg-sand'}`} data-testid="atlas-globe-tab">Ecosystem Globe</button>
+              </div>
+              <span className="mono text-[11px] text-slate2">Counts from published directory companies</span>
+            </div>
+            {atlasView === 'featured' ? (
+              <AtlasMap companies={publishedCompanies} databaseStatus={databaseStatus} onRefresh={() => refreshData().catch(() => {})} />
+            ) : (
+              <EcosystemGlobe companies={publishedCompanies} databaseStatus={databaseStatus} onRefresh={() => refreshData().catch(() => {})} />
+            )}
           </div>
         </div>
 
@@ -329,6 +337,99 @@ function AtlasMap({ companies, databaseStatus, onRefresh }) {
           No company locations are currently available.
         </div>
       )}
+    </div>
+  );
+}
+
+
+// Display geography is derived from published company records. No seeded counts.
+// Regional groupings are editorial geographic filters, not company affiliations.
+const REGION_COUNTRIES = {
+  'MENA': 'Algeria,Bahrain,Egypt,Iran,Iraq,Jordan,Kuwait,Lebanon,Libya,Mauritania,Morocco,Oman,Palestine,Qatar,Saudi Arabia,Sudan,Syria,Tunisia,United Arab Emirates,Yemen,Israel,Djibouti',
+  'South Asia': 'Afghanistan,Bangladesh,Bhutan,India,Maldives,Nepal,Pakistan,Sri Lanka',
+  'Southeast Asia': 'Brunei,Cambodia,Indonesia,Laos,Malaysia,Myanmar,Philippines,Singapore,Thailand,East Timor,Vietnam',
+  'Central Asia': 'Kazakhstan,Kyrgyzstan,Tajikistan,Turkmenistan,Uzbekistan',
+  'Sub-Saharan Africa': 'Angola,Benin,Botswana,Burkina Faso,Burundi,Cameroon,Cape Verde,Central African Republic,Chad,Comoros,Democratic Republic of the Congo,Equatorial Guinea,Eritrea,Ethiopia,Gabon,Gambia,Ghana,Guinea,Guinea-Bissau,Ivory Coast,Kenya,Liberia,Madagascar,Malawi,Mali,Mauritius,Mozambique,Niger,Nigeria,Rwanda,Senegal,Sierra Leone,Somalia,South Africa,South Sudan,Tanzania,Togo,Uganda,Zambia,Zimbabwe',
+  'Europe': 'Albania,Andorra,Austria,Belarus,Belgium,Bosnia and Herzegovina,Bulgaria,Croatia,Cyprus,Czech Republic,Denmark,Estonia,Finland,France,Germany,Greece,Hungary,Iceland,Ireland,Italy,Kosovo,Latvia,Lithuania,Luxembourg,Malta,Moldova,Montenegro,Netherlands,North Macedonia,Norway,Poland,Portugal,Romania,Russia,Serbia,Slovakia,Slovenia,Spain,Sweden,Switzerland,Turkey,Ukraine,United Kingdom',
+  'Americas': 'Argentina,Bolivia,Brazil,Canada,Chile,Colombia,Costa Rica,Cuba,Dominican Republic,Ecuador,El Salvador,Guatemala,Haiti,Honduras,Jamaica,Mexico,Nicaragua,Panama,Paraguay,Peru,United States,Uruguay,Venezuela',
+  'East Asia & Pacific': 'Australia,China,Fiji,Hong Kong,Japan,New Zealand,South Korea,Taiwan',
+};
+const REGION_LOOKUP = Object.entries(REGION_COUNTRIES).reduce((out, [region, names]) => {
+  names.split(',').forEach((name) => { out[name] = region; });
+  return out;
+}, {});
+function ecosystemRegion(name) { return REGION_LOOKUP[name] || 'Other regions'; }
+function globePoint(point, centerLongitude) {
+  if (!point) return null;
+  const lat = point.lat * Math.PI / 180;
+  const longitude = (point.lng - centerLongitude) * Math.PI / 180;
+  const visible = Math.cos(lat) * Math.cos(longitude) >= 0;
+  return visible ? { x: 330 + 165 * Math.cos(lat) * Math.sin(longitude), y: 202 - 165 * Math.sin(lat) } : null;
+}
+
+function EcosystemGlobe({ companies, databaseStatus, onRefresh }) {
+  const [region, setRegion] = useState('All regions');
+  const [countryName, setCountryName] = useState('All countries');
+  const [query, setQuery] = useState('');
+  const [selected, setSelected] = useState('');
+  const [longitude, setLongitude] = useState(45);
+  const grouped = useMemo(() => {
+    const result = new Map();
+    (Array.isArray(companies) ? companies : []).forEach((company) => {
+      const name = canonicalCountry(company?.country);
+      if (!name || name === 'Global' || name === 'Remote') return;
+      const existing = result.get(name) || { name, count: 0, region: ecosystemRegion(name), point: projectCountry(name) };
+      existing.count++;
+      result.set(name, existing);
+    });
+    return [...result.values()].sort((a,b) => b.count - a.count || a.name.localeCompare(b.name));
+  }, [companies]);
+  const regionTotals = useMemo(() => grouped.reduce((acc, item) => {
+    acc[item.region] = (acc[item.region] || 0) + item.count;
+    return acc;
+  }, {}), [grouped]);
+  const regions = useMemo(() => Object.keys(regionTotals).sort((a,b) => regionTotals[b] - regionTotals[a] || a.localeCompare(b)), [regionTotals]);
+  const availableCountries = useMemo(() => grouped.filter((entry) => region === 'All regions' || entry.region === region), [grouped, region]);
+  const visible = useMemo(() => availableCountries.filter((entry) =>
+    (countryName === 'All countries' || entry.name === countryName) && entry.name.toLowerCase().includes(query.trim().toLowerCase())
+  ), [availableCountries, countryName, query]);
+  const shownTotal = visible.reduce((sum, item) => sum + item.count, 0);
+  const selectedEntry = visible.find((item) => item.name === selected);
+  const pickCountry = (item) => {
+    setSelected(item.name);
+    if (item.point) setLongitude(item.point.lng);
+  };
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] min-h-[440px]" data-testid="ecosystem-globe">
+      <aside className="bg-white/80 border-b lg:border-b-0 lg:border-r border-line p-4 md:p-5 space-y-4" aria-label="Globe filters">
+        <div><div className="eyebrow">Explore the atlas</div><h2 className="font-display text-[24px] mt-1 text-ink">Countries & regions</h2></div>
+        <label className="block"><span className="text-xs font-semibold text-ink">Region</span><select value={region} onChange={(e) => { setRegion(e.target.value); setCountryName('All countries'); setSelected(''); }} className="mt-1 block w-full rounded-md border border-line bg-white p-2 text-sm" data-testid="globe-region-filter"><option>All regions</option>{regions.map((name) => <option key={name} value={name}>{name} · {regionTotals[name]}</option>)}</select></label>
+        <label className="block"><span className="text-xs font-semibold text-ink">Country</span><select value={countryName} onChange={(e) => { setCountryName(e.target.value); setSelected(''); const c = availableCountries.find(x => x.name === e.target.value); if (c?.point) setLongitude(c.point.lng); }} className="mt-1 block w-full rounded-md border border-line bg-white p-2 text-sm" data-testid="globe-country-filter"><option>All countries</option>{availableCountries.map((item) => <option key={item.name} value={item.name}>{countryLabel(item.name)} · {item.count}</option>)}</select></label>
+        <label className="block"><span className="text-xs font-semibold text-ink">Find a country</span><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search countries…" className="mt-1 block w-full rounded-md border border-line bg-white p-2 text-sm" data-testid="globe-country-search" /></label>
+        <div className="grid grid-cols-2 gap-2 text-center"><div className="bg-sand rounded-md p-3"><div className="font-display text-[25px] text-ink">{shownTotal}</div><div className="eyebrow">Companies</div></div><div className="bg-sand rounded-md p-3"><div className="font-display text-[25px] text-ink">{visible.length}</div><div className="eyebrow">Countries</div></div></div>
+        <button type="button" className="text-[12px] text-coral underline" onClick={() => { setRegion('All regions'); setCountryName('All countries'); setQuery(''); setSelected(''); setLongitude(45); }}>Reset filters</button>
+        <div className="max-h-[170px] overflow-y-auto border-t border-line pt-2" aria-label="Filtered countries">
+          {visible.map((item) => <button type="button" onClick={() => pickCountry(item)} key={item.name} className={`w-full flex justify-between gap-3 text-left px-2 py-1.5 rounded text-[12px] ${selected === item.name ? 'bg-sand font-bold' : 'hover:bg-sand/70'}`}><span>{countryLabel(item.name)}</span><span className="mono">{item.count}</span></button>)}
+          {visible.length === 0 && <p className="text-sm text-slate2 py-3">No countries match your filters.</p>}
+        </div>
+      </aside>
+      <div className="relative p-4 md:p-6 flex flex-col justify-center min-w-0">
+        <div className="flex flex-wrap justify-between items-center gap-3 mb-2"><span className="eyebrow">Ecosystem globe · published company locations</span><div className="flex gap-2"><button type="button" onClick={() => setLongitude(x => x - 35)} className="border border-line bg-white rounded px-2 py-1 text-[12px]" aria-label="Rotate globe left">◀</button><button type="button" onClick={() => setLongitude(x => x + 35)} className="border border-line bg-white rounded px-2 py-1 text-[12px]" aria-label="Rotate globe right">▶</button></div></div>
+        {databaseStatus !== 'connected' ? <div className="min-h-[340px] flex flex-col items-center justify-center gap-3"><p className="text-sm text-slate2">{databaseStatus === 'checking' ? 'Loading company locations…' : 'Company locations are temporarily unavailable.'}</p>{databaseStatus === 'error' && <button type="button" className="btn btn-outline btn-sm" onClick={onRefresh}>Retry</button>}</div> : <>
+          <svg viewBox="0 0 660 410" className="w-full max-h-[390px]" role="img" aria-label={`Globe showing ${visible.length} countries and ${shownTotal} companies, using published directory records`}>
+            <defs><radialGradient id="globe-ocean"><stop offset="0%" stopColor="#F5F1E9"/><stop offset="100%" stopColor="#C7D7D5"/></radialGradient><clipPath id="ecosystem-globe-clip"><circle cx="330" cy="202" r="172"/></clipPath></defs>
+            <circle cx="330" cy="202" r="172" fill="url(#globe-ocean)" stroke="#B4C2BB" strokeWidth="2"/>
+            <g clipPath="url(#ecosystem-globe-clip)" fill="none" stroke="#D5DBD2" strokeWidth="1">
+              {[-60,-30,0,30,60].map((lat) => { const y = 202 - 172*Math.sin(lat*Math.PI/180); const rx = 172*Math.cos(lat*Math.PI/180); return <ellipse key={`lat-${lat}`} cx="330" cy={y} rx={rx} ry={8} />; })}
+              {[-60,-30,0,30,60].map((deg) => <ellipse key={`meridian-${deg}`} cx="330" cy="202" rx={172*Math.abs(Math.cos(deg*Math.PI/180))} ry="172" />)}
+            </g>
+            {visible.map((item) => { const p = globePoint(item.point, longitude); if (!p) return null; const active = item.name === selected; return <g key={item.name} onClick={() => pickCountry(item)} style={{cursor:'pointer'}} role="button" tabIndex="0" aria-label={`${item.name}: ${item.count} companies`} onKeyDown={(event) => {if(event.key === 'Enter' || event.key === ' ') {event.preventDefault(); pickCountry(item);}}}><title>{item.name} · {item.count} companies</title><circle cx={p.x} cy={p.y} r={active ? 9 : Math.max(5,Math.min(12,4+Math.sqrt(item.count)*1.5))} fill={active ? '#D94B3D' : '#123F35'} stroke="white" strokeWidth="2"/><text x={p.x+12} y={p.y-9} fontSize="11" fill="#1A2925" fontWeight={active ? 'bold' : 'normal'}>{item.name} · {item.count}</text></g>; })}
+          </svg>
+          <div className="text-center text-[12px] text-slate2">Select a country on the left to center it. Rotate to explore other locations.</div>
+          {selectedEntry && <div className="mx-auto mt-3 bg-white rounded-md border border-line px-4 py-2 text-[13px]"><strong>{countryLabel(selectedEntry.name)}</strong> · {selectedEntry.count} {selectedEntry.count === 1 ? 'company' : 'companies'} · {selectedEntry.region}</div>}
+          {grouped.length === 0 && <p className="text-center text-sm text-slate2 mt-2">No published company locations yet.</p>}
+        </>}
+      </div>
     </div>
   );
 }
