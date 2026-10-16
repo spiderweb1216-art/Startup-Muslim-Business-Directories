@@ -122,6 +122,7 @@ export default function Hero() {
           <div className="panel-flat pt-4 md:pt-5 overflow-hidden">
             <MapShowcase
               companies={publishedCompanies}
+              investors={Array.isArray(data.investors) ? data.investors : []}
               databaseStatus={databaseStatus}
               onRefresh={() => refreshData().catch(() => {})}
             />
@@ -175,7 +176,7 @@ export default function Hero() {
   );
 }
 
-function MapShowcase({ companies, databaseStatus, onRefresh }) {
+function MapShowcase({ companies, investors, databaseStatus, onRefresh }) {
   const [tab, setTab] = useState('featured');
 
   return (
@@ -198,7 +199,7 @@ function MapShowcase({ companies, databaseStatus, onRefresh }) {
       {tab === 'featured' ? (
         <FeaturedPremiumAtlas companies={companies} databaseStatus={databaseStatus} onRefresh={onRefresh} />
       ) : (
-        <EcosystemGlobe companies={companies} databaseStatus={databaseStatus} onRefresh={onRefresh} />
+        <EcosystemGlobe companies={companies} investors={investors} databaseStatus={databaseStatus} onRefresh={onRefresh} />
       )}
     </div>
   );
@@ -236,9 +237,9 @@ function FeaturedPremiumAtlas({ companies, databaseStatus, onRefresh }) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-5 items-stretch">
         <div className="lg:col-span-4 border border-line rounded-[24px] bg-white p-4 md:p-5">
           <div className="eyebrow">Featured layer</div>
-          <h3 className="font-display text-[28px] text-ink mt-2">Premium companies at a glance</h3>
+          <h3 className="font-display text-[28px] text-ink mt-2">Featured ecosystem at a glance</h3>
           <p className="text-[14px] text-slate2 leading-relaxed mt-2">
-            Keep this as your premium/featured tab. It shows the strongest company concentration by country, with highlighted hubs and a quick global snapshot.
+            Discover featured ecosystem hubs and explore their startup activity.
           </p>
           <div className="grid grid-cols-2 gap-3 mt-5">
             <StatBox label="Countries" value={countries.length} />
@@ -351,14 +352,17 @@ function FeaturedPremiumAtlas({ companies, databaseStatus, onRefresh }) {
   );
 }
 
-function EcosystemGlobe({ companies, databaseStatus, onRefresh }) {
+function EcosystemGlobe({ companies, investors, databaseStatus, onRefresh }) {
+  const nav = useNavigate();
+  const [entityType, setEntityType] = useState("Startups");
   const [search, setSearch] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('All regions');
   const [selectedCountry, setSelectedCountry] = useState('All countries');
 
+  const visibleEntities = useMemo(() => entityType === "Startups" ? companies : investors.filter(item => !["Draft", "Pending", "Rejected", "Archived", "Blocked", "Inactive"].includes(item?.status || "Published")), [entityType, companies, investors]);
   const countries = useMemo(() => {
     const grouped = new Map();
-    companies.forEach((company) => {
+    visibleEntities.forEach((company) => {
       const country = canonicalCountry(company.country);
       const point = projectCountry(country);
       if (!country || !point) return;
@@ -373,7 +377,7 @@ function EcosystemGlobe({ companies, databaseStatus, onRefresh }) {
       grouped.set(country, current);
     });
     return Array.from(grouped.values()).sort((a, b) => b.companies - a.companies || a.name.localeCompare(b.name));
-  }, [companies]);
+  }, [visibleEntities]);
 
   const regions = useMemo(() => {
     const grouped = new Map();
@@ -396,6 +400,7 @@ function EcosystemGlobe({ companies, databaseStatus, onRefresh }) {
   }, [countries, search, selectedRegion, selectedCountry]);
 
   const filteredCompanyCount = filteredCountries.reduce((sum, item) => sum + item.companies, 0);
+  const selectedEntities = useMemo(() => visibleEntities.filter(item => filteredCountries.some(c => c.name === canonicalCountry(item?.country))).sort((a,b) => String(a.name || '').localeCompare(String(b.name || ''))), [visibleEntities, filteredCountries]);
   const topCountries = filteredCountries.slice(0, 6);
   const regionSummary = selectedRegion === 'All regions'
     ? regions.slice(0, 6)
@@ -410,9 +415,12 @@ function EcosystemGlobe({ companies, databaseStatus, onRefresh }) {
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 md:gap-5">
         <div className="xl:col-span-3 border border-line rounded-[24px] bg-white p-4 md:p-5">
           <div className="eyebrow flex items-center gap-2"><Filter className="w-3.5 h-3.5 text-coral" /> Ecosystem filters</div>
-          <h3 className="font-display text-[26px] text-ink mt-2">Rotating globe view</h3>
+          <h3 className="font-display text-[26px] text-ink mt-2">Explore the ecosystem</h3>
+          <div className="flex gap-2 mt-4" role="group" aria-label="Directory type">
+            {['Startups','Investors'].map(type => <button type="button" key={type} className={chipClass(entityType === type)} onClick={() => {setEntityType(type);setSelectedRegion('All regions');setSelectedCountry('All countries');setSearch('');}}>{type}</button>)}
+          </div>
           <p className="text-[14px] text-slate2 leading-relaxed mt-2">
-            Browse only the countries represented in your directory. Filter by region or country and see how many companies are active in each location.
+            Select a country on the globe or use the filters to browse matching directory profiles.
           </p>
 
           <div className="mt-5 space-y-4">
@@ -449,7 +457,7 @@ function EcosystemGlobe({ companies, databaseStatus, onRefresh }) {
 
             <div className="grid grid-cols-2 gap-3 pt-1">
               <StatBox label="Visible countries" value={filteredCountries.length} />
-              <StatBox label="Visible companies" value={filteredCompanyCount} />
+              <StatBox label={entityType} value={filteredCompanyCount} />
             </div>
           </div>
         </div>
@@ -458,7 +466,7 @@ function EcosystemGlobe({ companies, databaseStatus, onRefresh }) {
           <div className="flex flex-wrap items-center justify-between gap-4 mb-3">
             <div>
               <div className="eyebrow">Interactive globe</div>
-              <div className="text-[18px] md:text-[22px] text-ink font-display">Global startup footprint</div>
+              <div className="text-[18px] md:text-[22px] text-ink font-display">Global ecosystem atlas</div>
             </div>
             <div className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1.5 text-[11px] mono text-slate2">
               <span className="w-2 h-2 rounded-full bg-coral inline-block" /> Auto rotating
@@ -513,12 +521,17 @@ function EcosystemGlobe({ companies, databaseStatus, onRefresh }) {
           </div>
 
           <div className="border border-line rounded-[24px] bg-white p-4 md:p-5">
-            <div className="eyebrow">How to use</div>
-            <ul className="mt-3 space-y-2 text-[13px] text-slate2 leading-relaxed list-disc pl-4">
-              <li>Use this as the second homepage tab beside Featured / Premium.</li>
-              <li>Counts are based only on the companies currently in your directory.</li>
-              <li>Globe shows represented countries only, in your existing site style.</li>
-            </ul>
+            <div className="flex justify-between items-center gap-2"><div className="eyebrow">{entityType} in this view</div><span className="mono text-[12px] text-coral">{selectedEntities.length}</span></div>
+            <div className="mt-3 max-h-[240px] overflow-y-auto space-y-1">
+              {selectedEntities.slice(0,40).map((item,index) => (
+                <button key={item.slug || item.id || index} type="button" disabled={!item.slug}
+                  onClick={() => item.slug && nav(`${entityType === 'Startups' ? '/startups/' : '/investors/'}${encodeURIComponent(item.slug)}`)}
+                  className="w-full text-left flex items-center justify-between gap-3 p-2 rounded-lg hover:bg-[#F8F3EA] disabled:opacity-50">
+                  <span className="text-[13px] truncate text-ink">{item.name || item.title}</span><ArrowRight className="w-3.5 h-3.5 text-coral shrink-0" />
+                </button>))}
+              {!selectedEntities.length && <p className="text-[13px] text-slate2">No {entityType.toLowerCase()} match the selected filters.</p>}
+            </div>
+            {selectedEntities.length > 40 && <p className="text-[11px] text-slate2 mt-2">Showing first 40 matching profiles.</p>}
           </div>
         </div>
       </div>
@@ -623,10 +636,7 @@ function RotatingGlobe({ countries, selectedCountry, onCountrySelect, onReset })
     return {name,path:countryShapePath(shape,rotation),count:selectedCount.get(name)||0};
   }).filter(shape=>shape.path),[rotation,selectedCount]);
 
-  const markers=useMemo(()=>countries.map(country=>{
-    const p=globeProject(country.lat,country.lng,rotation);
-    return {...country,...p};
-  }).filter(country=>country.depth>0.08),[countries,rotation]);
+
 
   const choose=(country)=>{
     if(!country || !selectedCount.has(country))return;
@@ -674,13 +684,12 @@ function RotatingGlobe({ countries, selectedCountry, onCountrySelect, onReset })
           </radialGradient>
           <clipPath id="atlas-real-globe-clip"><circle cx="250" cy="250" r="178"/></clipPath>
         </defs>
-        <circle cx="250" cy="250" r="192" fill="#EEDFD0" opacity=".4"/>
         <circle cx="250" cy="250" r="178" fill="url(#atlas-real-globe-water)" stroke="#D5B494" strokeWidth="1.5"/>
         <g clipPath="url(#atlas-real-globe-clip)">
           {shapes.map(shape=>(
             <path
               key={shape.name} d={shape.path}
-              fill={shape.name===selectedCountry?'#B63C31':shape.count?'#DC7956':'#E8D9C5'}
+              fill={shape.name===selectedCountry?'#B63C31':shape.count?'#CE8069':'#E4D8C9'}
               stroke="#F9F1E6" strokeWidth=".65" strokeLinejoin="round"
               className={shape.count?'cursor-pointer':''}
               onClick={()=>choose(shape.name)}
@@ -689,12 +698,7 @@ function RotatingGlobe({ countries, selectedCountry, onCountrySelect, onReset })
               <title>{`${shape.name}: ${shape.count} ${shape.count===1?'company':'companies'}`}</title>
             </path>
           ))}
-          {markers.map(country=>(
-            <g key={country.name} onClick={()=>choose(country.name)} className="cursor-pointer">
-              <circle cx={country.x} cy={country.y} r={Math.max(3,Math.min(8,3+Math.sqrt(country.companies)))} fill="#B63C31" stroke="#FFFFFF" strokeWidth="1.5"/>
-              <title>{`${country.name}: ${country.companies} companies`}</title>
-            </g>
-          ))}
+
         </g>
         <circle cx="250" cy="250" r="178" fill="none" stroke="#A96B48" strokeWidth="1" opacity=".35" pointerEvents="none" />
       </svg>
