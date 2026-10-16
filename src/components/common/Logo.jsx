@@ -1,14 +1,18 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-// Public header and footer identity; other company/investor logos are untouched.
+// Public header and footer brand image. Keep company and investor logos unchanged.
 export const Wordmark = ({ variant = 'light', className = '' }) => (
   <Link to="/" aria-label="Startup Muslim Ecosystem Atlas — home"
-    className={`inline-flex items-center shrink-0 text-white ${className}`}>
-    <span className="flex flex-col text-left font-display font-bold text-white leading-tight text-[13px] sm:text-[15px]">
-      <span>Startup Muslim</span>
-      <span>Ecosystem Atlas</span>
-    </span>
+    className={`inline-flex items-center shrink-0 ${className}`}>
+    <img
+      src="/images/startup-muslim-logo.webp"
+      alt="Startup Muslim Ecosystem Atlas"
+      width="175"
+      height="88"
+      className="block w-auto h-10 sm:h-11 object-contain"
+      style={{ filter: 'brightness(0) invert(1)' }}
+    />
   </Link>
 );
 

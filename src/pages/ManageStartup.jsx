@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft, BadgeCheck, BriefcaseBusiness, Building2, CalendarDays, CircleDollarSign,
   ExternalLink, FileText, ImagePlus, Plus, Rocket, Save, Trash2, UserRound, X,
@@ -84,11 +84,16 @@ const MANAGERS = {
 
 export default function ManageStartup() {
   const { slug } = useParams();
+  const [searchParams] = useSearchParams();
   const { currentUser, isAdmin } = useAuth();
   const { data, loading, updateItem, addItem, removeItem } = useData();
   const { toast } = useToast();
-  const [section,setSection] = useState('profile');
+  const [section,setSection] = useState(() => SECTIONS.some(([id]) => id === searchParams.get('section')) ? searchParams.get('section') : 'profile');
   const [fullEditorOpen,setFullEditorOpen] = useState(false);
+  useEffect(() => {
+    const requested = searchParams.get('section');
+    if (SECTIONS.some(([id]) => id === requested)) setSection(requested);
+  }, [searchParams]);
 
   const startup = data.startups.find((item)=>item.slug===slug);
   const approvedClaim = data.claims.find((claim)=>claim.startupSlug===slug && claim.ownerId===currentUser?.id && claim.status==='Approved');
@@ -114,7 +119,7 @@ export default function ManageStartup() {
           <div className="flex items-center gap-2 flex-wrap"><h1 className="font-display text-[28px] truncate">Manage {startup.name}</h1>{(startup.claimed || approvedClaim) && <span className="tag tag-emerald"><BadgeCheck className="w-3 h-3"/> Claimed profile</span>}<span className={`tag ${startup.status==='Published'?'tag-emerald':'tag-amber'}`}>{startup.status}</span></div>
           <p className="text-[12.5px] text-slate2 mt-1">You can update the company profile and manage its pitches, team, funding rounds, jobs, and opportunities.</p>
         </div>
-        <div className="flex flex-wrap gap-2"><button onClick={()=>setFullEditorOpen(true)} className="btn btn-coral"><Building2 className="w-4 h-4"/> Edit full company</button>{startup.status==='Published'&&<Link to={`/startups/${startup.slug}`} className="btn btn-outline"><ExternalLink className="w-4 h-4"/> View public profile</Link>}</div>
+        <div className="flex flex-wrap gap-2"><button onClick={()=>setSection('jobs')} className="btn btn-coral"><BriefcaseBusiness className="w-4 h-4"/> Post a job</button><button onClick={()=>setFullEditorOpen(true)} className="btn btn-coral"><Building2 className="w-4 h-4"/> Edit full company</button>{startup.status==='Published'&&<Link to={`/startups/${startup.slug}`} className="btn btn-outline"><ExternalLink className="w-4 h-4"/> View public profile</Link>}</div>
       </div>
       {fullEditorOpen && <MemberCompanyWorkspace initial={startup} onClose={()=>setFullEditorOpen(false)}/>}
 

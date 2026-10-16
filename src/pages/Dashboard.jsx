@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
 import {
-  BadgeCheck, Bookmark, Building2, Eye, FileText, LayoutDashboard, LogOut, Menu, Settings,
+  BadgeCheck, Bookmark, Building2, BriefcaseBusiness, Eye, FileText, LayoutDashboard, LogOut, Menu, Settings,
   Handshake, X, TrendingUp, Plus, Trash2, ShieldCheck, SlidersHorizontal,
 } from 'lucide-react';
 import CountryLabel from '@/components/common/CountryLabel';
@@ -17,6 +17,7 @@ const NAV = [
   { id:'overview', label:'Overview', icon:LayoutDashboard },
   { id:'listings', label:'My listings', icon:Building2 },
   { id:'pitch', label:'My pitch submissions', icon:FileText },
+  { id:'jobs', label:'Post & manage jobs', icon:BriefcaseBusiness },
   { id:'saved-startups', label:'Saved startups', icon:Bookmark },
   { id:'saved-pitches', label:'Saved pitches', icon:Bookmark },
   { id:'saved-investors', label:'Saved investors', icon:Bookmark },
@@ -64,9 +65,10 @@ export default function Dashboard() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3"><Stat label="Listings" value={String(myListings.length)} icon={Building2}/><Stat label="Pitches" value={String(myPitches.length)} icon={FileText}/><Stat label="Saved" value={String(savedStartups.length+savedPitches.length+savedInvestors.length)} icon={Bookmark}/><Stat label="Total views" value={String(myListings.reduce((sum,item)=>sum+Number(item.views||0),0))} icon={TrendingUp}/></div>
           {firstListing&&<div className="border border-emerald/20 bg-emeraldSoft rounded-2xl p-5 flex flex-col md:flex-row md:items-center gap-4"><div className="w-10 h-10 rounded-xl bg-white text-emerald flex items-center justify-center"><BadgeCheck className="w-5 h-5"/></div><div className="flex-1"><div className="font-medium text-[14px]">You can manage {firstListing.name}</div><div className="text-[12px] text-slate2 mt-1">Update its profile, team, pitches, funding rounds, jobs, and opportunities from one workspace.</div></div><Link to={`/dashboard/startups/${firstListing.slug}`} className="btn btn-coral"><SlidersHorizontal className="w-4 h-4"/> Manage startup</Link></div>}
           <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} className="border border-line bg-white rounded-2xl p-6"><div className="flex items-center justify-between"><div className="font-display text-[20px]">Profile views</div><div className="text-[12.5px] text-slate2">Last six months</div></div><div className="h-64 mt-4"><ResponsiveContainer><LineChart data={CHART_DATA}><CartesianGrid strokeDasharray="4 4" stroke="#E8E3DA"/><XAxis dataKey="m" stroke="#696969" fontSize={12} tickLine={false} axisLine={false}/><YAxis stroke="#696969" fontSize={12} tickLine={false} axisLine={false}/><Tooltip/><Line type="monotone" dataKey="views" stroke="#C93636" strokeWidth={2} dot={{r:3,fill:'#C93636'}}/></LineChart></ResponsiveContainer></div></motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4"><Quick title="Submit another startup" text="Add a new company profile to the review queue." to="/submit-startup" icon={Building2}/><Quick title="Share a funding pitch" text="Submit a private or public investment pitch." to={firstListing?`/submit-pitch?startup=${firstListing.slug}`:'/submit-pitch'} icon={FileText}/></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{firstListing&&<Quick title="Post a job" text="Publish and manage company vacancies." to={`/dashboard/startups/${firstListing.slug}?section=jobs`} icon={BriefcaseBusiness}/>}<Quick title="Submit another startup" text="Add a new company profile to the review queue." to="/submit-startup" icon={Building2}/><Quick title="Share a funding pitch" text="Submit a private or public investment pitch." to={firstListing?`/submit-pitch?startup=${firstListing.slug}`:'/submit-pitch'} icon={FileText}/></div>
         </>}
 
+        {sec==='jobs'&&<Panel title="Post and manage jobs"><p className="text-sm text-slate2 mb-4">Choose an approved or owned company to post jobs, edit vacancies and close openings. Jobs are managed through the company's secure workspace.</p>{myListings.length ? <div className="space-y-3">{myListings.map((startup)=><div key={startup.slug} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border border-line rounded-xl p-4"><div><div className="font-medium">{startup.name}</div><div className="text-xs text-slate2 mt-1">{(data.jobs||[]).filter((job)=>job.startupSlug===startup.slug).length} job listings</div></div><Link className="btn btn-coral btn-sm" to={`/dashboard/startups/${startup.slug}?section=jobs`}><BriefcaseBusiness className="w-4 h-4"/> Post / manage jobs</Link></div>)}</div>:<div className="rounded-xl border border-line p-5 text-sm text-slate2">After your company claim is approved, your company will appear here and you can publish job opportunities. <Link className="text-coral underline" to="/startups">Find and claim your company</Link>.</div>}</Panel>}
         {sec==='listings'&&<Panel title="My listings" action={<Link to="/submit-startup" className="btn btn-coral btn-sm"><Plus className="w-4 h-4"/> Add listing</Link>}><div className="grid grid-cols-1 lg:grid-cols-2 gap-3">{myListings.map((startup)=>{
           const claimed=approvedClaimSlugs.has(startup.slug)||startup.claimed;
           const canDelete=startup.ownerId===currentUser?.id&&!claimed&&['Pending','Draft','Rejected'].includes(startup.status);

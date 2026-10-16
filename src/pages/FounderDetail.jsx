@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
 import { StartupLogo } from '@/components/common/Logo';
 import CountryLabel from '@/components/common/CountryLabel';
-import { ArrowUpRight, Linkedin, Mail, MapPin, BadgeCheck } from 'lucide-react';
+import { ArrowUpRight, BriefcaseBusiness, Linkedin, Mail, MapPin, BadgeCheck } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 import { useData } from '@/context/DataContext';
 import { useAuth } from '@/context/AuthContext';
@@ -23,6 +23,7 @@ export default function FounderDetail() {
   if (!f) return <Navigate to="/founders" replace />;
 
   const startup = f.startupSlug && (data.startups || []).find((item) => item.slug === f.startupSlug && isPublic(item));
+  const canManageStartup = Boolean(currentUser && startup && (startup.ownerId === currentUser.id || (data.claims || []).some((claim) => claim.startupSlug === startup.slug && claim.ownerId === currentUser.id && claim.status === 'Approved')));
   const similar = (data.founders || [])
     .filter((founder) => founder.slug !== f.slug && isPublic(founder) && (founder.industry === f.industry || founder.country === f.country))
     .sort((a, b) => Number(a.industry !== f.industry) - Number(b.industry !== f.industry))
@@ -76,6 +77,7 @@ export default function FounderDetail() {
 
                 <div className="mt-7 flex flex-wrap gap-2">
                   <button className="btn btn-coral" onClick={contactFounder} data-testid="founder-contact"><Mail className="w-4 h-4" /> Contact</button>
+                  {canManageStartup && <Link to={`/dashboard/startups/${startup.slug}?section=jobs`} className="btn btn-coral"><BriefcaseBusiness className="w-4 h-4"/> Post a job</Link>}
                   {f.linkedin && f.linkedin !== '#' && <a href={f.linkedin} target="_blank" rel="noreferrer" className="btn btn-outline"><Linkedin className="w-4 h-4" /> LinkedIn</a>}
                 </div>
               </div>
