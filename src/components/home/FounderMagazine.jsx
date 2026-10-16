@@ -5,16 +5,32 @@ import { ArrowUpRight, Linkedin } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { SectionHeading } from '@/components/common/Section';
 
-// Only display founder profiles published in the current database.
+// These slugs originate from the fictional sample founders in database/seed.sql.
+// A "Published" seed status is not evidence that a founder is a real person.
+const SAMPLE_FOUNDER_SLUGS = new Set(["aisha-rahman", "yusuf-al-amin", "nadia-benali", "imran-siddiqui", "layla-hassan", "omar-farouq", "sana-qureshi", "khadija-bello", "hamza-yildiz", "fatima-oduya", "ahmed-khalifa", "zainab-mohamed"]);
+
+// Display only published, non-sample database records on the homepage.
 export default function FounderMagazine() {
   const { data, databaseStatus } = useData();
   const founders = useMemo(() => databaseStatus === 'connected'
-    ? (data.founders || []).filter((f) => f.status === 'Published' && f.name && f.slug)
+    ? (data.founders || []).filter((f) => f.status === 'Published' && f.name && f.slug && !SAMPLE_FOUNDER_SLUGS.has(f.slug))
     : [], [data.founders, databaseStatus]);
   const lead = founders.find((f) => f.story && f.photo) || founders.find((f) => f.photo && f.bio) || founders[0];
   const others = founders.filter((f) => f.slug !== lead?.slug).slice(0, 2);
   // No editorial profile should be substituted from the bundled examples.
-  if (!lead) return null;
+  if (!lead) {
+    if (databaseStatus !== 'connected') return null;
+    return (
+      <section className="bg-canvas" data-testid="founder-magazine-section">
+        <div className="wrap py-16 md:py-24">
+          <SectionHeading number="07" eyebrow="Founder profiles" title="Operators building publicly."
+            subtitle="Discover founders whose profiles have been published in the directory."
+            right={<Link to="/founders" className="btn btn-outline btn-sm">Browse all founders <ArrowUpRight className="w-3.5 h-3.5" /></Link>} />
+          <p className="mt-8 text-slate2 text-[14.5px]">Featured founder profiles will appear here once real founder records are published. Sample profiles are not displayed.</p>
+        </div>
+      </section>
+    );
+  }
   const linkedIn = /^https?:\/\//i.test(lead.linkedin || '') ? lead.linkedin : '';
 
   return (
