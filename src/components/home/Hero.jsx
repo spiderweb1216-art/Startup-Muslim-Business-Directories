@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { canonicalCountry, countryLabel, projectCountry } from '@/lib/countryAtlas';
+import worldCountryShapes from '@/data/worldCountryShapes.json';
 
 function isPublishedCompany(company = {}) {
   return !['Draft', 'Pending', 'Rejected', 'Archived', 'Blocked', 'Inactive', 'Revoked', 'Cancelled'].includes(company.status || 'Published');
@@ -465,7 +466,7 @@ function EcosystemGlobe({ companies, databaseStatus, onRefresh }) {
           </div>
 
           <div className="min-h-[340px] md:min-h-[430px] flex items-center justify-center">
-            <RotatingGlobe countries={filteredCountries} />
+            <RotatingGlobe countries={filteredCountries} selectedCountry={selectedCountry} onCountrySelect={(country) => { setSelectedCountry(country); setSearch(''); const region = getRegionForCountry(country); setSelectedRegion(region === 'Other' ? 'All regions' : region); }} onReset={() => { setSelectedCountry('All countries'); setSelectedRegion('All regions'); setSearch(''); }} />
           </div>
 
           <div className="mt-4 border-t border-line pt-4 flex flex-wrap gap-2 items-center">
@@ -525,115 +526,184 @@ function EcosystemGlobe({ companies, databaseStatus, onRefresh }) {
   );
 }
 
-function RotatingGlobe({ countries }) {
-  const [rotation, setRotation] = useState(-20);
+// Bundled generalized Natural Earth-style country shapes: no map API keys or external tile requests.
+const SHAPE_ALIASES = {
+  'United States of America': 'United States',
+  'Dem. Rep. Congo': 'Democratic Republic of the Congo',
+  'Dominican Rep.': 'Dominican Republic',
+  'Central African Rep.': 'Central African Republic',
+  'S. Sudan': 'South Sudan',
+  'Bosnia and Herz.': 'Bosnia and Herzegovina',
+  'Czechia': 'Czech Republic',
+  'Eq. Guinea': 'Equatorial Guinea',
+  'eSwatini': 'Swaziland',
+  'Solomon Is.': 'Solomon Islands',
+  'N. Cyprus': 'Cyprus',
+  'W. Sahara': 'Western Sahara',
+  'Somaliland': 'Somalia',
+  'Macedonia': 'Republic of Macedonia',
+  'Timor-Leste': 'East Timor',
+  'S. Korea': 'South Korea',
+  'N. Korea': 'North Korea',
+  'Côte d\'Ivoire': 'Ivory Coast',
+  'United Rep. of Tanzania': 'Tanzania',
+};
 
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setRotation((value) => (value + 1.1) % 360);
-    }, 60);
-    return () => window.clearInterval(timer);
-  }, []);
-
-  const maxCompanies = Math.max(1, ...countries.map((country) => country.companies));
-
-  const visibleCountries = useMemo(() => {
-    return countries.map((country) => {
-      const projected = projectOnGlobe(country.lat, country.lng, rotation, 280, 280, 170);
-      return {
-        ...country,
-        ...projected,
-        radius: 4 + (country.companies / maxCompanies) * 6,
-      };
-    }).filter((country) => country.visible);
-  }, [countries, rotation, maxCompanies]);
-
-  const latitudeLines = [-60, -30, 0, 30, 60];
-  const longitudeLines = [-120, -60, 0, 60, 120];
-
-  return (
-    <svg viewBox="0 0 560 560" className="w-full max-w-[520px] h-auto" role="img" aria-label="Rotating ecosystem globe showing company countries">
-      <defs>
-        <radialGradient id="globeFill" cx="45%" cy="40%" r="68%">
-          <stop offset="0%" stopColor="#FFF7EC" />
-          <stop offset="72%" stopColor="#F7DFC3" />
-          <stop offset="100%" stopColor="#EFC08E" />
-        </radialGradient>
-        <linearGradient id="globeShade" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.5" />
-          <stop offset="100%" stopColor="#D94B3D" stopOpacity="0.12" />
-        </linearGradient>
-        <clipPath id="globeClip">
-          <circle cx="280" cy="280" r="170" />
-        </clipPath>
-        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="12" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-
-      <circle cx="280" cy="280" r="200" fill="#F7EEE1" opacity="0.55" />
-      <circle cx="280" cy="280" r="180" fill="#FFF8EF" opacity="0.8" />
-      <circle cx="280" cy="280" r="170" fill="url(#globeFill)" stroke="#E7C7A3" strokeWidth="2" />
-      <circle cx="280" cy="280" r="170" fill="url(#globeShade)" opacity="0.55" />
-
-      <g clipPath="url(#globeClip)">
-        {latitudeLines.map((lat) => (
-          <ellipse key={`lat-${lat}`} cx="280" cy={280 - (lat * 1.6)} rx={170} ry={Math.max(28, 170 * Math.cos((lat * Math.PI) / 180) * 0.35)} fill="none" stroke="#DAB58D" strokeWidth="1" opacity="0.45" />
-        ))}
-        {longitudeLines.map((lng) => {
-          const delta = ((lng + rotation + 540) % 360) - 180;
-          const rx = Math.max(14, Math.abs(Math.cos((delta * Math.PI) / 180)) * 170);
-          return <ellipse key={`lng-${lng}`} cx="280" cy="280" rx={rx} ry="170" fill="none" stroke="#DAB58D" strokeWidth="1" opacity="0.35" />;
-        })}
-
-        {visibleCountries.map((country, index) => (
-          <g key={country.name} style={{ opacity: country.opacity }}>
-            <motion.circle
-              cx={country.x}
-              cy={country.y}
-              r={country.radius}
-              fill={index < 5 ? '#D94B3D' : '#111827'}
-              stroke="#FFF7EC"
-              strokeWidth="1.5"
-              filter={index < 5 ? 'url(#glow)' : undefined}
-              initial={{ scale: 0.6, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.25 }}
-            />
-            {index < 9 && (
-              <text x={country.x + country.radius + 6} y={country.y + 4} fontSize="11" fontFamily="IBM Plex Mono" fill="#5F5146">
-                {countryLabel(country.name)} · {country.companies}
-              </text>
-            )}
-          </g>
-        ))}
-      </g>
-
-      <ellipse cx="280" cy="460" rx="130" ry="18" fill="#E7D3BA" opacity="0.55" />
-      <text x="280" y="70" textAnchor="middle" fontSize="13" fontFamily="IBM Plex Mono" fill="#8E6D57">AUTOMATICALLY ROTATING · FILTERED BY YOUR DIRECTORY DATA</text>
-    </svg>
-  );
+function globeProject(lat, lng, rotationDeg, radius = 178) {
+  const phi = lat * Math.PI / 180;
+  const theta = (lng - rotationDeg) * Math.PI / 180;
+  const centerLat = 16 * Math.PI / 180;
+  const depth = Math.sin(centerLat) * Math.sin(phi) + Math.cos(centerLat) * Math.cos(phi) * Math.cos(theta);
+  return {
+    x: 250 + radius * Math.cos(phi) * Math.sin(theta),
+    y: 250 - radius * (Math.cos(centerLat) * Math.sin(phi) - Math.sin(centerLat) * Math.cos(phi) * Math.cos(theta)),
+    depth,
+  };
 }
 
-function projectOnGlobe(lat, lng, rotationDeg, cx, cy, radius) {
-  const phi = (lat * Math.PI) / 180;
-  const lambda = ((lng - rotationDeg) * Math.PI) / 180;
-  const phi0 = (18 * Math.PI) / 180;
+function visiblePolygonPath(ring, rotationDeg) {
+  if (!Array.isArray(ring) || ring.length < 3) return '';
+  // Sample edges before projecting, then clip land to the near hemisphere.
+  // A polygon crossing the horizon is closed along the edge of the visible disc.
+  const sampled=[];
+  for (let i=0;i<ring.length;i++) {
+    const start=ring[i], end=ring[(i+1)%ring.length];
+    if (!Array.isArray(start) || !Array.isArray(end)) continue;
+    let lonDiff=end[0]-start[0];
+    if (lonDiff>180)lonDiff-=360;
+    if (lonDiff< -180)lonDiff+=360;
+    const steps=Math.max(1,Math.ceil(Math.max(Math.abs(lonDiff),Math.abs(end[1]-start[1]))/5));
+    for(let j=0;j<steps;j++){
+      const t=j/steps;
+      sampled.push(globeProject(start[1]+(end[1]-start[1])*t,start[0]+lonDiff*t,rotationDeg));
+    }
+  }
+  if(sampled.length<3)return '';
+  const output=[];
+  for(let i=0;i<sampled.length;i++){
+    const p=sampled[i],q=sampled[(i+1)%sampled.length];
+    const pin=p.depth>=0, qin=q.depth>=0;
+    if(pin)output.push(p);
+    if(pin!==qin){
+      let low=0,high=1;
+      for(let n=0;n<16;n++){
+        const t=(low+high)/2;
+        const depth=p.depth+(q.depth-p.depth)*t;
+        if((depth>=0)===pin)low=t; else high=t;
+      }
+      const t=(low+high)/2;
+      output.push({x:p.x+(q.x-p.x)*t,y:p.y+(q.y-p.y)*t});
+    }
+  }
+  if(output.length<3)return '';
+  return `M${output.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join('L')}Z`;
+}
 
-  const x3 = Math.cos(phi) * Math.sin(lambda);
-  const y3 = Math.cos(phi0) * Math.sin(phi) - Math.sin(phi0) * Math.cos(phi) * Math.cos(lambda);
-  const z3 = Math.sin(phi0) * Math.sin(phi) + Math.cos(phi0) * Math.cos(phi) * Math.cos(lambda);
+function countryShapePath(shape, rotation) {
+  const polygons=shape.type==='MultiPolygon'?shape.coordinates:[shape.coordinates];
+  return polygons.map(polygon=>visiblePolygonPath(polygon[0],rotation)).filter(Boolean).join(' ');
+}
 
-  return {
-    x: cx + radius * x3,
-    y: cy - radius * y3,
-    visible: z3 > -0.05,
-    opacity: z3 > 0 ? 0.95 : 0.3,
+function RotatingGlobe({ countries, selectedCountry, onCountrySelect, onReset }) {
+  const [rotation,setRotation]=useState(-22);
+  const [paused,setPaused]=useState(false);
+  const [hovered,setHovered]=useState('');
+  const dragging=useRef(null);
+  const lastDrag=useRef(0);
+  const selectedCount=useMemo(()=>new Map(countries.map(item=>[canonicalCountry(item.name),item.companies])),[countries]);
+
+  useEffect(()=>{
+    if(paused || (typeof window!=='undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches))return undefined;
+    const timer=window.setInterval(()=>setRotation(r=>(r+0.45)%360),75);
+    return ()=>window.clearInterval(timer);
+  },[paused]);
+
+  const shapes=useMemo(()=>worldCountryShapes.map(shape=>{
+    const name=canonicalCountry(SHAPE_ALIASES[shape.name]||shape.name);
+    return {name,path:countryShapePath(shape,rotation),count:selectedCount.get(name)||0};
+  }).filter(shape=>shape.path),[rotation,selectedCount]);
+
+  const markers=useMemo(()=>countries.map(country=>{
+    const p=globeProject(country.lat,country.lng,rotation);
+    return {...country,...p};
+  }).filter(country=>country.depth>0.08),[countries,rotation]);
+
+  const choose=(country)=>{
+    if(!country || !selectedCount.has(country))return;
+    if(Date.now()-lastDrag.current<250)return;
+    onCountrySelect(country);
+    setPaused(true);
   };
+
+  const handlePointerDown=(event)=>{
+    if(event.button!==0 && event.pointerType==='mouse')return;
+    dragging.current={x:event.clientX,rotation,moved:false};
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+  const handlePointerMove=(event)=>{
+    if(!dragging.current)return;
+    const dx=event.clientX-dragging.current.x;
+    if(Math.abs(dx)>4)dragging.current.moved=true;
+    setRotation((dragging.current.rotation-dx*0.38+3600)%360);
+  };
+  const handlePointerUp=()=>{
+    if(dragging.current?.moved){lastDrag.current=Date.now();setPaused(true);}
+    dragging.current=null;
+  };
+
+  return (
+    <div className="w-full flex flex-col items-center">
+      <div className="flex items-center justify-between w-full gap-3 mb-1">
+        <span className="mono text-[11px] text-slate2">Drag or swipe to turn · select a highlighted country</span>
+        <button type="button" onClick={()=>setPaused(p=>!p)} className="text-[12px] mono rounded-full px-3 py-1.5 bg-white border border-line hover:text-coral">
+          {paused?'Resume rotation':'Pause rotation'}
+        </button>
+      </div>
+      <svg
+        viewBox="0 0 500 500" role="img" aria-label="Interactive geographic globe with draggable rotation and clickable countries"
+        className="w-full max-w-[510px] select-none cursor-grab active:cursor-grabbing"
+        style={{touchAction:'pan-y'}}
+        onPointerDown={handlePointerDown} onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp}
+        onPointerLeave={()=>setHovered('')}
+      >
+        <defs>
+          <radialGradient id="atlas-real-globe-water" cx="35%" cy="28%" r="79%">
+            <stop offset="0%" stopColor="#FFF7ED"/><stop offset="70%" stopColor="#F2D6B9"/>
+            <stop offset="100%" stopColor="#D9B48F"/>
+          </radialGradient>
+          <clipPath id="atlas-real-globe-clip"><circle cx="250" cy="250" r="178"/></clipPath>
+        </defs>
+        <circle cx="250" cy="250" r="192" fill="#EEDFD0" opacity=".4"/>
+        <circle cx="250" cy="250" r="178" fill="url(#atlas-real-globe-water)" stroke="#D5B494" strokeWidth="1.5"/>
+        <g clipPath="url(#atlas-real-globe-clip)">
+          {shapes.map(shape=>(
+            <path
+              key={shape.name} d={shape.path}
+              fill={shape.name===selectedCountry?'#B63C31':shape.count?'#DC7956':'#E8D9C5'}
+              stroke="#F9F1E6" strokeWidth=".65" strokeLinejoin="round"
+              className={shape.count?'cursor-pointer':''}
+              onClick={()=>choose(shape.name)}
+              onPointerEnter={()=>setHovered(shape.name)}
+            >
+              <title>{`${shape.name}: ${shape.count} ${shape.count===1?'company':'companies'}`}</title>
+            </path>
+          ))}
+          {markers.map(country=>(
+            <g key={country.name} onClick={()=>choose(country.name)} className="cursor-pointer">
+              <circle cx={country.x} cy={country.y} r={Math.max(3,Math.min(8,3+Math.sqrt(country.companies)))} fill="#B63C31" stroke="#FFFFFF" strokeWidth="1.5"/>
+              <title>{`${country.name}: ${country.companies} companies`}</title>
+            </g>
+          ))}
+        </g>
+        <circle cx="250" cy="250" r="178" fill="none" stroke="#A96B48" strokeWidth="1" opacity=".35" pointerEvents="none" />
+      </svg>
+      <div className="flex items-center justify-between gap-3 w-full mt-1">
+        <span className="text-[12px] text-slate2 min-h-[20px]">{hovered?`${hovered} · ${selectedCount.get(hovered)||0} companies`:'Highlighted countries have directory listings'}</span>
+        {selectedCountry!=='All countries' && <button type="button" className="text-[12px] text-coral underline" onClick={onReset}>Clear selection</button>}
+      </div>
+    </div>
+  );
 }
 
 function LoadingMapState({ databaseStatus, onRefresh }) {
